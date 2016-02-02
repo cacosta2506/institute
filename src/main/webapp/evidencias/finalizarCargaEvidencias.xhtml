@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+	<f:metadata>
+		<f:event listener="#{cambioFaseController.obtenerDatosIniciales}"
+			type="preRenderView"></f:event>
+	</f:metadata>
+	<ui:define name="contenido">
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<h:form id="formulario" acceptcharset="iso-8859-1">
+
+			<div class="info2">
+				<p class="titulo-mensaje">Importante:</p>
+				<p>Al presionar el botón "Finalizar carga de evidencias" Usted
+					declara que toda la información ingresada al sistema, asi como las
+					evidencias reportadas es verídica y puede ser evaluada.</p>
+				<p>Una vez finalizada la fase de carga de evidencias no podrá
+					regresar a la misma sin una autorización del administrador y por
+					pedido explícito de la autoridad competente del CEAACES.</p>
+				<!-- 	<p>Considere que si retorna a ingreso de datos, todas las
+					muestras de estudiantes generadas para carga de evidencias podrían
+					sufrir cambios, por tanto debe verificar y de ser el caso cargar
+					nuevamente las evidencias que el sistema solicite.</p>  -->
+				<h:panelGrid columns="2">
+					<p:commandButton value="Finalizar carga de evidencias"
+						oncomplete="dlgFinalizar.show()"></p:commandButton>
+					<p:commandButton title="importar" value="Rectificar datos"
+						disabled="#{!cambioFaseController.activarRectificacion}"
+						update=":formAdvertencia"
+						action="#{cambioFaseController.validarCambioFase('REGISTRO')}"
+						oncomplete="dlgAdvertencia.show()"></p:commandButton>
+				</h:panelGrid>
+			</div>
+		</h:form>
+
+		<p:confirmDialog id="cfFinalizar" widgetVar="dlgFinalizar"
+			header="Finalizar proceso de Evidencia" severity="alert"
+			message="Una vez realizada esta acción no podrá a ingresar al sistema para cargar más evidencia. ¿Está seguro de realizar esta acción?">
+			<center>
+				<h:panelGrid columns="3">
+					<p:commandButton value="Sí" 
+						action="#{cambioFaseController.cambiarFase('EVALUACION')}"
+						oncomplete="dlgFinalizar.hide()" style="width:100px"
+						icon="ui ui-icon-check" />
+					<p:spacer width="10" />
+					<p:commandButton value="No" onclick="dlgFinalizar.hide()"
+						style="width:100px" icon="ui ui-icon-closethick" />
+				</h:panelGrid>
+			</center>
+		</p:confirmDialog>
+		<p:dialog widgetVar="dlgAdvertencia" id="modalAdvertencia" width="600"
+			resizable="false" modal="true">
+			<h:form id="formAdvertencia" acceptcharset="iso-8859-1">
+				<center>
+					<h:panelGrid columns="1">
+						<p:messages></p:messages>
+						<p:commandButton value="Aceptar"
+							oncomplete="dlgAdvertencia.hide()"
+							action="#{cambioFaseController.cambiarFase('REGISTRO')}" />
+					</h:panelGrid>
+				</center>
+			</h:form>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

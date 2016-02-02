@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+			<p:messages id="msj" showDetail="true" autoUpdate="true"
+				showSummary="false" closable="false" globalOnly="false" />
+
+			<center>
+				<p:panel
+					header="ADMINISTRACIÓN DE PROGRAMAS DE ESTUDIO DE LAS ASIGNATURAS">
+					<p:commandButton style="float:right;" value="Nuevo"
+						action="#{peasController.nuevoPEA}"
+						update=":formPrincipal :formAsignatura">
+					</p:commandButton>
+					<br />
+					<br />
+					<br />
+					<h:outputText
+						style="font-size:12px;float:left;color:#0078D0;font-weight:bold;"
+						value="Nro. programas de estudio de las asignaturas registrados: #{peasController.totalPeas}" />
+					<br />
+					<p:dataTable id="tablaPeas"
+						value="#{peasController.listaPeasDiferentes}" var="peas"
+						emptyMessage="No se encontraron registros" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15"
+						style="width:auto;height:auto"
+						paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+
+						<p:column headerText="PROGRAMA DE ESTUDIO DE LA ASIGNATURA"
+							filterBy="#{peas}">
+							<h:inputTextarea value="#{peas}" readonly="true" cols="50"
+								style="resize:none;" />
+						</p:column>
+
+						<!-- editar -->
+						<p:column headerText="Acciones">
+							<p:commandButton oncomplete="dialogAdminEditar.show()"
+								icon="ui-icon-pencil" update=":formAsignaturaEditar"
+								style="width:24px;height:24px;"
+								action="#{peasController.cargarEdicion}">
+								<f:setPropertyActionListener
+									target="#{peasController.codigoPea}" value="#{peas}" />
+							</p:commandButton>
+							<p:commandButton oncomplete="deleteConfirmation.show()"
+								title="eliminar" icon="ui-icon-close"
+								style="width:24px;height:24px;">
+								<f:setPropertyActionListener
+									target="#{laboratorioController.laboratorioSeleccionado}"
+									value="#{lab}" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</center>
+		</h:form>
+
+		<p:dialog widgetVar="dialogAdmin"
+			header="Nuevo Programa de Estudios de la Asignatura" resizable="true"
+			showEffect="fold" hideEffect="fold">
+			<center>
+				<p:messages id="msjPrinci" showDetail="true" autoUpdate="true"
+					showSummary="false" />
+
+				<h:form id="formAsignatura" acceptcharset="iso-8859-1">
+					<h:panelGrid columns="2">
+
+						<h:outputText
+							value="Programa de Estudios de las Asignatura (PEA): " />
+						<p:inputText value="#{peasController.codigoPea}" />
+
+						<h:outputText value="Matriz/Extensión" />
+						<p:selectOneMenu id="idSdIs" style="width:250px"
+							value="#{peasController.idSedeIesSeleccionada}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems
+								value="#{peasController.listaSedeIesAsignaturaDto}" var="lis"
+								itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+							<p:ajax update="idCarrer"
+								listener="#{peasController.cargarCarreras}" />
+						</p:selectOneMenu>
+
+						<h:outputText value="Carrera:" />
+						<p:selectOneMenu id="idCarrer" style="width:250px"
+							value="#{peasController.idInformacionCarreraSeleccionada}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems
+								value="#{peasController.listaInformacionCarreraDto}" var="lis"
+								itemLabel="#{lis.tituloOtorga}" itemValue="#{lis.id}" />
+							<p:ajax update="mallA" listener="#{peasController.cargarMalla}" />
+						</p:selectOneMenu>
+
+						<h:outputText value="Malla Curricular:" />
+						<p:selectOneMenu id="mallA" style="width:250px"
+							value="#{peasController.idMallaSeleccionada}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems value="#{peasController.listaMallaDto}" var="lis"
+								itemLabel="#{lis.descripcion}" itemValue="#{lis.id}" />
+							<p:ajax update="pickList"
+								listener="#{peasController.cargarAsignaturas}" />
+						</p:selectOneMenu>
+					</h:panelGrid>
+
+					<h:panelGrid columns="1" id="pg_2">
+						<p:pickList id="pickList" effect="puff"
+							value="#{peasController.listaAsignaturasDTO}" var="lista"
+							itemValue="#{lista}" itemLabel="#{lista.nombre}"
+							showCheckbox="true" filterMatchMode="contains"
+							converter="laboratorioAsignaturaConverter">
+							<p:ajax event="transfer" update="pg_2" />
+						</p:pickList>
+					</h:panelGrid>
+				</h:form>
+
+				<h:form id="fopciones" acceptcharset="iso-8859-1">
+					<h:panelGrid columns="2">
+						<p:commandButton value="Guardar"
+							action="#{peasController.registrarPeasPorAsignatura}"
+							update=":formPrincipal" />
+						<p:commandButton value="Cancelar" oncomplete="dialogAdmin.hide();" />
+					</h:panelGrid>
+				</h:form>
+			</center>
+		</p:dialog>
+
+		<!-- editar asignaturas -->
+		<p:dialog widgetVar="dialogAdminEditar" header="Editar Laboratorio"
+			resizable="true" showEffect="fold" hideEffect="fold"
+			position="center">
+			<center>
+				<p:messages id="msjPrinciEditar" showDetail="true" autoUpdate="true"
+					showSummary="false" />
+
+				<h:form id="formAsignaturaEditar" acceptcharset="iso-8859-1">
+					<h:outputText
+						value="Programa de Estudios de las Asignaturas: #{peasController.codigoPea}" />
+					<br />
+					<p:dataTable var="objAsig"
+						value="#{peasController.listaAsignaturas}"
+						emptyMessage="No se encontraron registros" paginator="true"
+						rows="5" rowsPerPageTemplate="5,10,15"
+						style="width:auto;height:auto"
+						paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+
+						<p:column headerText="Asignatura">
+							<h:outputText value="#{objAsig.nombre}" />
+						</p:column>
+
+						<p:column headerText="Acciones" style="width:24px;height:24px;">
+							<p:commandButton oncomplete="deleteConfirmationAsig.show()"
+								icon="ui-icon-close">
+								<f:setPropertyActionListener
+									target="#{laboratorioController.laboratorioAsignaturaDto}"
+									value="#{objAsig}" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<br />
+					<h:panelGrid columns="6">
+						<h:outputText value="Matriz/Extensión:" />
+						<p:selectOneMenu id="idSdIsEditar"
+							style="width:250px;resize:none;"
+							value="#{peasController.idSedeIesSeleccionada}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems
+								value="#{peasController.listaSedeIesAsignaturaDto}" var="lis"
+								itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+							<p:ajax update="idCarrerEditar"
+								listener="#{peasController.cargarCarreras}" />
+						</p:selectOneMenu>
+
+						<h:outputText value="Carrera:" />
+						<p:selectOneMenu id="idCarrerEditar"
+							style="width:250px;resize:none;"
+							value="#{peasController.idInformacionCarreraSeleccionada}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems
+								value="#{peasController.listaInformacionCarreraDto}" var="lis"
+								itemLabel="#{lis.tituloOtorga}" itemValue="#{lis.id}" />
+							<p:ajax update="mallAEditar"
+								listener="#{peasController.cargarMalla}" />
+						</p:selectOneMenu>
+
+						<h:outputText value="Malla:" />
+						<p:selectOneMenu id="mallAEditar" style="width:250px;resize:none;"
+							value="#{peasController.idMallaSeleccionada}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems value="#{peasController.listaMallaDto}" var="lis"
+								itemLabel="#{lis.descripcion}" itemValue="#{lis.id}" />
+							<p:ajax update="pickListEditar"
+								listener="#{peasController.cargarAsignaturas}" />
+						</p:selectOneMenu>
+					</h:panelGrid>
+
+					<h:panelGrid columns="1" aling="left" id="pd_Editar">
+						<p:pickList id="pickListEditar" effect="puff"
+							value="#{peasController.listaAsignaturasDTO}" var="lista"
+							itemValue="#{lista}" itemLabel="#{lista.nombre}"
+							showCheckbox="true" filterMatchMode="contains"
+							converter="laboratorioAsignaturaConverter">
+							<p:ajax event="transfer" update="pd_Editar" />
+						</p:pickList>
+					</h:panelGrid>
+
+				</h:form>
+				<br />
+				<h:form id="fopcionesEditar" acceptcharset="iso-8859-1">
+					<h:panelGrid columns="2">
+						<p:commandButton value="Guardar"
+							action="#{peasController.registrarPeasPorAsignatura}"
+							update=":formAsignaturaEditar" />
+						<p:commandButton value="Cancelar"
+							oncomplete="dialogAdminEditar.hide()" />
+					</h:panelGrid>
+				</h:form>
+			</center>
+		</p:dialog>
+
+	</ui:define>
+</ui:composition>
+</html>

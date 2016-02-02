@@ -1,0 +1,1622 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formCabecera" acceptcharset="iso-8859-1">
+			<p:growl id="mensajesPrincipal" autoUpdate="true" showDetail="false"
+				closable="true" />
+			<p:ajaxStatus onstart="statusDialog.show();"
+				onsuccess="statusDialog.hide();" />
+			<p:dialog modal="true" widgetVar="statusDialog" resizable="false"
+				header="Espere por favor." draggable="false" closable="false">
+				<p:graphicImage name="ajax-loader.gif" library="img" />
+			</p:dialog>
+			<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+				resizable="false" closable="false" closeOnEscape="false"
+				widgetVar="dlgDescarga" modal="true">
+
+				<p:panel>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" style="width:100px"
+							icon="ui ui-icon-check" onclick="dlgDescarga.hide()" ajax="false">
+							<p:fileDownload
+								value="#{evaluacionCalidadDocenciaController.documentoDescarga}" />
+
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgDescarga.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+
+
+				</p:panel>
+
+			</p:dialog>
+			<p:dialog id="cfCalcularVariable" header="Calcular Variables"
+				resizable="false" closable="false" closeOnEscape="false"
+				widgetVar="dlgCalcularVariable" modal="true" width="300">
+
+				<p:panel>
+
+					<h:outputText
+						value="Esta acción actualizará los valores de las variables en base a la verificación de la información realizada previamente.La verificación del detalle de las variables sufrirá cambios y debe realizar nuevamente la evaluación.¿Está seguro de realizar esta acción?" />
+
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" style="width:100px"
+							icon="ui ui-icon-check"
+							action="#{evaluacionCalidadDocenciaController.calcularVariablesCalidadDocencia}"
+							ajax="true" update=":formPrincipal">
+
+
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgCalcularVariable.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+
+
+				</p:panel>
+
+			</p:dialog>
+			<p:confirmDialog id="cfEliminar" widgetVar="dlgEliminar"
+				header="Eliminar Evidencia" severity="alert"
+				message="¿Desea eliminar la evidencia seleccionada?">
+				<center>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" update=":formMuestraDocentesRem"
+							actionListener="#{evaluacionCalidadDocenciaController.eliminarEvidencia}"
+							onclick="dlgEliminar.hide()" style="width:100px"
+							icon="ui ui-icon-check" />
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgEliminar.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+				</center>
+			</p:confirmDialog>
+		</h:form>
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+
+			<center>
+				<p:panel>
+					<p:fieldset legend="Cuerpo Docente">
+
+						<br />
+						<br />
+						<p:dataTable id="tblVariableCuerpoDocente" var="vv"
+							value="#{evaluacionCalidadDocenciaController.listaVariablesCalidadDocenciaCuerpoDocente}"
+							editable="true" editMode="cell">
+
+							<p:ajax partialSubmit="true" event="cellEdit" process="@this"
+								listener="#{evaluacionCalidadDocenciaController.tomarVariableEditada(vv)}" />
+
+							<p:column headerText="Variable"
+								style="width:150px; white-space: normal">
+								<h:outputText
+									value="#{vv.variableProcesoDTO.variableDTO.etiqueta}" />
+							</p:column>
+
+							<p:column headerText="Valor Inicial Reportado"
+								style="width:100px; white-space:normal;">
+								<h:outputText value="#{vv.valorInicialReportado}" />
+							</p:column>
+
+							<p:column headerText="Valor Inicial">
+								<h:outputText value="#{vv.valorInicial}" />
+							</p:column>
+
+							<p:column headerText="Universo">
+								<h:outputText value="#{vv.totalUniverso}" />
+							</p:column>
+							<p:column headerText="Muestra">
+								<h:outputText value="#{vv.totalMuestra}" />
+							</p:column>
+
+							<p:column headerText="No Aceptados">
+								<h:outputText value="#{vv.registrosNoAceptados}" />
+							</p:column>
+
+							<p:column headerText="Aceptados">
+								<h:outputText value="#{vv.valorVerificado}" />
+							</p:column>
+
+							<p:column headerText="Valor Modificado"
+								style="width:80px; white-space:normal; text-align:center">
+								<h:outputText value="" style="color:red;"
+									rendered="#{vv.modificado}" class="fa fa-circle fa-2x" />
+								<h:outputText value="" style="color:green;"
+									rendered="#{!vv.modificado}" class="fa fa-circle fa-2x" />
+							</p:column>
+
+							<p:column headerText="Evaluación">
+								<h:outputText
+									value="#{(vv.registrosNoAceptados+vv.valorVerificado)==vv.totalMuestra? 'COMPLETO' : 'INCOMPLETO'}" />
+							</p:column>
+							<p:column headerText="Valor/Ponderación">
+								<p:inputTextarea value="#{vv.valor}" rows="1" cols="50"
+									readonly="#{vv.variableProcesoDTO.id!=299 and vv.variableProcesoDTO.id!=298 and vv.variableProcesoDTO.id!=300}"
+									style="resize:none;" />
+							</p:column>
+
+							<p:column headerText="Observación">
+								<p:inputTextarea value="#{vv.observacion}" rows="2" cols="90"
+									style="resize:none;" />
+							</p:column>
+
+							<p:column headerText="Verificar/Ver">
+
+								<p:commandLink
+									value="#{vv.variableProcesoDTO.verificacion ? 'Verificar': 'Ver'}"
+									action="#{evaluacionCalidadDocenciaController.cargarDocentes}"
+									update=":formMuestraDocentes">
+
+									<f:setPropertyActionListener
+										target="#{evaluacionCalidadDocenciaController.valorVariableDTO}"
+										value="#{vv}" />
+								</p:commandLink>
+							</p:column>
+
+							<p:column headerText="Última modificación"
+								style="width:80px; white-space:normal;">
+								<h:outputText value="#{vv.auditoriaDTO.usuarioModificacion}" />
+								<span></span>
+								<h:outputText value="#{vv.auditoriaDTO.fechaModificacion}">
+									<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+										timeZone="GMT-5" />
+								</h:outputText>
+							</p:column>
+							<p:column headerText="Histórico">
+								<p:commandLink value="Histórico"
+									update=":formPrincipal:idhistoricoModal"
+									oncomplete="historicoModal.show()" async="true" process="@this"
+									actionListener="#{evaluacionController.obtenerHistoricoVariable(vv)}">
+									<f:setPropertyActionListener
+										target="#{evaluacionCalidadDocenciaController.valorVariableDTO}"
+										value="#{vv}" />
+								</p:commandLink>
+							</p:column>
+
+
+						</p:dataTable>
+						<br />
+						<p:commandButton value="Guardar"
+							update=":formPrincipal:tblVariableCuerpoDocente :formCabecera:mensajesPrincipal"
+							action="#{evaluacionCalidadDocenciaController.guardarValorVariable}" />
+
+
+						<!-- Dialogo de historico de Valor Variable -->
+						<p:dialog widgetVar="historicoModal" modal="true"
+							header="Histórico de la variable: #{evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.variableDTO.etiqueta}"
+							resizable="false" closeOnEscape="false" showEffect="fade"
+							hideEffect="fade" id="idhistoricoModal">
+							<br />
+							<p:dataTable id="tblhistoricos" var="vv"
+								value="#{evaluacionController.historicosVariable}"
+								paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+								paginator="true" rows="5">
+
+								<p:column headerText="Valor Verificado" style="width:80px">
+									<h:outputText value="#{vv.valor}" />
+								</p:column>
+
+								<p:column headerText="Valor /Ponderación" style="width:80px">
+									<h:outputText value="#{vv.valor}" />
+								</p:column>
+								<p:column headerText="Observación" style="white-space: normal">
+									<h:inputTextarea rows="3" disabled="true" value="#{vv.observacion}" />
+								</p:column>
+								<p:column headerText="Fase" style="white-space: normal">
+									<h:outputText value="#{vv.faseIesDTO.tipo.valor}" />
+								</p:column>
+								<p:column headerText="Usuario" style="width:80px">
+									<h:outputText value="#{vv.auditoriaDTO.usuarioModificacion}">
+									</h:outputText>
+								</p:column>
+								<p:column headerText="Fecha" style="width:80px">
+									<center>
+										<h:outputText value="#{vv.auditoriaDTO.fechaModificacion}">
+											<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+												timeZone="GMT-5" />
+										</h:outputText>
+									</center>
+								</p:column>
+							</p:dataTable>
+							<br></br>
+							<p:commandButton value="Cerrar" async="true" process="@this"
+								onclick="historicoModal.hide()" />
+						</p:dialog>
+
+						<!-- Fin del dialogo Valor Variable -->
+					</p:fieldset>
+					<br />
+					<p:fieldset legend="Remuneración">
+						<p:dataTable id="tblVariableRemuneracion" var="vv"
+							value="#{evaluacionCalidadDocenciaController.listaVariablesCalidadDocenciaRemuneracion}"
+							editable="true" editMode="cell">
+
+							<p:ajax partialSubmit="true" event="cellEdit" process="@this"
+								listener="#{evaluacionCalidadDocenciaController.tomarVariableEditada(vv)}" />
+
+							<p:column headerText="Variable" style="width:150px">
+								<h:outputText
+									value="#{vv.variableProcesoDTO.variableDTO.etiqueta}" />
+							</p:column>
+
+							<p:column headerText="Valor Inicial Reportado"
+								style="width:100px; white-space:normal;">
+								<h:outputText value="#{vv.valorInicialReportado}" />
+							</p:column>
+
+							<p:column headerText="Valor Inicial" style="width:80px">
+								<h:outputText value="#{vv.valorInicial}" />
+							</p:column>
+							<p:column headerText="Universo">
+								<h:outputText value="#{vv.totalUniverso}" />
+							</p:column>
+							<p:column headerText="Muestra">
+								<h:outputText value="#{vv.totalMuestra}" />
+							</p:column>
+
+
+							<p:column headerText="No Aceptados" style="width:80px">
+								<h:outputText value="#{vv.registrosNoAceptados}" />
+							</p:column>
+
+							<p:column headerText="Verificados" style="width:80px">
+								<h:outputText value="#{vv.valorVerificado}" />
+							</p:column>
+
+							<p:column headerText="Valor Modificado"
+								style="width:80px; white-space:normal; text-align:center">
+								<h:outputText value="" style="color:red;"
+									rendered="#{vv.modificado}" class="fa fa-circle fa-2x" />
+								<h:outputText value="" style="color:green;"
+									rendered="#{!vv.modificado}" class="fa fa-circle fa-2x" />
+							</p:column>
+
+							<p:column headerText="Evaluación">
+								<h:outputText
+									value="#{(vv.registrosNoAceptados+vv.valorVerificado)==vv.totalMuestra? 'COMPLETO' : 'INCOMPLETO'}" />
+							</p:column>
+
+							<p:column headerText="Valor/Ponderación" style="width:80px">
+								<h:outputText value="#{vv.valor}" />
+							</p:column>
+
+							<p:column headerText="Observación">
+								<p:inputTextarea value="#{vv.observacion}" rows="2" cols="90"
+									style="resize:none;" />
+
+							</p:column>
+
+							<p:column headerText="Verificar/Ver" style="width:100px">
+								<p:commandLink
+									value="#{vv.variableProcesoDTO.verificacion ? 'Verificar': 'Ver'}"
+									action="#{evaluacionCalidadDocenciaController.cargarDocentesRemuneracion}"
+									update=":formMuestraDocentesRem ">
+									<f:setPropertyActionListener
+										target="#{evaluacionCalidadDocenciaController.valorVariableDTO}"
+										value="#{vv}" />
+								</p:commandLink>
+							</p:column>
+
+							<p:column headerText="Última modificación"
+								style="width:80px; white-space:normal;">
+								<h:outputText value="#{vv.auditoriaDTO.usuarioModificacion}" />
+								<span></span>
+								<h:outputText value="#{vv.auditoriaDTO.fechaModificacion}">
+									<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+										timeZone="GMT-5" />
+								</h:outputText>
+							</p:column>
+
+							<p:column headerText="Histórico" style="width:100px">
+								<p:commandLink value="Histórico"
+									update=":formPrincipal:idhistoricoModal"
+									oncomplete="historicoModal.show()" async="true" process="@this"
+									actionListener="#{evaluacionController.obtenerHistoricoVariable(vv)}">
+									<f:setPropertyActionListener
+										target="#{evaluacionCalidadDocenciaController.valorVariableDTO}"
+										value="#{vv}" />
+								</p:commandLink>
+							</p:column>
+						</p:dataTable>
+						<br />
+						<p:commandButton value="Guardar"
+							update=":formPrincipal:tblVariableRemuneracion :formCabecera:mensajesPrincipal"
+							action="#{evaluacionCalidadDocenciaController.guardarValorVariableRemuneracion}" />
+					</p:fieldset>
+					<br />
+					<p:fieldset legend="Formación y Desarrollo">
+						<p:dataTable id="tblVariableFormDesarrollo" var="vv"
+							value="#{evaluacionCalidadDocenciaController.listaVariablesCalidadDocenciaFormacionDesarrollo}"
+							editable="true" editMode="cell">
+
+							<p:ajax partialSubmit="true" event="cellEdit" process="@this"
+								listener="#{evaluacionCalidadDocenciaController.tomarVariableEditada(vv)}" />
+
+							<p:column headerText="Variable"
+								style="white-space: normal; width:150px">
+								<h:outputText
+									value="#{vv.variableProcesoDTO.variableDTO.etiqueta}" />
+							</p:column>
+
+							<p:column headerText="Valor Inicial Reportado"
+								style="width:100px; white-space:normal;">
+								<h:outputText value="#{vv.valorInicialReportado}" />
+							</p:column>
+
+							<p:column headerText="Valor Inicial">
+								<h:outputText value="#{vv.valorInicial}" />
+							</p:column>
+
+							<p:column headerText="Universo">
+								<h:outputText value="#{vv.totalUniverso}" />
+							</p:column>
+							<p:column headerText="Muestra">
+								<h:outputText value="#{vv.totalMuestra}" />
+							</p:column>
+
+							<p:column headerText="No Aceptados" style="width:80px">
+								<h:outputText value="#{vv.registrosNoAceptados}" />
+							</p:column>
+
+							<p:column headerText="Aceptados" style="width:80px">
+								<h:outputText value="#{vv.valorVerificado}" />
+							</p:column>
+
+							<p:column headerText="Valor Modificado"
+								style="width:80px; white-space:normal; text-align:center">
+								<h:outputText value="" style="color:red;"
+									rendered="#{vv.modificado}" class="fa fa-circle fa-2x" />
+								<h:outputText value="" style="color:green;"
+									rendered="#{!vv.modificado}" class="fa fa-circle fa-2x" />
+							</p:column>
+
+							<p:column headerText="Evaluación">
+								<h:outputText
+									value="#{(vv.registrosNoAceptados+vv.valorVerificado)==vv.totalMuestra? 'COMPLETO' : 'INCOMPLETO'}" />
+							</p:column>
+
+							<p:column headerText="Valor/Ponderación" style="width:80px">
+								<h:outputText value="#{vv.valor}">
+									<f:convertNumber pattern="#0.00" />
+								</h:outputText>
+							</p:column>
+
+							<p:column headerText="Observación">
+								<p:inputTextarea value="#{vv.observacion}" rows="2" cols="90"
+									style="resize:none;" />
+							</p:column>
+
+							<p:column headerText="Verificar/Ver" style="width:100px">
+								<p:commandLink
+									value="#{vv.variableProcesoDTO.verificacion ? 'Verificar': 'Ver'}"
+									action="#{evaluacionCalidadDocenciaController.cargarDocentes}"
+									update=":formMuestraDocentes">
+									<f:setPropertyActionListener
+										target="#{evaluacionCalidadDocenciaController.valorVariableDTO}"
+										value="#{vv}" />
+								</p:commandLink>
+							</p:column>
+
+							<p:column headerText="Última modificación"
+								style="width:80px; white-space:normal;">
+								<h:outputText value="#{vv.auditoriaDTO.usuarioModificacion}" />
+								<span></span>
+								<h:outputText value="#{vv.auditoriaDTO.fechaModificacion}">
+									<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+										timeZone="GMT-5" />
+								</h:outputText>
+							</p:column>
+
+							<p:column headerText="Histórico" style="width:100px">
+								<p:commandLink value="Histórico"
+									update=":formPrincipal:idhistoricoModal"
+									oncomplete="historicoModal.show()" async="true" process="@this"
+									actionListener="#{evaluacionController.obtenerHistoricoVariable(vv)}">
+									<f:setPropertyActionListener
+										target="#{evaluacionCalidadDocenciaController.valorVariableDTO}"
+										value="#{vv}" />
+								</p:commandLink>
+							</p:column>
+						</p:dataTable>
+						<br />
+						<p:commandButton value="Guardar"
+							update=":formPrincipal:tblVariableFormDesarrollo :formCabecera:mensajesPrincipal"
+							action="#{evaluacionCalidadDocenciaController.guardarValorVariableFormacion}" />
+					</p:fieldset>
+					<br />
+					<p:fieldset legend="Producción del Conocimiento">
+						<p:dataTable id="tblVariableProdConocimiento" var="vv"
+							value="#{evaluacionCalidadDocenciaController.listaVariablesCalidadDocenciaProduccionConocimiento}"
+							editable="true" editMode="cell">
+
+							<p:ajax partialSubmit="true" event="cellEdit" process="@this"
+								listener="#{evaluacionCalidadDocenciaController.tomarVariableEditada(vv)}" />
+
+							<p:column headerText="Variable" style="white-space: normal;">
+								<h:outputText
+									value="#{vv.variableProcesoDTO.variableDTO.etiqueta}" />
+							</p:column>
+
+							<p:column headerText="Valor Inicial Reportado"
+								style="width:100px; white-space:normal;">
+								<h:outputText value="#{vv.valorInicialReportado}" />
+							</p:column>
+
+							<p:column headerText="Valor Inicial" style="width:80px">
+								<h:outputText value="#{vv.valorInicial}" />
+							</p:column>
+
+							<p:column headerText="No Aceptados" style="width:80px">
+								<h:outputText value="#{vv.registrosNoAceptados}" />
+							</p:column>
+
+							<p:column headerText="Aceptados" style="width:80px">
+								<h:outputText value="#{vv.valorVerificado}" />
+							</p:column>
+
+							<p:column headerText="Valor/Ponderación" style="width:80px">
+								<h:outputText value="#{vv.valor}" />
+							</p:column>
+
+
+							<p:column headerText="Valor Modificado"
+								style="width:80px; white-space:normal; text-align:center">
+								<h:outputText value="" style="color:red;"
+									rendered="#{vv.modificado}" class="fa fa-circle fa-2x" />
+								<h:outputText value="" style="color:green;"
+									rendered="#{!vv.modificado}" class="fa fa-circle fa-2x" />
+							</p:column>
+
+							<p:column headerText="Observación">
+								<p:inputTextarea value="#{vv.observacion}" rows="2" cols="90"
+									style="resize:none;" />
+							</p:column>
+
+							<p:column headerText="Ver" style="width:100px">
+								<p:commandLink value="Ver"
+									action="#{evaluacionCalidadDocenciaController.cargarPuProdProy}"
+									update=":formMuestraPublicaciones :formMuestraProducciones :formMuestraProyectos">
+									<f:setPropertyActionListener
+										target="#{evaluacionCalidadDocenciaController.valorVariableDTO}"
+										value="#{vv}" />
+								</p:commandLink>
+							</p:column>
+							
+							<p:column headerText="Última modificación"
+								style="width:80px; white-space:normal;">
+								<h:outputText value="#{vv.auditoriaDTO.usuarioModificacion}" />
+								<span></span>
+								<h:outputText value="#{vv.auditoriaDTO.fechaModificacion}">
+									<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+										timeZone="GMT-5" />
+								</h:outputText>
+							</p:column>
+
+							<p:column headerText="Histórico" style="width:100px">
+								<p:commandLink value="Histórico"
+									update=":formPrincipal:idhistoricoModal"
+									oncomplete="historicoModal.show()" async="true" process="@this"
+									actionListener="#{evaluacionController.obtenerHistoricoVariable(vv)}">
+									<f:setPropertyActionListener
+										target="#{evaluacionCalidadDocenciaController.valorVariableDTO}"
+										value="#{vv}" />
+								</p:commandLink>
+							</p:column>
+						</p:dataTable>
+						<br />
+						<p:commandButton value="Guardar"
+							update=":formPrincipal:tblVariableProdConocimiento :formCabecera:mensajesPrincipal"
+							action="#{evaluacionCalidadDocenciaController.guardarValorVariableDPC}" />
+					</p:fieldset>
+				</p:panel>
+			</center>
+		</h:form>
+
+		<!-- DIALOGO PARA PRESENTAR LA MUESTRA DE LOS DOCENTES -->
+		<p:dialog id="modalDialogMuestraDocentes" header="Verificar/Ver"
+			widgetVar="dlgMuestraDocentes" modal="true" width="1200" height="500">
+			<div align="center">
+				<h:form id="formMuestraDocentes" acceptcharset="iso-8859-1">
+
+					<p:growl id="messagesDocentes" showDetail="false" />
+					<h:panelGrid columns="1" cellspacing="10">
+						<h:panelGrid columns="3" cellpadding="0" cellspacing="1"
+							style="float:left;">
+							<h:outputText style="float:right;font-size:10px;" value="Cedula:" />
+							<h:inputText
+								value="#{evaluacionCalidadDocenciaController.identificacion}" />
+							<p:commandButton style="width:20px;height:20px"
+								update=":formMuestraDocentes" icon="ui-icon-search"
+								title="Buscar"
+								action="#{evaluacionCalidadDocenciaController.buscarDocentePorCedula}" />
+						</h:panelGrid>
+						<p:fieldset
+							legend="Muestra detalles de #{evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.variableDTO.etiqueta}"
+							style="margin:  20px 0px 0px 0px;" id="legendtablaMuestra">
+							<p:dataTable id="tablaMuestradocentes"
+								widgetVar="tablaMuestradocenteswidget" var="docentes"
+								value="#{evaluacionCalidadDocenciaController.listaMuestraDetalleDocentes}"
+								rowKey="#{docentes.docente.id}" selectionMode="single"
+								paginator="true" rows="10"
+								selection="#{evaluacionCalidadDocenciaController.docenteSeleccionado}"
+								emptyMessage="No hay Docentes"
+								paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+								rowsPerPageTemplate="5,10,15">
+
+								<p:ajax event="rowSelect" update=":formMuestraDocentes"
+									listener="#{evaluacionCalidadDocenciaController.cargarConceptos}" />
+
+								<p:column headerText="Identificacion">
+									<h:outputText value="#{docentes.docente.identificacion}" />
+								</p:column>
+								<p:column headerText="Nombres">
+									<h:outputText value="#{docentes.docente.nombres}" />
+								</p:column>
+								<p:column headerText="Apellidos">
+									<h:outputText
+										value="#{docentes.docente.apellidoPaterno} #{estudiantes.estudiante.apellidoMaterno}" />
+								</p:column>
+								<p:column headerText="Aceptado">
+
+									<p:selectOneMenu value="#{docentes.muestraDetalle.verificado}"
+										tabindex="6"
+										disabled="#{!evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.verificacion}">
+										<f:selectItem itemLabel="-- seleccione --" itemValue="-1" />
+										<f:selectItem itemLabel="Sí" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="0" />
+										<f:selectItem itemLabel="pendiente" itemValue="-2" />
+
+										<p:ajax event="change" update="@this" global="false" />
+									</p:selectOneMenu>
+
+								</p:column>
+
+								<p:column headerText="Ponderación">
+									<h:outputText value="#{docentes.muestraDetalle.ponderacion}" />
+								</p:column>
+
+								<p:column headerText="Observación"
+									style="width:300px; white-space:normal;">
+									<p:inputTextarea
+										value="#{docentes.muestraDetalle.observaciones}" rows="2"
+										cols="50" style="resize:none;"
+										disabled="#{!evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.verificacion}" />
+								</p:column>
+								<p:column headerText="Fecha modificación">
+									<h:outputText
+										value="#{docentes.muestraDetalle.auditoria.fechaModificacion}" />
+								</p:column>
+								<p:column headerText="Histórico" style="width:100px">
+									<p:commandLink value="Histórico"
+										update=":idhistoricoModalMuestra"
+										oncomplete="historicoModalMuestra.show()" async="true"
+										actionListener="#{evaluacionController.obtenerHistoricoMuestra(docentes.muestraDetalle.id)}"
+										process="@this">
+										<f:setPropertyActionListener
+											target="#{evaluacionCalidadDocenciaController.docenteSeleccionado}"
+											value="#{docentes}" />
+									</p:commandLink>
+								</p:column>
+							</p:dataTable>
+
+							<br />
+							<p:outputPanel>
+								<p:outputPanel
+									rendered="#{evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.verificacion==true}">
+									<p style="text-align: center;">
+										<p:commandButton value="Guardar"
+											update=":formCabecera:mensajesPrincipal :formMuestraDocentes:tablaMuestradocentes :formPrincipal:tblVariableCuerpoDocente :formPrincipal:tblVariableFormDesarrollo"
+											action="#{evaluacionCalidadDocenciaController.guardarMuestraDetalle}"
+											process=":formMuestraDocentes:tablaMuestradocentes" />
+									</p>
+								</p:outputPanel>
+								<p:outputPanel
+									rendered="#{evaluacionCalidadDocenciaController.evidencias}">
+
+									<p:dataTable id="tablaInformaDistributivo" var="distrib"
+										value="#{evaluacionCalidadDocenciaController.listaDistributivo}"
+										paginator="true" rows="5" emptyMessage="No hay Distributivos"
+										paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+										rowsPerPageTemplate="5,10,15">
+
+
+										<p:column headerText="Carrera">
+											<h:outputText
+												value="#{distrib.asignaturaDTO.mallaCurricularDTO.informacionCarreraDTO.carreraIesDTO.nombre}" />
+										</p:column>
+										<p:column headerText="Nivel">
+											<h:outputText
+												value="#{distrib.asignaturaDTO.mallaCurricularDTO.informacionCarreraDTO.carreraIesDTO.nivel}" />
+										</p:column>
+										<p:column headerText="Asignatura"
+											style="width:150px;white-space:normal">
+											<h:outputText value="#{distrib.asignaturaDTO.nombre}" />
+										</p:column>
+
+										<p:column headerText="Período Académicos">
+											<h:outputText
+												value="#{distrib.contratacionPeriodoAcademicoDTO.periodoAcademicoDTO.fechaInicioPeriodo} - #{distrib.contratacionPeriodoAcademicoDTO.periodoAcademicoDTO.fechaFinPeriodo}" />
+										</p:column>
+
+										<p:column headerText="Horas">
+											<h:outputText value="#{distrib.numHoras}" />
+										</p:column>
+
+									</p:dataTable>
+									<h:panelGrid columns="2" style="margin:12px;">
+										<h:outputText value="EVIDENCIAS: " />
+										<p:selectOneMenu
+											value="#{evaluacionCalidadDocenciaController.conceptoSeleccionado}"
+											converter="infoConceptoCalidadConverter">
+											<p:ajax event="change" update="@this :formMuestraDocentes"
+												global="false"
+												listener="#{evaluacionCalidadDocenciaController.cargarEvidencias}" />
+											<f:selectItem itemLabel="--Seleccionar--" itemValue="" />
+											<f:selectItems
+												value="#{evaluacionCalidadDocenciaController.listaEvidencia}"
+												var="pa" itemValue="#{pa}" itemLabel="#{pa.etiqueta}" />
+										</p:selectOneMenu>
+
+									</h:panelGrid>
+
+								</p:outputPanel>
+							</p:outputPanel>
+							<p:outputPanel
+								rendered="#{evaluacionCalidadDocenciaController.contratos}">
+								<p:dataTable id="tablaContratosDocentes" var="contratos"
+									value="#{evaluacionCalidadDocenciaController.listaContratacion}"
+									paginator="true" rows="10" emptyMessage="No hay Contratos"
+									paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+									rowsPerPageTemplate="5,10,15">
+
+									<p:column headerText="No.Contrato">
+										<h:outputText value="#{contratos.numeroContrato}" />
+									</p:column>
+
+									<p:column headerText="Tiempo Dedicación">
+										<h:outputText value="#{contratos.tiempoDedicacion.value}" />
+									</p:column>
+
+									<p:column headerText="Categoría">
+										<h:outputText value="#{contratos.categoria.value}" />
+									</p:column>
+
+									<p:column headerText="Fecha Inicio">
+										<h:outputText value="#{contratos.fechaInicio}" />
+									</p:column>
+
+									<p:column headerText="Fecha Fin">
+										<h:outputText value="#{contratos.fechaFin}" />
+									</p:column>
+
+									<p:column headerText="Evaluación">
+										<h:outputText
+											value="#{contratos.aceptadoEvaluador ? 'SI': 'NO'}" />
+									</p:column>
+									<p:column headerText="Observación">
+										<p:inputTextarea value="#{contratos.observacionEvaluador}"
+											rows="2" cols="25" style="resize:none;" readonly="true" />
+									</p:column>
+
+									<p:column headerText="Evidencia">
+										<p:commandLink value="Ver Evidencia"
+											action="#{evaluacionCalidadDocenciaController.cargarEConcepto}"
+											update=":formMuestraDocentes:tablaEConcepto :formMuestraDocentes">
+											<f:setPropertyActionListener
+												target="#{evaluacionCalidadDocenciaController.contratoSeleccionado}"
+												value="#{contratos}" />
+										</p:commandLink>
+									</p:column>
+								</p:dataTable>
+							</p:outputPanel>
+
+							<p:outputPanel
+								rendered="#{evaluacionCalidadDocenciaController.experiencia}">
+								<p:dataTable id="tablaExperienciaDocentes" var="experiencias"
+									value="#{evaluacionCalidadDocenciaController.listaExperienciaProfesional}"
+									paginator="true" rows="10"
+									emptyMessage="No hay Experiencias Profesionales"
+									paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+									rowsPerPageTemplate="5,10,15">
+
+									<p:column headerText="Institucion"
+										style="width:150px;white-space:normal">
+										<h:outputText value="#{experiencias.institucion}" />
+									</p:column>
+
+									<p:column headerText="Cargo"
+										style="width:150px;white-space:normal">
+										<h:outputText value="#{experiencias.cargo}" />
+									</p:column>
+
+									<p:column headerText="Fecha Inicio">
+										<h:outputText value="#{experiencias.fechaInicio}" />
+									</p:column>
+									<p:column headerText="Fecha Fin">
+										<h:outputText value="#{experiencias.fechaFin}" />
+									</p:column>
+									<p:column headerText="Evaluación">
+										<h:outputText
+											value="#{experiencias.aceptadoEvaluador ? 'SI': 'NO'}" />
+									</p:column>
+									<p:column headerText="Observación">
+										<p:inputTextarea value="#{experiencias.observacionEvaluador}"
+											rows="2" cols="25" style="resize:none;" readonly="true" />
+									</p:column>
+
+									<p:column headerText="Evidencia">
+										<p:commandLink value="Ver Evidencia"
+											action="#{evaluacionCalidadDocenciaController.cargarEConcepto}"
+											update=":formMuestraDocentes:tablaEConcepto :formMuestraDocentes">
+											<f:setPropertyActionListener
+												target="#{evaluacionCalidadDocenciaController.experienciaSeleccionada}"
+												value="#{experiencias}" />
+
+										</p:commandLink>
+									</p:column>
+								</p:dataTable>
+							</p:outputPanel>
+
+							<p:outputPanel
+								rendered="#{evaluacionCalidadDocenciaController.capacitacion}">
+								<p:dataTable id="tablaCapacitacionDocente" var="capacitaciones"
+									value="#{evaluacionCalidadDocenciaController.listaCapacitacion}"
+									paginator="true" rows="10" emptyMessage="No hay Capacitaciones"
+									paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+									rowsPerPageTemplate="5,10,15">
+
+									<p:column headerText="Capacitación"
+										style="width:150px;white-space:normal">
+										<h:outputText value="#{capacitaciones.nombre}" />
+									</p:column>
+
+									<p:column headerText="Tipo">
+										<h:outputText value="#{capacitaciones.tipoPrograma.value}" />
+									</p:column>
+
+									<p:column headerText="Fecha Inicio">
+										<h:outputText value="#{capacitaciones.fechaInicio}" />
+									</p:column>
+									<p:column headerText="Fecha Fin">
+										<h:outputText value="#{capacitaciones.fechaFin}" />
+									</p:column>
+
+									<p:column headerText="Apoyo Institución">
+										<h:outputText
+											value="#{capacitaciones.financiadoPorInsitucion ? 'SI' : 'NO'}" />
+									</p:column>
+
+									<p:column headerText="Horas">
+										<h:outputText value="#{capacitaciones.numeroHoras}" />
+									</p:column>
+
+									<p:column headerText="Evaluación">
+										<h:outputText
+											value="#{capacitaciones.aceptadoEvaluador ? 'SI': 'NO'}" />
+									</p:column>
+									<p:column headerText="Observación">
+										<p:inputTextarea
+											value="#{capacitaciones.observacionEvaluador}" rows="2"
+											cols="25" style="resize:none;" readonly="true" />
+									</p:column>
+
+
+									<p:column headerText="Evidencia">
+										<p:commandLink value="Ver Evidencia"
+											action="#{evaluacionCalidadDocenciaController.cargarEConcepto}"
+											update=":formMuestraDocentes:tablaEConcepto :formMuestraDocentes">
+											<f:setPropertyActionListener
+												target="#{evaluacionCalidadDocenciaController.capacitacionSeleccionada}"
+												value="#{capacitaciones}" />
+										</p:commandLink>
+									</p:column>
+								</p:dataTable>
+							</p:outputPanel>
+
+							<p:outputPanel
+								rendered="#{evaluacionCalidadDocenciaController.formacion}">
+								<p:dataTable id="tablaFormacionDocente" var="formaciones"
+									value="#{evaluacionCalidadDocenciaController.listaFormacion}"
+									paginator="true" rows="10"
+									emptyMessage="No hay Formación Profesional  "
+									paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+									rowsPerPageTemplate="5,10,15">
+
+									<p:column headerText="Título" style="white-space: normal">
+										<h:outputText value="#{formaciones.titulo}" />
+									</p:column>
+
+									<p:column headerText="Nivel">
+										<h:outputText value="#{formaciones.grado.nombre}" />
+									</p:column>
+
+									<p:column headerText="Fecha Inicio">
+										<h:outputText value="#{formaciones.fechaInicioEstudios}" />
+									</p:column>
+
+									<p:column headerText="Fecha Graduación">
+										<h:outputText value="#{formaciones.fechaGraduacion}" />
+									</p:column>
+
+
+									<p:column headerText="Registro Senescyt">
+										<h:outputText value="#{formaciones.numeroRegistroSenescyt}" />
+									</p:column>
+
+
+									<p:column headerText="Cursando">
+										<h:outputText value="#{formaciones.cursando ? 'SI': 'NO'}" />
+									</p:column>
+
+									<p:column headerText="Evaluación">
+										<h:outputText
+											value="#{formaciones.aceptadoEvaluador ? 'SI': 'NO'}" />
+									</p:column>
+									<p:column headerText="Observación">
+										<p:inputTextarea value="#{formaciones.observacionEvaluador}"
+											rows="2" cols="25" style="resize:none;" readonly="true" />
+									</p:column>
+									<p:column headerText="Evidencia">
+										<p:commandLink value="Ver Evidencia"
+											action="#{evaluacionCalidadDocenciaController.cargarEConcepto}"
+											update=":formMuestraDocentes:tablaEConcepto :formMuestraDocentes">
+											<f:setPropertyActionListener
+												target="#{evaluacionCalidadDocenciaController.formacionSeleccionada}"
+												value="#{formaciones}" />
+										</p:commandLink>
+									</p:column>
+								</p:dataTable>
+							</p:outputPanel>
+							<p:outputPanel
+								rendered="#{evaluacionCalidadDocenciaController.cargos}">
+								<p:dataTable id="tablaCargosDocente" var="cargo"
+									value="#{evaluacionCalidadDocenciaController.listaCargosAcademicos}"
+									paginator="true" rows="10"
+									emptyMessage="No hay Cargos Académicos"
+									paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+									rowsPerPageTemplate="5,10,15">
+
+									<p:column headerText="Autoridad">
+										<h:outputText value="#{cargo.autoridadAcademica.value}" />
+									</p:column>
+
+									<p:column headerText="Fecha Inicio">
+										<h:outputText value="#{cargo.fechaInicio}" />
+									</p:column>
+
+									<p:column headerText="Fecha Fin">
+										<h:outputText value="#{cargo.fechaFin}" />
+									</p:column>
+
+									<p:column headerText="Documento">
+										<h:outputText value="#{cargo.documento}" />
+									</p:column>
+
+									<p:column headerText="Evaluación">
+										<h:outputText value="#{cargo.aceptadoEvaluador ? 'SI': 'NO'}" />
+									</p:column>
+									<p:column headerText="Observación">
+										<p:inputTextarea value="#{cargo.observacionEvaluador}"
+											rows="2" cols="25" style="resize:none;" readonly="true" />
+									</p:column>
+
+									<p:column headerText="Evidencia">
+										<p:commandLink value="Ver Evidencia"
+											action="#{evaluacionCalidadDocenciaController.cargarEConcepto}"
+											update=":formMuestraDocentes:tablaEConcepto :formMuestraDocentes">
+											<f:setPropertyActionListener
+												target="#{evaluacionCalidadDocenciaController.cargoAcademicaSeleccionado}"
+												value="#{cargo}" />
+										</p:commandLink>
+									</p:column>
+								</p:dataTable>
+							</p:outputPanel>
+							<p:outputPanel
+								rendered="#{evaluacionCalidadDocenciaController.evidenciaConcepto}">
+								<p:fieldset legend="Evidencias"
+									style="margin:  20px 0px 0px 0px;">
+
+									<br />
+									<p:dataTable id="tablaEConcepto" var="evidenciaconcepto"
+										value="#{evaluacionCalidadDocenciaController.listaEvidenciaConcepto}"
+										emptyMessage="No hay Conceptos">
+
+										<p:column headerText="Evidencias" style="white-space: normal">
+											<h:outputText value="#{evidenciaconcepto.nombre}" />
+										</p:column>
+										<p:column headerText="Lista Archivos">
+											<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+												var="evidencia" emptyMessage="No hay Evidencias">
+
+												<p:column>
+													<h:outputText value="#{evidencia.nombreArchivo}" />
+
+												</p:column>
+												<p:column>
+
+													<p:commandButton title="descargar" icon="ui-icon-document"
+														oncomplete="dlgDescarga.show()"
+														update=":formCabecera:cfDescarga" process="@this"
+														actionListener="#{evaluacionCalidadDocenciaController.enviarEvidencia(evidencia)}">
+
+													</p:commandButton>
+
+
+												</p:column>
+
+											</p:dataTable>
+										</p:column>
+
+
+									</p:dataTable>
+
+								</p:fieldset>
+							</p:outputPanel>
+
+
+
+						</p:fieldset>
+
+					</h:panelGrid>
+					<p:spacer height="5" />
+					<p:commandButton value="Salir"
+						oncomplete="dlgMuestraDocentes.hide()" />
+				</h:form>
+			</div>
+		</p:dialog>
+		<!-- Dialogo de historico de Muestra Detalle Estudiante -->
+		<p:dialog widgetVar="historicoModalMuestra" modal="true"
+			header="Histórico de la Muestra de: #{evaluacionCalidadDocenciaController.docenteSeleccionado.docente.nombres} #{evaluacionCalidadDocenciaController.docenteSeleccionado.docente.apellidoPaterno} #{evaluacionCalidadDocenciaController.docenteSeleccionado.docente.apellidoMaterno}"
+			resizable="false" closeOnEscape="false" showEffect="fade"
+			hideEffect="fade" id="idhistoricoModalMuestra">
+			<br />
+			<p:dataTable id="tblhistoricosmuestra" var="me"
+				value="#{evaluacionController.historicoMuestraDetalle}"
+				paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+				style="width:900px" paginator="true" rows="10">
+				<p:column headerText="Valor Verificado" style="width:80px">
+					<h:outputText value="#{me.valor}" />
+				</p:column>
+				<p:column headerText="Observación" style="white-space: normal">
+					<h:outputText value="#{me.observacion}" />
+				</p:column>
+				<p:column headerText="Fase">
+					<h:outputText value="#{me.muestraDetalle.faseIesDTO.tipo.valor}" />
+				</p:column>
+				<p:column headerText="Usuario" style="width:80px">
+					<h:outputText value="#{me.auditoria.usuarioModificacion}">
+					</h:outputText>
+				</p:column>
+				<p:column headerText="Fecha" style="width:80px">
+					<center>
+						<h:outputText value="#{me.auditoria.fechaModificacion}">
+							<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss" timeZone="GMT-5" />
+						</h:outputText>
+					</center>
+				</p:column>
+			</p:dataTable>
+			<br></br>
+			<p:commandButton value="Cerrar" async="true" process="@this"
+				onclick="historicoModalMuestra.hide()" />
+		</p:dialog>
+
+		<!-- Fin del dialogo Muestra Detalle Estudiante -->
+
+
+
+
+
+		<!-- DIALOGO PARA PRESENTAR LA MUESTRA DE LOS DOCENTES REMUNERACIONES -->
+		<p:dialog id="modalDialogMuestraDocentesRem" header="Verificar/Ver"
+			widgetVar="dlgMuestraDocentesRem" modal="true" width="1200"
+			height="500">
+			<div align="center">
+				<h:form id="formMuestraDocentesRem" acceptcharset="iso-8859-1">
+					<p:messages id="message" showDetail="false" />
+					<p:growl id="messagesDocentesRem" showDetail="false" />
+					<h:panelGrid columns="1" cellspacing="10">
+						<p:fieldset
+							legend="Muestra detalles de #{evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.variableDTO.etiqueta}"
+							style="margin:  20px 0px 0px 0px;" id="legendtablaMuestra">
+							<p:dataTable id="tablaMuestradocentesRem" var="docentes"
+								value="#{evaluacionCalidadDocenciaController.listaMuestraDetalleDocentes}"
+								rowKey="#{docentes.docente.id}" selectionMode="single"
+								paginator="true" rows="10"
+								selection="#{evaluacionCalidadDocenciaController.docenteSeleccionado}"
+								emptyMessage="No hay Docentes"
+								paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+								rowsPerPageTemplate="5,10,15">
+
+								<p:ajax event="rowSelect"
+									update=":formMuestraDocentesRem :formMuestraDocentesRem:tablaContratosDocentesRem"
+									listener="#{evaluacionCalidadDocenciaController.cargarEConceptoContrato}" />
+
+								<p:column headerText="Identificacion"
+									filterBy="#{docentes.docente.identificacion}">
+									<h:outputText value="#{docentes.docente.identificacion}" />
+								</p:column>
+								<p:column headerText="Nombres"
+									filterBy="#{docentes.docente.nombres}">
+									<h:outputText value="#{docentes.docente.nombres}" />
+								</p:column>
+								<p:column headerText="Apellidos"
+									filterBy="#{docentes.docente.apellidoPaterno}">
+									<h:outputText
+										value="#{docentes.docente.apellidoPaterno} #{docentes.docente.apellidoMaterno}" />
+								</p:column>
+								<p:column headerText="Remuneración">
+									<p:inputText value="#{docentes.muestraDetalle.ponderacion}"
+										disabled="#{!evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.verificacion}">
+									</p:inputText>
+								</p:column>
+
+								<p:column headerText="Aceptado">
+
+									<p:selectOneMenu value="#{docentes.muestraDetalle.verificado}"
+										tabindex="6"
+										disabled="#{!evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.verificacion}">
+										<f:selectItem itemLabel="-- seleccione --" itemValue="-1" />
+										<f:selectItem itemLabel="Sí" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="0" />
+										<f:selectItem itemLabel="pendiente" itemValue="-2" />
+
+										<p:ajax event="change" update="@this" global="false" />
+									</p:selectOneMenu>
+
+								</p:column>
+
+								<p:column headerText="Observación"
+									style="width:300px; white-space:normal;">
+									<p:inputTextarea
+										value="#{docentes.muestraDetalle.observaciones}" rows="2"
+										cols="50" style="resize:none;"
+										disabled="#{!evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.verificacion}" />
+								</p:column>
+								<p:column headerText="Fecha modificación">
+									<h:outputText
+										value="#{docentes.muestraDetalle.auditoria.fechaModificacion}" />
+								</p:column>
+								<p:column headerText="Histórico" style="width:100px">
+									<p:commandLink value="Histórico"
+										update=":idhistoricoModalMuestra"
+										oncomplete="historicoModalMuestra.show()" async="true"
+										actionListener="#{evaluacionController.obtenerHistoricoMuestra(docentes.muestraDetalle.id)}"
+										process="@this">
+										<f:setPropertyActionListener
+											target="#{evaluacionCalidadDocenciaController.docenteSeleccionado}"
+											value="#{docentes}" />
+									</p:commandLink>
+								</p:column>
+							</p:dataTable>
+
+							<br />
+							<p:outputPanel>
+								<p:outputPanel
+									rendered="#{evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.verificacion==true}">
+									<p style="text-align: center;">
+										<p:commandButton value="Guardar"
+											update=":formCabecera:mensajesPrincipal :formMuestraDocentesRem:tablaMuestradocentesRem :formPrincipal:tblVariableRemuneracion "
+											action="#{evaluacionCalidadDocenciaController.guardarMuestraDetalleRemuneracion}"
+											process=":formMuestraDocentesRem:tablaMuestradocentesRem" />
+									</p>
+								</p:outputPanel>
+								<br />
+								<p:outputPanel
+									rendered="#{evaluacionCalidadDocenciaController.contratos}"
+									style="margin:20px 0px 0px 0px;">
+									<p:dataTable id="tablaContratosDocentesRem" var="contratos"
+										value="#{evaluacionCalidadDocenciaController.listaContratacion}"
+										paginator="true" rows="10" emptyMessage="No hay Contratos"
+										paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+										rowsPerPageTemplate="5,10,15" style="margin:20px 0px 0px 0px;">
+
+										<p:column headerText="No.Contrato">
+											<h:outputText value="#{contratos.numeroContrato}" />
+										</p:column>
+
+										<p:column headerText="Dedicación">
+											<h:outputText value="#{contratos.tiempoDedicacion.value}" />
+										</p:column>
+
+										<p:column headerText="Remuneración mensual">
+											<h:outputText value="#{contratos.remuneracionContrato}" />
+										</p:column>
+
+										<p:column headerText="Fecha Inicio">
+											<h:outputText value="#{contratos.fechaInicio}" />
+										</p:column>
+
+										<p:column headerText="Fecha Fin">
+											<h:outputText value="#{contratos.fechaFin}" />
+										</p:column>
+										<p:column headerText="Evaluación">
+											<h:outputText style="font-size:10px;"
+												value="#{contratos.aceptadoEvaluador ? 'SI': 'NO'}" />
+										</p:column>
+										<p:column headerText="Observación" style="white-space:normal;">
+											<p:inputTextarea value="#{contratos.observacionEvaluador}"
+												rows="2" cols="25" style="resize:none;" readonly="true" />
+										</p:column>
+										<p:column headerText="Evidencia">
+											<p:commandLink value="Ver Evidencia"
+												action="#{evaluacionCalidadDocenciaController.cargarEConcepto}"
+												update=":formMuestraDocentesRem:tablaEConceptoRem :formMuestraDocentesRem">
+												<f:setPropertyActionListener
+													target="#{evaluacionCalidadDocenciaController.contratoSeleccionado}"
+													value="#{contratos}" />
+											</p:commandLink>
+										</p:column>
+									</p:dataTable>
+								</p:outputPanel>
+
+
+							</p:outputPanel>
+							<p:outputPanel
+								rendered="#{evaluacionCalidadDocenciaController.evidenciaConcepto}">
+								<p:fieldset legend="Evidencias"
+									style="margin:  20px 0px 0px 0px;">
+
+									<br />
+									<p:dataTable id="tablaEConceptoRem" var="evidenciaconcepto"
+										value="#{evaluacionCalidadDocenciaController.listaEvidenciaConcepto}"
+										emptyMessage="No hay Conceptos">
+
+										<p:column headerText="Evidencias" style="white-space: normal">
+											<h:outputText value="#{evidenciaconcepto.nombre}" />
+										</p:column>
+										<p:column headerText="Lista Archivos">
+											<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+												var="evidencia" emptyMessage="No hay Evidencias">
+
+												<p:column>
+													<h:outputText value="#{evidencia.nombreArchivo}" />
+
+												</p:column>
+												<p:column>
+
+													<p:commandButton title="descargar" icon="ui-icon-document"
+														oncomplete="dlgDescarga.show()"
+														update=":formCabecera:cfDescarga" process="@this"
+														actionListener="#{evaluacionCalidadDocenciaController.enviarEvidencia(evidencia)}">
+
+													</p:commandButton>
+													<p:outputPanel rendered="#{evidencia.origen=='EVALUADOR'}">
+														<p:commandButton title="eliminar evidencia"
+															icon="ui-icon-close" oncomplete="dlgEliminar.show()"
+															process="@this" update=":formCabecera:cfEliminar">
+															<f:setPropertyActionListener
+																target="#{evaluacionCalidadDocenciaController.evidenciaSeleccionada}"
+																value="#{evidencia}" />
+
+														</p:commandButton>
+													</p:outputPanel>
+
+												</p:column>
+
+												<p:column>
+													<h:outputText value="#{evidencia.origen}" />
+
+												</p:column>
+											</p:dataTable>
+										</p:column>
+										<p:column headerText="Acciones">
+											<p:commandButton value="Cargar Evidencias"
+												oncomplete="dlgCargarEvidencia.show()"
+												update=":formEvidencia">
+												<f:setPropertyActionListener
+													target="#{evaluacionCalidadDocenciaController.evidenciaConceptoSeleccionado}"
+													value="#{evidenciaconcepto}" />
+											</p:commandButton>
+
+										</p:column>
+
+
+
+									</p:dataTable>
+
+								</p:fieldset>
+							</p:outputPanel>
+
+
+						</p:fieldset>
+						<br />
+
+
+					</h:panelGrid>
+					<p:spacer height="5" />
+
+					<p:commandButton value="Salir"
+						oncomplete="dlgMuestraDocentesRem.hide()" />
+				</h:form>
+			</div>
+		</p:dialog>
+
+		<!-- DIALOGO PARA PRESENTAR LA MUESTRA DE PUBLICACIONES -->
+		<p:dialog id="modalDialogMuestraPublicaciones" header="Verificar/Ver"
+			widgetVar="dlgMuestraPublicaciones" modal="true" width="1200"
+			height="500">
+			<div align="center">
+				<h:form id="formMuestraPublicaciones" acceptcharset="iso-8859-1">
+					<p:messages id="message" showDetail="false" />
+					<p:growl id="messagesPublicaciones" showDetail="false" />
+					<h:panelGrid columns="1" cellspacing="10">
+						<p:fieldset
+							legend="Muestra detalles de #{evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.variableDTO.etiqueta}"
+							style="margin:  20px 0px 0px 0px;"
+							id="legendtablaMuestraPublicaciones">
+							<p:dataTable id="tbl_MuestraDocentes" var="item" rows="4"
+								value="#{evaluacionCalidadDocenciaController.listaMuestraDetalleDocentes}"
+								paginator="true" editable="true" editMode="cell"
+								scrollWidth="1000" style="width:1100px">
+
+								<p:ajax partialSubmit="true" event="cellEdit" process="@this"
+									listener="#{evaluacionCalidadDocenciaController.tomarItemEditado(item)}" />
+
+								<p:column headerText="Publicación"
+									filterBy="#{item.publicacionDTO.titulo}">
+									<h:inputTextarea value="#{item.publicacionDTO.titulo}"
+										cols="30" rows="3" />
+								</p:column>
+
+								<p:column headerText="Fecha Publicación">
+									<h:outputText value="#{item.publicacionDTO.fechaPublicacion}">
+										<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+
+								<p:column headerText="Docentes">
+									<p:dataTable var="part" border=""
+										value="#{item.publicacionDTO.listaDocentePublicacionDTO}">
+										<p:column headerText="Nombre">
+											<h:outputText
+												value="#{part.docenteDTO.apellidoPaterno} #{part.docenteDTO.apellidoMaterno} #{part.docenteDTO.nombres}" />
+										</p:column>
+									</p:dataTable>
+								</p:column>
+
+								<p:column headerText="Valor Evaluación">
+									<h:outputText
+										value="#{item.muestraDetalle.verificado=='1' ? 'SI': 'NO'}" />
+								</p:column>
+
+								<p:column headerText="Observaciones" style="white-space: normal">
+									<p:inputTextarea rows="2" style="resize:none;"
+										value="#{item.publicacionDTO.observacionEvaluador}" cols="40"
+										readonly="true">
+									</p:inputTextarea>
+								</p:column>
+
+								<p:column headerText="Evaluador" style="white-space: normal">
+									<h:outputText
+										value="#{item.publicacionDTO.auditoriaDTO.usuarioModificacion}" />
+								</p:column>
+									<p:column headerText="Evidencia">
+									<p:commandLink value="Ver Evidencia"
+										action="#{evaluacionCalidadDocenciaController.cargarEConceptoPublicacion}"
+										update=":formMuestraPublicaciones:tablaEPublicacion :formMuestraPublicaciones">
+										<f:setPropertyActionListener
+											target="#{evaluacionCalidadDocenciaController.itemnSeleccionado}"
+											value="#{item}" />
+									</p:commandLink>
+								</p:column>
+								
+							</p:dataTable>
+						</p:fieldset>
+						
+						
+						<p:outputPanel
+							rendered="#{evaluacionCalidadDocenciaController.evidenciaConcepto}">
+							<p:fieldset legend="Evidencias"
+								style="margin:  20px 0px 0px 0px;">
+
+								<br />
+								<p:dataTable id="tablaEPublicacion" var="evidenciaconcepto"
+									value="#{evaluacionCalidadDocenciaController.listaEvidenciaConcepto}"
+									emptyMessage="No hay Conceptos">
+
+									<p:column headerText="Evidencias" style="white-space: normal">
+										<h:outputText value="#{evidenciaconcepto.nombre}" />
+									</p:column>
+									<p:column headerText="Lista Archivos">
+										<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+											var="evidencia" emptyMessage="No hay Evidencias">
+
+											<p:column>
+												<h:outputText value="#{evidencia.nombreArchivo}" />
+
+											</p:column>
+											<p:column>
+
+												<p:commandButton title="descargar" icon="ui-icon-document"
+													oncomplete="dlgDescarga.show()"
+													update=":formCabecera:cfDescarga" process="@this"
+													actionListener="#{evaluacionCalidadDocenciaController.enviarEvidencia(evidencia)}">
+
+												</p:commandButton>
+
+
+											</p:column>
+
+										</p:dataTable>
+									</p:column>
+
+
+								</p:dataTable>
+
+							</p:fieldset>
+						</p:outputPanel>
+						
+						
+					</h:panelGrid>
+					<p:spacer height="5" />
+					<p:commandButton value="Salir"
+						oncomplete="dlgMuestraPublicaciones.hide();" />
+				</h:form>
+			</div>
+		</p:dialog>
+
+		<!-- DIALOGO PARA PRESENTAR LA MUESTRA DE PRODUCCIONES -->
+		<p:dialog id="modalDialogMuestraProducciones" header="Verificar/Ver"
+			widgetVar="dlgMuestraProducciones" modal="true" width="1200"
+			height="500">
+			<div align="center">
+				<h:form id="formMuestraProducciones" acceptcharset="iso-8859-1">
+					<p:messages id="message" showDetail="false" />
+					<p:growl id="messagesProducciones" showDetail="false" />
+					<h:panelGrid columns="1" cellspacing="10">
+						<p:fieldset
+							legend="Muestra detalles de #{evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.variableDTO.etiqueta}"
+							style="margin:  20px 0px 0px 0px;"
+							id="legendtablaMuestraProducciones">
+							<p:dataTable id="tbl_MuestraDocentes" var="item" rows="4"
+								value="#{evaluacionCalidadDocenciaController.listaMuestraDetalleDocentes}"
+								paginator="true" editable="true" editMode="cell"
+								scrollWidth="1000" style="width:1100px">
+
+								<p:ajax partialSubmit="true" event="cellEdit" process="@this"
+									listener="#{evaluacionCalidadDocenciaController.tomarItemEditado(item)}" />
+
+								<p:column headerText="Producción"
+									filterBy="#{item.produccionDTO.nombre}">
+									<h:inputTextarea value="#{item.produccionDTO.nombre}"
+										disabled="false" cols="20" rows="4" />
+								</p:column>
+
+								<p:column headerText="Fecha Presentación">
+									<h:outputText value="#{item.produccionDTO.fechaPresentacion}">
+										<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+
+								<p:column headerText="Premio"
+									filterBy="#{item.produccionDTO.nombrePremio}">
+									<h:inputTextarea value="#{item.produccionDTO.nombrePremio}"
+										disabled="false" cols="20" rows="4" />
+								</p:column>
+
+								<p:column headerText="Docentes">
+									<p:dataTable var="partProd" border=""
+										value="#{item.produccionDTO.listaDocenteProduccionDTO}">
+										<p:column headerText="Nombre">
+											<h:outputText
+												value="#{partProd.docenteDTO.apellidoPaterno} #{partProd.docenteDTO.apellidoMaterno} #{partProd.docenteDTO.nombres}" />
+										</p:column>
+									</p:dataTable>
+								</p:column>
+
+								<p:column headerText="Valor Evaluación">
+									<h:outputText
+										value="#{item.muestraDetalle.verificado=='1' ? 'SI': 'NO'}" />
+								</p:column>
+
+
+								<p:column headerText="Observaciones" style="white-space: normal">
+									<p:inputTextarea rows="2" style="resize:none;"
+										value="#{item.produccionDTO.observacionEvaluador}" cols="40"
+										readonly="true">
+									</p:inputTextarea>
+								</p:column>
+
+								<p:column headerText="Evaluador" style="white-space: normal">
+									<h:outputText
+										value="#{item.produccionDTO.auditoria.usuarioModificacion}" />
+								</p:column>
+
+								<p:column headerText="Evidencia">
+									<p:commandLink value="Ver Evidencia"
+										action="#{evaluacionCalidadDocenciaController.cargarEConceptoProduccion}"
+										update=":formMuestraProducciones:tablaEProduccion :formMuestraProducciones">
+										<f:setPropertyActionListener
+											target="#{evaluacionCalidadDocenciaController.itemnSeleccionado}"
+											value="#{item}" />
+									</p:commandLink>
+								</p:column>
+							</p:dataTable>
+						</p:fieldset>
+
+						<p:outputPanel
+							rendered="#{evaluacionCalidadDocenciaController.evidenciaConcepto}">
+							<p:fieldset legend="Evidencias"
+								style="margin:  20px 0px 0px 0px;">
+
+								<br />
+								<p:dataTable id="tablaEProduccion" var="evidenciaconcepto"
+									value="#{evaluacionCalidadDocenciaController.listaEvidenciaConcepto}"
+									emptyMessage="No hay Conceptos">
+
+									<p:column headerText="Evidencias" style="white-space: normal">
+										<h:outputText value="#{evidenciaconcepto.nombre}" />
+									</p:column>
+									<p:column headerText="Lista Archivos">
+										<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+											var="evidencia" emptyMessage="No hay Evidencias">
+
+											<p:column>
+												<h:outputText value="#{evidencia.nombreArchivo}" />
+
+											</p:column>
+											<p:column>
+
+												<p:commandButton title="descargar" icon="ui-icon-document"
+													oncomplete="dlgDescarga.show()"
+													update=":formCabecera:cfDescarga" process="@this"
+													actionListener="#{evaluacionCalidadDocenciaController.enviarEvidencia(evidencia)}">
+
+												</p:commandButton>
+
+
+											</p:column>
+
+										</p:dataTable>
+									</p:column>
+
+
+								</p:dataTable>
+
+							</p:fieldset>
+						</p:outputPanel>
+
+					</h:panelGrid>
+					<p:spacer height="5" />
+					<p:commandButton value="Salir"
+						oncomplete="dlgMuestraProducciones.hide();" />
+				</h:form>
+			</div>
+		</p:dialog>
+
+		<!-- DIALOGO PARA PRESENTAR LA MUESTRA DE PROYECTOS -->
+		<p:dialog id="modalDialogMuestraProyectos" header="Verificar/Ver"
+			widgetVar="dlgMuestraProyectos" modal="true" width="1200"
+			height="500">
+			<div align="center">
+				<h:form id="formMuestraProyectos" acceptcharset="iso-8859-1">
+					<p:messages id="message" showDetail="false" />
+					<p:growl id="messagesProyectos" showDetail="false" />
+					<h:panelGrid columns="1" cellspacing="10">
+						<p:fieldset
+							legend="Muestra detalles de #{evaluacionCalidadDocenciaController.valorVariableDTO.variableProcesoDTO.variableDTO.etiqueta}"
+							style="margin:  20px 0px 0px 0px;"
+							id="legendtablaMuestraProyectos">
+							<p:dataTable id="tbl_MuestraProyectos" var="item" rows="4"
+								value="#{evaluacionCalidadDocenciaController.listaMuestraDetalleDocentes}"
+								paginator="true" editable="true" editMode="cell"
+								scrollWidth="1000" style="width:1100px">
+
+								<p:ajax partialSubmit="true" event="cellEdit" process="@this"
+									listener="#{evaluacionCalidadDocenciaController.tomarItemEditado(item)}" />
+
+								<p:column headerText="Proyecto"
+									filterBy="#{item.proyecto.nombre}">
+									<h:inputTextarea value="#{item.proyecto.nombre}"
+										disabled="false" cols="20" rows="4" />
+								</p:column>
+
+								<p:column headerText="Institución Beneficiaria"
+									filterBy="#{item.proyecto.institucionBeneficiaria}">
+									<h:inputTextarea
+										value="#{item.proyecto.institucionBeneficiaria}"
+										disabled="false" cols="20" rows="4" />
+								</p:column>
+
+								<p:column headerText="Fecha Inicio">
+									<h:outputText value="#{item.proyecto.fechaInicio}">
+										<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+								<p:column headerText="Fecha Fin">
+									<h:outputText value="#{item.proyecto.fechaFinPlaneado}">
+										<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+
+								<p:column headerText="Valor Evaluación">
+									<p:cellEditor>
+										<f:facet name="output">
+											<h:outputText value="#{item.muestraDetalle.verificado}" />
+										</f:facet>
+										<f:facet name="input">
+											<p:selectOneListbox id="opcions" required="true"
+												requiredMessage="Valor es requerido"
+												value="#{item.muestraDetalle.verificado}">
+												<f:selectItem itemLabel="SI" itemValue="SI" />
+												<f:selectItem itemLabel="NO" itemValue="NO" />
+												<p:ajax partialSubmit="true" update="tbl_MuestraProyectos"
+													process="@this"
+													listener="#{evaluacionCalidadDocenciaController.tomarItemEditado(item)}" />
+											</p:selectOneListbox>
+										</f:facet>
+									</p:cellEditor>
+								</p:column>
+								<p:column headerText="Observaciones">
+									<p:cellEditor>
+										<f:facet name="output">
+											<h:inputTextarea rows="4" style="resize:none;"
+												value="#{item.muestraDetalle.observaciones}" cols="40" />
+
+										</f:facet>
+										<f:facet name="input">
+											<p:inputTextarea rows="4" style="resize:none;"
+												value="#{item.muestraDetalle.observaciones}" cols="40">
+												<p:ajax partialSubmit="true" update="tbl_MuestraProyectos"
+													process="@this"
+													listener="#{evaluacionCalidadDocenciaController.tomarItemEditado(item)}" />
+											</p:inputTextarea>
+										</f:facet>
+									</p:cellEditor>
+								</p:column>
+								<p:column
+									sortBy="#{item.muestraDetalle.auditoria.fechaModificacion}"
+									headerText="Fecha Modificacion" style="font-size:9px;">
+									<h:outputText style="font-size:10px;"
+										value="#{item.muestraDetalle.auditoria.fechaModificacion}">
+										<f:convertDateTime pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+								<p:column headerText="Historicos">
+									<p:commandLink value="Visualizar"
+										update=":formMuestraProyectos">
+									</p:commandLink>
+								</p:column>
+							</p:dataTable>
+						</p:fieldset>
+					</h:panelGrid>
+					<p:spacer height="5" />
+					<p:commandButton value="Guardar" update=":formMuestraProyectos"
+						process="@this"
+						action="#{evaluacionCalidadDocenciaController.registrarValoresMuestraDetalles('INVESTIGACION')}" />
+					<p:spacer width="20" />
+					<p:commandButton value="Salir" onclick="confirmation.show()" />
+				</h:form>
+			</div>
+		</p:dialog>
+		<p:dialog id="idInforEvidencia" header="Cargar Evidencias"
+			resizable="false" closable="true" closeOnEscape="false"
+			widgetVar="dlgCargarEvidencia" modal="true">
+			<p:panel>
+
+				<h:form id="formEvidencia" enctype="multipart/form-data" acceptcharset="iso-8859-1">
+					<p:fileUpload
+						fileUploadListener="#{evaluacionCalidadDocenciaController.uploadfile}"
+						update=":formMuestraDocentesRem"
+						oncomplete="dlgCargarEvidencia.hide()" uploadLabel="Cargar" />
+
+
+
+
+				</h:form>
+
+
+			</p:panel>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

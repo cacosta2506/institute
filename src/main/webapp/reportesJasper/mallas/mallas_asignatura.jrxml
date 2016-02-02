@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="mallas_asignatura" pageWidth="556" pageHeight="802" columnWidth="556" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="963c37fc-7f1a-46c6-a26f-87b7afc1584a">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<field name="numeroCreditos" class="java.lang.Double"/>
+	<field name="areaFormacion" class="java.lang.String"/>
+	<field name="nombre" class="java.lang.String"/>
+	<field name="preRequisitoMalla" class="java.util.List"/>
+	<field name="corRequisitoMalla" class="java.util.List"/>
+	<field name="idAsignaturaPadre" class="java.lang.Long"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="78" splitType="Prevent">
+			<printWhenExpression><![CDATA[$F{idAsignaturaPadre} == null]]></printWhenExpression>
+			<textField>
+				<reportElement x="133" y="34" width="422" height="20" uuid="f2418a59-6bfd-48bc-bd25-bac2c5bb2924"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{numeroCreditos}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="34" width="133" height="20" uuid="a9a39825-d400-408b-bde3-1a97ee1abd8b"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Número de Créditos:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="54" width="133" height="20" uuid="94c1f176-14f5-4586-b8f6-fb682ab3cae5"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Área Formación:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="133" y="54" width="422" height="20" uuid="00c16fd7-5748-40c9-b1b6-1293f5eb9487"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{areaFormacion}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="14" width="133" height="20" uuid="209dd36e-856b-42be-b8ba-0e356321be11"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Double"/>
+					<topPen lineWidth="0.75" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Double"/>
+					<bottomPen lineWidth="0.0" lineStyle="Double"/>
+					<rightPen lineWidth="0.0" lineStyle="Double"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nombre:]]></text>
+			</staticText>
+			<textField>
+				<reportElement stretchType="RelativeToTallestObject" x="133" y="14" width="422" height="20" uuid="afbb660b-af7c-4d21-84b5-bc3b97052015"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Double"/>
+					<topPen lineWidth="0.75" lineStyle="Solid"/>
+					<leftPen lineWidth="0.0" lineStyle="Double"/>
+					<bottomPen lineWidth="0.0" lineStyle="Double"/>
+					<rightPen lineWidth="0.0" lineStyle="Double"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nombre}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="13">
+			<printWhenExpression><![CDATA[$F{idAsignaturaPadre} == null]]></printWhenExpression>
+			<subreport>
+				<reportElement x="0" y="0" width="278" height="10" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true" uuid="7601e597-ca9c-4d18-a799-2cf9766c96b0"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{preRequisitoMalla})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "mallas_asignatura_prerrequisitos.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="278" y="0" width="278" height="10" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true" uuid="3237ca30-82d3-4dbd-bf44-39eaceca8c2f"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{corRequisitoMalla})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "mallas_asignatura_correquisitos.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

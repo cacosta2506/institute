@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+
+	<ui:define name="contenido">
+		<script type="text/javascript"
+			src="${facesContext.externalContext.request.contextPath}/js/validacionesUtil.js"></script>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage value="images/saving.gif" />
+			</center>
+		</p:dialog>
+
+
+		<p:fieldset>
+			<p:growl id="msg" showDetail="false" autoUpdate="true" sticky="true" />
+			<p:commandButton value="Regresar" style="float:right"
+				update=":tabViewFormularios"
+				action="#{adminSedeIesDistriFisicaController.regresarSedeIesCabecera}" />
+			<br />
+			<br />
+			<br />
+			<p:tabView id="tabViewFormularios"
+				activeIndex="#{adminSedeIesDistriFisicaController.indiceTab}">
+				<p:tab title="Información Matriz/Extensión">
+					<h:form id="formSedeIes" acceptcharset="iso-8859-1">
+						<h:panelGrid columns="1">
+							<h:panelGrid columns="2" cellspacing="10" cellpadding="5">
+
+								<p:outputLabel value="Nombre:" />
+								<h:inputTextarea d="idnom" style="width:250px; resize:none;"
+									value="#{adminSedeIesDistriFisicaController.sedeIesDto.nombre}">
+									<p:ajax event="blur" update="@this" global="false" />
+								</h:inputTextarea>
+
+								<p:outputLabel value="Código:"
+									rendered="#{adminSedeIesDistriFisicaController.sedeIesDto.codigo != null}" />
+								<h:outputText
+									rendered="#{adminSedeIesDistriFisicaController.sedeIesDto.codigo != null}"
+									value="#{adminSedeIesDistriFisicaController.sedeIesDto.codigo}">
+								</h:outputText>
+
+								<p:outputLabel value="Tipo:" />
+								<p:selectOneMenu id="idti" style="width:250px"
+									disabled="#{!adminSedeIesDistriFisicaController.deshabilitarCampus}"
+									value="#{adminSedeIesDistriFisicaController.sedeIesDto.tipoSede}">
+									<f:selectItem itemLabel="--Seleccionar--" />
+									<f:selectItem itemLabel="MATRIZ" itemValue="MATRIZ" />
+									<f:selectItem itemLabel="EXTENSIÓN" itemValue="EXTENSIÓN" />
+									<p:ajax event="change" update="@this" global="false" />
+								</p:selectOneMenu>
+
+								<p:outputLabel value="Provincia :" />
+								<p:selectOneMenu id="idProvinciaSede"
+									value="#{adminSedeIesDistriFisicaController.idProvinciaSede}"
+									style="width:250px;">
+									<f:selectItem itemLabel="--Seleccionar--" itemValue="0" />
+									<f:selectItems
+										value="#{adminSedeIesDistriFisicaController.listaProvinciaIes}"
+										var="lis" itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+									<p:ajax update="idCantonSede "
+										listener="#{adminSedeIesDistriFisicaController.obtenerCantonSede}" />
+								</p:selectOneMenu>
+
+
+								<h:outputText value="Cantón :" />
+								<p:selectOneMenu id="idCantonSede"
+									value="#{adminSedeIesDistriFisicaController.idCantonSede}"
+									style="width:250px;">
+									<p:ajax event="change" update="idCantonSede" />
+									<f:selectItem itemLabel="--Seleccionar--" itemValue="0" />
+									<f:selectItems
+										value="#{adminSedeIesDistriFisicaController.listaCantonSede}"
+										var="lctn" itemLabel="#{lctn.nombre}" itemValue="#{lctn.id}" />
+								</p:selectOneMenu>
+
+
+								<p:outputLabel value="Fecha Creación: " />
+								<p:calendar
+									maxdate="#{adminSedeIesDistriFisicaController.fechaActual}"
+									value="#{adminSedeIesDistriFisicaController.sedeIesDto.fechaCreacion}"
+									maxlength="10" navigator="true" effect="slide" size="37"
+									pattern="dd-MM-yyyy">
+									<p:ajax event="dateSelect" update="@this" />
+								</p:calendar>
+
+							</h:panelGrid>
+						</h:panelGrid>
+					</h:form>
+					<h:form id="formGuardar" acceptcharset="iso-8859-1">
+						<center>
+							<br />
+							<p:commandButton value="Guardar" style="width:150px"
+								action="#{adminSedeIesDistriFisicaController.guardarSedeIes}"
+								update=":tabViewFormularios" />
+						</center>
+					</h:form>
+				</p:tab>
+
+				<p:tab title="Ubicación Física"
+					disabled="#{adminSedeIesDistriFisicaController.deshabilitarCampus}">
+					<h:form id="formDetalleDisFisica" acceptcharset="iso-8859-1">
+						<center>
+							<p:panel>
+								<h:panelGrid columns="1" style="float:left">
+
+									<h:outputText
+										value="Matriz/Extensión: #{adminSedeIesDistriFisicaController.sedeIesDto.nombre}"
+										style="font-size:16px; font-weight:bold" />
+								</h:panelGrid>
+								<p:commandButton
+									action="#{adminSedeIesDistriFisicaController.nuevaSedeIesDistriFisica}"
+									value="Nuevo" style="float:right"
+									update=":formSedeIesDetalleDistriFisica" />
+								<br />
+								<br />
+								<br />
+								<p:dataTable id="tablaSedeIesDistriFisica"
+									var="tblSedeIesDistriFis"
+									value="#{adminSedeIesDistriFisicaController.listaSedeIesDisFisDto}"
+									widgetVar="tablSedeIesDisFis" border="1"
+									style="width:auto;height:auto" paginator="true" rows="10"
+									paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+									rowsPerPageTemplate="5,10,15">
+
+									<p:column id="idcodigofo"
+										filterBy="#{tblSedeIesDistriFis.codigo}" headerText="Código"
+										filterMatchMode="contains">
+										<h:outputText value="#{tblSedeIesDistriFis.codigo}" />
+									</p:column>
+
+									<p:column id="idNomfor"
+										filterBy="#{tblSedeIesDistriFis.nombre}" headerText="Nombres"
+										filterMatchMode="contains">
+										<h:outputText value="#{tblSedeIesDistriFis.nombre}" />
+									</p:column>
+
+									<p:column id="iddireci" headerText="Dirección">
+										<h:outputText value="#{tblSedeIesDistriFis.direccion}" />
+									</p:column>
+
+									<p:column headerText="Acciones" style="width:100px">
+										<p:commandButton id="btnVerMapa" oncomplete="dlgMapaId.show()"
+											update=":dlgMapaIdDlg" icon="ui-icon-search"
+											style="width:24px;height:24px;">
+											<f:setPropertyActionListener
+												target="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto}"
+												value="#{tblSedeIesDistriFis}" />
+										</p:commandButton>
+										<p:tooltip for="btnVerMapa" value="Ver Ubicación en el mapa"
+											showEffect="fade" hideEffect="fade" showEffectLength="1000"
+											hideEffectLength="1000" />
+
+										<p:commandButton oncomplete="dlgSedeIesDistriFisica.show()"
+											update=":formSedeIesDetalleDistriFisica"
+											action="#{adminSedeIesDistriFisicaController.editarSedeIesDistriFisica}"
+											icon="ui-icon-pencil" style="width:24px;height:24px;">
+											<f:setPropertyActionListener
+												target="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto}"
+												value="#{tblSedeIesDistriFis}" />
+										</p:commandButton>
+
+										<p:commandButton oncomplete="deleteConfirmation.show()"
+											update="@form" icon="ui-icon-close" title="eliminar"
+											actionListener="#{adminSedeIesDistriFisicaController.verificarEliminacionCampus}"
+											style="width:24px;height:24px;">
+											<f:setPropertyActionListener
+												target="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto}"
+												value="#{tblSedeIesDistriFis}" />
+										</p:commandButton>
+									</p:column>
+								</p:dataTable>
+							</p:panel>
+
+							<p:confirmDialog id="delConfirmation"
+								message="Está seguro que desea eliminar el campus #{adminSedeIesDistriFisicaController.mensajeAdvertencia}?"
+								header="Confirmación" severity="alert"
+								widgetVar="deleteConfirmation">
+								<p:commandButton id="go" value="Si"
+									update=":tabViewFormularios:formDetalleDisFisica"
+									oncomplete="deleteConfirmation.hide()"
+									actionListener="#{adminSedeIesDistriFisicaController.eliminarSedeIesDistriFisica}" />
+								<p:commandButton id="cancel" value="No"
+									onclick="deleteConfirmation.hide()" type="button" />
+							</p:confirmDialog>
+						</center>
+					</h:form>
+
+				</p:tab>
+
+			</p:tabView>
+
+		</p:fieldset>
+
+		<p:dialog id="modalDialogSedeIes" header="Editar"
+			widgetVar="dlgSedeIesDistriFisica" modal="true">
+			<p style="color: red; text-align: left"> Los campos marcados con * son obligatorios.</p>
+			<div align="center">
+				<h:form id="formSedeIesDetalleDistriFisica" acceptcharset="iso-8859-1">
+					<p:fieldset>
+					
+						<h:outputText style="font-weight: bold;" value="Campus" />
+						<h:panelGrid id="panelfisica" columns="9" cellspacing="10"
+							cellpadding="5">
+
+							<h:outputText value="Código :" />
+							<h:outputText id="idcodgo"
+								rendered="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.codigo != null}"
+								value="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.codigo}">
+							</h:outputText>
+							<h:outputText value=" "
+								rendered="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.codigo == null}" />
+
+							<p:tooltip for="idcodgo" value="Ingrese el código de Campus"
+								showEffect="fade" hideEffect="fade" />
+
+							<h:outputText value="Tipo : " ><span style="color:red">*</span> </h:outputText>
+							<p:selectOneMenu id="idt"
+								value="#{adminSedeIesDistriFisicaController.tipoSeleccionada}">
+								<f:selectItems
+									value="#{adminSedeIesDistriFisicaController.tipoEnum}" />
+							</p:selectOneMenu>
+							<p:tooltip for="idt" value="Seleccione el tipo del campus"
+								showEffect="fade" hideEffect="fade" />
+
+							<h:outputText value="Nombre :" ><span style="color:red">*</span> </h:outputText>
+							<p:inputText id="nomid"
+								value="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.nombre}">
+							</p:inputText>
+							<p:tooltip for="nomid" value="Ingrese el nombre del campus"
+								showEffect="fade" hideEffect="fade" />
+
+							<h:outputText value="Fecha Creación:"  ><span style="color:red">*</span> </h:outputText>
+							<p:calendar id="calFechaCreacion" effect="slideDown"
+								required="true" requiredMessage="Ingrese Fecha Creación"
+								value="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.fechaCreacion}"
+								navigator="true" pattern="dd-MM-yyyy"
+								maxdate="#{adminSedeIesDistriFisicaController.fechaActual}">
+								<p:ajax event="dateSelect" update="@this" global="false" />
+							</p:calendar>
+							<h:outputLabel value="" />
+
+							<h:outputText value="Dirección:"  ><span style="color:red">*</span> </h:outputText>
+							<p:inputText id="direcid"
+								value="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.direccion}" />
+							<h:outputLabel value="" />
+
+							<h:outputText value="Area Ubicación:"  ><span style="color:red">*</span> </h:outputText>
+							<p:selectOneMenu id="estado"
+								value="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.areaUbicacion}">
+								<p:ajax event="change" update="@this" global="false" />
+								<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+								<f:selectItem itemLabel="URBANA" itemValue="URBANA" />
+								<f:selectItem itemLabel="RURAL" itemValue="RURAL" />
+							</p:selectOneMenu>
+							<h:outputLabel value="" />
+
+							<h:outputText value="Provincia :"  ><span style="color:red">*</span> </h:outputText>
+							<p:selectOneMenu id="idSelecProvincia"
+								value="#{adminSedeIesDistriFisicaController.idProvinciaSelec}"
+								style="width:200px;">
+								<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+								<f:selectItems
+									value="#{adminSedeIesDistriFisicaController.listaProvinciaIes}"
+									var="lis" itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+								<p:ajax update="idSelecCanton, idSelecParroquia"
+									listener="#{adminSedeIesDistriFisicaController.obtenerCanton}" />
+							</p:selectOneMenu>
+							<h:outputLabel value="" />
+
+							<h:outputText value="Cantón :"  ><span style="color:red">*</span> </h:outputText>
+							<p:selectOneMenu id="idSelecCanton"
+								value="#{adminSedeIesDistriFisicaController.idCantonSelect}"
+								style="width:200px;">
+								<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+								<f:selectItems
+									value="#{adminSedeIesDistriFisicaController.listaCantonIesDto}"
+									var="lctn" itemLabel="#{lctn.nombre}" itemValue="#{lctn.id}" />
+								<p:ajax update="idSelecParroquia"
+									listener="#{adminSedeIesDistriFisicaController.obtenerParroquia}" />
+							</p:selectOneMenu>
+							<h:outputLabel value="" />
+
+							<h:outputText value="Parroquia :" ><span style="color:red"> *</span> </h:outputText>
+							<p:selectOneMenu id="idSelecParroquia"
+								value="#{adminSedeIesDistriFisicaController.idParroquiaSelect}"
+								style="width:200px;">
+								<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+								<f:selectItems
+									value="#{adminSedeIesDistriFisicaController.listaParroquiaIesDto}"
+									var="lp" itemLabel="#{lp.nombre}" itemValue="#{lp.id}" />
+							</p:selectOneMenu>
+							<h:outputLabel value="" />
+							<h:outputText value="Total Sitios Biblioteca:" />
+							<p:spinner id="sitiosBiblioteca"
+								value="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.totalSitiosBiblioteca}"
+								min="0" />
+							<h:outputText value="" />
+							<h:outputText value="No. Sitios Biblioteca Internet:" />
+							<p:spinner id="sitiosBibliotInternet"
+								value="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.numSitiosBibliotecaInternet}"
+								min="0" />
+							<h:outputText value="" />
+
+							<h:outputText value="No. Total Aulas:" />
+							<p:spinner id="totalAulas"
+								value="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.numTotalAulas}"
+								min="0" />
+							<h:outputText value="" />
+
+							<h:outputText value="No. Total Sitios Trabajo DTC:" />
+							<p:spinner id="sitiosTrabDtc"
+								value="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.numTotalSitiosTrabajoDtc}"
+								min="0" />
+							<h:outputText value="" />
+
+							<h:outputText
+								value="No. Computadores al servicio de los Estudiantes:" />
+							<p:spinner id="computadEst"
+								value="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.numComputadoresEstudiantes}"
+								min="0" />
+							<h:outputText value="" />
+							<p:outputLabel value="Latitud:" />
+							<p:inputText
+								value="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.latitud}">
+								<p:ajax event="blur"
+									update="@this :formSedeIesDetalleDistriFisica:verMapaNuevoId"
+									global="false" />
+							</p:inputText>
+							<h:outputLabel value="" />
+
+							<p:outputLabel value="Longitud:" />
+							<h:panelGroup>
+								<p:inputText
+									value="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.longitud}">
+									<p:ajax event="blur"
+										update="@this :formSedeIesDetalleDistriFisica:verMapaNuevoId"
+										global="false" />
+								</p:inputText>
+								<p:commandButton id="verMapaNuevoId" update=":dlgMapaIdDlg"
+									action="#{adminSedeIesDistriFisicaController.validarUbicacionMapa}"
+									oncomplete="if(!(!args.abrirMapa)){dlgMapaId.show();}"
+									icon="ui-icon-search" style="width:24px;height:24px;"
+									process="@this" async="true">
+								</p:commandButton>
+								<p:tooltip for="verMapaNuevoId" value="Ver Ubicación en el mapa"
+									showEffect="fade" hideEffect="fade" showEffectLength="1000"
+									hideEffectLength="1000" />
+							</h:panelGroup>
+							<h:outputLabel value="" />
+							<h:outputLink
+								value="https://support.google.com/maps/answer/18539?hl=es"
+								target="_blank">¿Cómo obtener la longitud y Latitud?</h:outputLink>
+
+
+						</h:panelGrid>
+						<p:spacer width="10" />
+					</p:fieldset>
+					<p:commandButton value="Guardar"
+						update=":tabViewFormularios:formDetalleDisFisica :tabViewFormularios:formGuardar"
+						action="#{adminSedeIesDistriFisicaController.guardarSedeIesDistriFisica}" />
+
+					<p:spacer width="20" />
+					<p:commandButton value="Cerrar" process="@this" async="true"
+						action="#{adminSedeIesDistriFisicaController.salirSedeIesDetalleDistriFisica}"
+						oncomplete="dlgSedeIesDistriFisica.hide()" />
+				</h:form>
+			</div>
+		</p:dialog>
+
+		<p:dialog id="dlgMapaIdDlg" widgetVar="dlgMapaId" width="625"
+			height="400" modal="true">
+			<p:gmap
+				center="#{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.latitud}, #{adminSedeIesDistriFisicaController.sedeIesDisFisicaDto.longitud}"
+				zoom="20" type="HYBRID"
+				model="#{adminSedeIesDistriFisicaController.miMapa}"
+				mapTypeControl="true" navigationControl="true"
+				style="width:600px;height:400px" />
+			<script src="http://maps.google.com/maps/api/js?sensor=false"
+				type="text/javascript"></script>
+		</p:dialog>
+
+	</ui:define>
+</ui:composition>
+</html>

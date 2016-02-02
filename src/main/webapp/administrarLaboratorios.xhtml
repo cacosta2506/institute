@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+<script type="text/javascript"
+			src="${facesContext.externalContext.request.contextPath}/resources/js/validacionesUtil.js"></script>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+			<p:messages id="msj" showDetail="true" autoUpdate="false"
+				showSummary="false" closable="false" globalOnly="false" />
+			<p:confirmDialog id="deleteConfirmDialog"
+				message="Está seguro de eliminar el laboratorio?"
+				header="Iniciando proceso de eliminación" severity="alert"
+				widgetVar="deleteConfirmation">
+				<div align="center">
+					<p:commandButton id="confirm" value="Si" update=":formPrincipal"
+						oncomplete="deleteConfirmation.hide()"
+						action="#{laboratorioController.eliminarLaboratorio}" />
+					<p:commandButton id="decline" value="No"
+						onclick="deleteConfirmation.hide()" type="button" />
+				</div>
+			</p:confirmDialog>
+
+			<p:confirmDialog id="deleteConfirmDialogAsig"
+				message="Está seguro de eliminar la Asignatura?"
+				header="Iniciando proceso de eliminación" severity="alert"
+				widgetVar="deleteConfirmationAsig">
+				<div align="center">
+					<p:commandButton id="confirmAsi" value="Si"
+						update=":tabViewFormulariosEditar:formAsignaturaEditar"
+						oncomplete="deleteConfirmationAsig.hide()"
+						action="#{laboratorioController.eliminarAsignatura}" />
+					<p:commandButton id="declineAsig" value="No"
+						onclick="deleteConfirmationAsig.hide()" type="button" />
+				</div>
+			</p:confirmDialog>
+
+			<center>
+				<p:panel header="ADMINISTRACIÓN DE LABORATORIOS"
+				style="text-align:center;">
+					<p:outputPanel rendered="#{!laboratorioController.alertaEvaluador}">
+						<p:commandButton style="float:right;" value="Nuevo"
+							action="#{laboratorioController.nuevoLaboratorio}"
+							update=":formPrincipal :tabViewFormularios">
+						</p:commandButton>
+					</p:outputPanel>
+					<br />
+					<br />
+					<br />
+
+					<h:outputText
+						style="font-size:12px;float:left;color:#0078D0;font-weight:bold;"
+						value="Nro. laboratorios registrados: #{laboratorioController.totalLaboratorios}" />
+					<br />
+					<p:dataTable id="tablaLabs"
+						value="#{laboratorioController.listaLaboratorios}" var="lab"
+						emptyMessage="No se encontraron registros" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15"
+						style="width:auto;height:auto"
+						paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+
+						<p:column headerText="Nombre" filterBy="#{lab.nombre}">
+							<h:inputTextarea value="#{lab.nombre}" readonly="true" cols="50"
+								style="resize:none;" />
+						</p:column>
+
+						<p:column headerText="Tipo" filterBy="#{lab.tipo}">
+							<h:outputText value="#{lab.tipo.value}" />
+						</p:column>
+
+						<p:column headerText="No. Equipos">
+							<h:outputText value="#{lab.numEquipos}" />
+						</p:column>
+
+						<p:column headerText="Ubicación Física">
+							<h:inputTextarea value="#{lab.sedeDistribucionFisicaDTO.nombre}"
+								readonly="true" cols="40" style="resize:none;" />
+						</p:column>
+
+						<p:column headerText="Ubicación Específica">
+							<h:inputTextarea value="#{lab.ubicacion}" readonly="true"
+								cols="40" style="resize:none;" />
+						</p:column>
+						<p:column headerText="Evaluación">
+							<h:inputTextarea value="#{lab.aceptadoEvaluador ? 'SI': 'NO'}" readonly="true"
+								cols="40" style="resize:none;" />
+						</p:column>
+						<p:column headerText="Observación">
+							<h:inputTextarea value="#{lab.observacionEvaluador}" readonly="true"
+								cols="40" style="resize:none;" />
+						</p:column>
+						<!-- editar -->
+						<p:column headerText="Acciones">
+							<p:commandButton oncomplete="dialogAdminEditar.show()"
+								icon="ui-icon-pencil" style="width:24px;height:24px;"
+								update=":tabViewFormulariosEditar"
+								action="#{laboratorioController.cargarEdicion}">
+								<f:setPropertyActionListener
+									target="#{laboratorioController.laboratorioSeleccionado}"
+									value="#{lab}" />
+							</p:commandButton>
+							<p:commandButton oncomplete="deleteConfirmation.show()"
+								title="eliminar" icon="ui-icon-close"
+								style="width:24px;height:24px;">
+								<f:setPropertyActionListener
+									target="#{laboratorioController.laboratorioSeleccionado}"
+									value="#{lab}" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</center>
+		</h:form>
+
+		<p:dialog widgetVar="dialogAdmin" header="Nuevo Laboratorio"
+			modal="true" resizable="true" showEffect="fold" hideEffect="fold">
+			<center>
+				<p:messages id="msjPrinci" showDetail="true" autoUpdate="true"
+					showSummary="false" />
+				<p:tabView id="tabViewFormularios">
+					<p:tab title="Laboratorio">
+						<h:form id="formLaboratorio" acceptcharset="iso-8859-1">
+							<p:fieldset legend="Información General">
+								<h:panelGrid columns="4" cellspacing="5" cellpadding="10">
+
+									<h:outputText style="float:left;" value="Tipo:" />
+									<p:selectOneMenu tabindex="1"
+										value="#{laboratorioController.tipoLaboratorio}"
+										style="width:210px;">
+										<f:selectItem itemLabel="-Seleccionar-" itemValue="" />
+										<f:selectItems value="#{laboratorioController.listaTipo}"
+											var="tle" itemValue="#{tle}" itemLabel="#{tle}" />
+										<p:ajax event="change" process="@this" global="false"
+											update=":tabViewFormularios:formLaboratorio" />
+									</p:selectOneMenu>
+									<h:outputText value="" />
+									<h:outputText value="" />
+
+									<h:outputText value="Especificar otro tipo:"
+										rendered="#{laboratorioController.tipoLaboratorio=='OTRO'}" />
+									<p:inputTextarea id="txt_tipo" tabindex="2"
+										rendered="#{laboratorioController.tipoLaboratorio=='OTRO'}"
+										value="#{laboratorioController.laboratorioSeleccionado.especificarOtroTipoLab}"
+										style="width:300px;height:50px;" effectDuration="400">
+										<p:ajax event="blur" update="@this" />
+									</p:inputTextarea>
+
+									<h:outputText value="Nombre:" />
+									<p:inputTextarea id="txt_nombre" tabindex="3"
+										value="#{laboratorioController.laboratorioSeleccionado.nombre}"
+										style="width:300px;height:50px;" effectDuration="400">
+										<p:ajax event="blur" update="@this" />
+									</p:inputTextarea>
+
+									<h:outputText value="Nro. Computadores:"
+										rendered="#{laboratorioController.tipoLaboratorio=='INFORMÁTICO'}" />
+									<p:spinner id="num_comp" min="0" tabindex="4" onkeypress="return validarIngresoSoloNumeros(event)"
+										rendered="#{laboratorioController.tipoLaboratorio=='INFORMÁTICO'}"
+										value="#{laboratorioController.laboratorioSeleccionado.numComputadores}">
+										<p:ajax process="@this" />
+									</p:spinner>
+
+									<h:outputText value="Nro. otros equipos (opcional):"
+										rendered="#{laboratorioController.tipoLaboratorio=='INFORMÁTICO'}" />
+									<p:spinner id="num_otros_equipos" min="0" tabindex="5" onkeypress="return validarIngresoSoloNumeros(event)"
+										rendered="#{laboratorioController.tipoLaboratorio=='INFORMÁTICO'}"
+										value="#{laboratorioController.laboratorioSeleccionado.numEquipos}">
+										<p:ajax process="@this" />
+									</p:spinner>
+
+									<h:outputText value="Nro. equipos:"
+										rendered="#{laboratorioController.tipoLaboratorio=='OTRO'}" />
+									<p:spinner id="num_equipos" min="0" tabindex="6"
+										rendered="#{laboratorioController.tipoLaboratorio=='OTRO'}"
+										value="#{laboratorioController.laboratorioSeleccionado.numEquipos}">
+										<p:ajax process="@this" />
+									</p:spinner>
+
+									<h:outputText value="Descripción Equipo:" />
+									<p:inputTextarea id="txt_descripcionEquipos" tabindex="7"
+										value="#{laboratorioController.laboratorioSeleccionado.descripcionEquipos}"
+										style="width:300px;height:50px;" effectDuration="400">
+										<p:ajax event="blur" update="@this" />
+									</p:inputTextarea>
+
+									<h:outputText value="Matriz/Extensión:" />
+									<p:selectOneMenu id="sedei" style="width:250px" tabindex="8"
+										value="#{laboratorioController.idSedeSeleccionada}">
+										<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+										<f:selectItems
+											value="#{laboratorioController.listaSedeIesDto}" var="lis"
+											itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+										<p:ajax update=":tabViewFormularios:formLaboratorio:sedeD"
+											listener="#{laboratorioController.cargarListaSedeDistribucion}" />
+									</p:selectOneMenu>
+
+									<h:outputText value="Ubicación Física:" />
+									<p:selectOneMenu id="sedeD" style="width:250px" tabindex="9"
+										value="#{laboratorioController.idSedeDistribucionSeleccionada}">
+										<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+										<f:selectItems
+											value="#{laboratorioController.listaSedeDistribucion}"
+											var="lis" itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+										<p:ajax event="change" update="@this" global="false"
+											process="@this" />
+									</p:selectOneMenu>
+
+									<h:outputText value="Ubicación Especifica:" />
+									<p:inputTextarea id="txt_ubicacion" tabindex="10"
+										value="#{laboratorioController.laboratorioSeleccionado.ubicacion}"
+										style="width:300px;height:50px;" effectDuration="400">
+										<p:ajax event="blur" update="@this" />
+									</p:inputTextarea>
+								</h:panelGrid>
+							</p:fieldset>
+
+							<p:fieldset legend="Evaluación"
+								rendered="#{laboratorioController.alertaEvaluador}">
+								<h:panelGrid columns="4" cellspacing="5">
+									<h:outputText value="Aceptado Evaluador:" />
+									<p:selectOneMenu
+										value="#{laboratorioController.laboratorioSeleccionado.aceptadoEvaluador}"
+										style="width:210px;" tabindex="6">
+										<f:selectItem itemLabel="Sí" itemValue="TRUE" />
+										<f:selectItem itemLabel="No" itemValue="FALSE" />
+
+										<p:ajax event="change" update="@this" global="false" />
+									</p:selectOneMenu>
+
+
+									<h:outputText value="Observación Evaluador:" />
+									<p:inputTextarea id="txtObservacion" tabindex="12"
+										style="resize:none; width:350px;" cols="30"
+										value="#{laboratorioController.laboratorioSeleccionado.observacionEvaluador}">
+										<p:ajax event="blur" update="@this" />
+									</p:inputTextarea>
+								</h:panelGrid>
+							</p:fieldset>
+						</h:form>
+					</p:tab>
+					<p:tab title="Asignaturas">
+						<h:form id="formAsignatura" acceptcharset="iso-8859-1">
+							<h:panelGrid columns="2">
+								<h:outputText value="Matriz/Extensión" />
+								<p:selectOneMenu id="idSdIs" style="width:250px"
+									value="#{laboratorioController.idSedeIesSeleccionada}">
+									<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+									<f:selectItems
+										value="#{laboratorioController.listaSedeIesAsignaturaDto}"
+										var="lis" itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+									<p:ajax update="idCarrer"
+										listener="#{laboratorioController.cargarCarreras}" />
+								</p:selectOneMenu>
+
+								<h:outputText value="Carrera:" />
+								<p:selectOneMenu id="idCarrer" style="width:250px"
+									value="#{laboratorioController.idInformacionCarreraSeleccionada}">
+									<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+									<f:selectItems
+										value="#{laboratorioController.listaInformacionCarreraDto}"
+										var="lis"
+										itemLabel="#{lis.carreraIesDTO.nombre} [ #{lis.carreraIesDTO.codigo} ]"
+										itemValue="#{lis.id}" />
+									<p:ajax update="mallA"
+										listener="#{laboratorioController.cargarMalla}" />
+								</p:selectOneMenu>
+
+								<h:outputText value="Malla Curricular:" />
+								<p:selectOneMenu id="mallA" style="width:250px"
+									value="#{laboratorioController.idMallaSeleccionada}">
+									<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+									<f:selectItems value="#{laboratorioController.listaMallaDto}"
+										var="lis" itemLabel="#{lis.codigoUnico}" itemValue="#{lis.id}" />
+									<p:ajax update="pickList"
+										listener="#{laboratorioController.cargarAsignaturas}" />
+								</p:selectOneMenu>
+							</h:panelGrid>
+
+							<h:panelGrid columns="1">
+								<p:pickList id="pickList" effect="puff"
+									value="#{laboratorioController.listaAsignaturasDTO}"
+									var="lista" itemValue="#{lista}" itemLabel="#{lista.nombre}"
+									showCheckbox="true" filterMatchMode="contains"
+									converter="laboratorioAsignaturaConverter">
+									<p:ajax event="transfer"
+										update=":tabViewFormularios:formAsignatura" />
+								</p:pickList>
+							</h:panelGrid>
+						</h:form>
+					</p:tab>
+				</p:tabView>
+				<h:form id="fopciones" acceptcharset="iso-8859-1">
+					<h:panelGrid columns="2">
+						<p:commandButton value="Guardar"
+							action="#{laboratorioController.guardarLaboratorio}"
+							update=":formPrincipal" />
+						<p:commandButton value="Cancelar"
+							action="#{laboratorioController.cancelarLaboratorio}" />
+					</h:panelGrid>
+				</h:form>
+			</center>
+		</p:dialog>
+
+		<!-- editar asignaturas -->
+		<p:dialog widgetVar="dialogAdminEditar" header="Editar Laboratorio"
+			resizable="true" showEffect="fold" hideEffect="fold"
+			position="center">
+			<center>
+				<p:messages id="msjPrinciEditar" showDetail="true" autoUpdate="true"
+					showSummary="false" />
+				<p:tabView id="tabViewFormulariosEditar">
+					<p:tab title="Laboratorio">
+						<h:form id="formLaboratorioEditar" acceptcharset="iso-8859-1">
+							<p:fieldset legend="Información General">
+								<h:panelGrid columns="4" cellspacing="5" cellpadding="10">
+
+									<h:outputText style="float:left;" value="Tipo:" />
+									<p:selectOneMenu tabindex="1"
+										value="#{laboratorioController.tipoLaboratorio}"
+										style="width:210px;">
+										<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+										<f:selectItems value="#{laboratorioController.listaTipo}"
+											var="tle" itemValue="#{tle}" itemLabel="#{tle}" />
+										<p:ajax event="change" process="@this" global="false"
+											update=":tabViewFormulariosEditar:formLaboratorioEditar" />
+									</p:selectOneMenu>
+									<h:outputText value=" " />
+									<h:outputText value="" />
+
+									<h:outputText value="Especificar otro tipo:"
+										rendered="#{laboratorioController.tipoLaboratorio=='OTRO'}" />
+									<p:inputTextarea id="txt_tipoEditar" tabindex="2"
+										rendered="#{laboratorioController.tipoLaboratorio=='OTRO'}"
+										value="#{laboratorioController.laboratorioSeleccionado.especificarOtroTipoLab}"
+										style="width:300px;height:50px;" effectDuration="400">
+										<p:ajax event="blur" update="@this" />
+									</p:inputTextarea>
+
+									<h:outputText value="Nombre:" />
+									<p:inputTextarea id="txtnombreEditar" tabindex="3"
+										value="#{laboratorioController.laboratorioSeleccionado.nombre}"
+										style="width:300px;height:50px;" effectDuration="400">
+										<p:ajax event="blur" update="@this" />
+									</p:inputTextarea>
+
+									<h:outputText value="Nro. Computadores:"
+										rendered="#{laboratorioController.tipoLaboratorio=='INFORMÁTICO'}" />
+									<p:spinner id="num_comp" min="0" tabindex="4"
+										rendered="#{laboratorioController.tipoLaboratorio=='INFORMÁTICO'}"
+										value="#{laboratorioController.laboratorioSeleccionado.numComputadores}">
+										<p:ajax process="@this" />
+									</p:spinner>
+
+									<h:outputText value="Nro. otros equipos (opcional):"
+										rendered="#{laboratorioController.tipoLaboratorio=='INFORMÁTICO'}" />
+									<p:spinner id="num_otros_equiposEditar" min="0" tabindex="5"
+										rendered="#{laboratorioController.tipoLaboratorio=='INFORMÁTICO'}"
+										value="#{laboratorioController.laboratorioSeleccionado.numEquipos}">
+										<p:ajax process="@this" />
+									</p:spinner>
+
+
+									<h:outputText value="Nro. equipos:"
+										rendered="#{laboratorioController.tipoLaboratorio=='OTRO'}" />
+									<p:spinner id="num_equipos" min="0" tabindex="6"
+										rendered="#{laboratorioController.tipoLaboratorio=='OTRO'}"
+										value="#{laboratorioController.laboratorioSeleccionado.numEquipos}">
+										<p:ajax process="@this" />
+									</p:spinner>
+
+									<h:outputText value="Descripción Equipo:" />
+									<p:inputTextarea id="txt_descripcionEquipos" tabindex="7"
+										value="#{laboratorioController.laboratorioSeleccionado.descripcionEquipos}"
+										style="width:300px;height:50px;" effectDuration="400">
+										<p:ajax event="blur" update="@this" />
+									</p:inputTextarea>
+
+
+									<h:outputText value="Matriz/Extensión:" />
+									<p:selectOneMenu id="sedeiEditar" style="width:250px"
+										tabindex="8"
+										value="#{laboratorioController.idSedeSeleccionada}">
+										<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+										<f:selectItems
+											value="#{laboratorioController.listaSedeIesDto}" var="lis"
+											itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+										<p:ajax
+											update=":tabViewFormulariosEditar:formLaboratorioEditar:sedeDEditar"
+											listener="#{laboratorioController.cargarListaSedeDistribucion}" />
+									</p:selectOneMenu>
+
+									<h:outputText value="Ubicación Física:" />
+									<p:selectOneMenu id="sedeDEditar" style="width:250px"
+										tabindex="9"
+										value="#{laboratorioController.idSedeDistribucionSeleccionada}">
+										<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+										<f:selectItems
+											value="#{laboratorioController.listaSedeDistribucion}"
+											var="lis" itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+										<p:ajax event="change" update="@this" global="false"
+											process="@this" />
+									</p:selectOneMenu>
+
+									<h:outputText value="Ubicación Especifica:" />
+									<p:inputTextarea id="txt_ubicacionEditar" tabindex="10"
+										value="#{laboratorioController.laboratorioSeleccionado.ubicacion}"
+										style="width:300px;height:50px;" effectDuration="400">
+										<p:ajax event="blur" update="@this" />
+									</p:inputTextarea>
+								</h:panelGrid>
+							</p:fieldset>
+
+							<p:fieldset legend="Evaluación"
+								rendered="#{laboratorioController.alertaEvaluador}">
+								<h:panelGrid columns="2" cellspacing="5">
+									<h:outputText value="Aceptado Evaluador:" />
+									<p:selectOneMenu
+										value="#{laboratorioController.laboratorioSeleccionado.aceptadoEvaluador}"
+										style="width:210px;" tabindex="6">
+										<f:selectItem itemLabel="Sí" itemValue="TRUE" />
+										<f:selectItem itemLabel="No" itemValue="FALSE" />
+
+										<p:ajax event="change" update="@this" global="false" />
+									</p:selectOneMenu>
+
+									<h:outputText value="Observación Evaluador:" />
+									<p:inputTextarea id="txtObservacionEditar" tabindex="12"
+										style="resize:none; width:250px;" cols="30"
+										value="#{laboratorioController.laboratorioSeleccionado.observacionEvaluador}">
+										<p:ajax event="blur" update="@this" />
+									</p:inputTextarea>
+								</h:panelGrid>
+							</p:fieldset>
+						</h:form>
+					</p:tab>
+					<p:tab title="Asignaturas">
+						<h:form id="formAsignaturaEditar" acceptcharset="iso-8859-1">
+							<p:dataTable var="objAsig"
+								value="#{laboratorioController.laboratorioSeleccionado.laboratorioAsignaturaDTO}"
+								emptyMessage="No se encontraron registros" paginator="true"
+								rows="5" rowsPerPageTemplate="5,10,15"
+								style="width:auto;height:auto"
+								paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+								<p:column headerText="Asignatura">
+									<h:outputText value="#{objAsig.asignaturaDTO.nombre}" />
+								</p:column>
+
+								<p:column headerText="Acciones" style="width:24px;height:24px;">
+									<p:commandButton oncomplete="deleteConfirmationAsig.show()"
+										title="eliminar" icon="ui-icon-close">
+										<f:setPropertyActionListener
+											target="#{laboratorioController.laboratorioAsignaturaDto}"
+											value="#{objAsig}" />
+									</p:commandButton>
+								</p:column>
+							</p:dataTable>
+							<br />
+							<h:panelGrid columns="6">
+								<h:outputText value="Matriz/Extensión:" />
+								<p:selectOneMenu id="idSdIsEditar"
+									style="width:250px;resize:none;"
+									value="#{laboratorioController.idSedeIesSeleccionada}">
+									<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+									<f:selectItems
+										value="#{laboratorioController.listaSedeIesAsignaturaDto}"
+										var="lis" itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+									<p:ajax update="idCarrerEditar"
+										listener="#{laboratorioController.cargarCarreras}" />
+								</p:selectOneMenu>
+
+								<h:outputText value="Carrera:" />
+								<p:selectOneMenu id="idCarrerEditar"
+									style="width:250px;resize:none;"
+									value="#{laboratorioController.idInformacionCarreraSeleccionada}">
+									<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+									<f:selectItems
+										value="#{laboratorioController.listaInformacionCarreraDto}"
+										var="lis"
+										itemLabel="#{lis.carreraIesDTO.nombre} [ #{lis.carreraIesDTO.codigo} ]"
+										itemValue="#{lis.id}" />
+									<p:ajax update="mallAEditar"
+										listener="#{laboratorioController.cargarMalla}" />
+								</p:selectOneMenu>
+
+								<h:outputText value="Malla Curricular:" />
+								<p:selectOneMenu id="mallAEditar"
+									style="width:250px;resize:none;"
+									value="#{laboratorioController.idMallaSeleccionada}">
+									<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+									<f:selectItems value="#{laboratorioController.listaMallaDto}"
+										var="lis" itemLabel="#{lis.codigoUnico}" itemValue="#{lis.id}" />
+									<p:ajax update="pickListEditar"
+										listener="#{laboratorioController.cargarAsignaturas}" />
+								</p:selectOneMenu>
+
+							</h:panelGrid>
+
+							<h:panelGrid columns="1" aling="left">
+								<p:pickList id="pickListEditar" effect="puff"
+									value="#{laboratorioController.listaAsignaturasDTO}"
+									var="lista" itemValue="#{lista}" itemLabel="#{lista.nombre}"
+									showCheckbox="true" filterMatchMode="contains"
+									converter="laboratorioAsignaturaConverter">
+									<p:ajax event="transfer"
+										update=":tabViewFormulariosEditar:formAsignaturaEditar" />
+								</p:pickList>
+							</h:panelGrid>
+
+						</h:form>
+					</p:tab>
+				</p:tabView>
+				<br />
+				<h:form id="fopcionesEditar" acceptcharset="iso-8859-1">
+					<h:panelGrid columns="2">
+						<p:commandButton value="Guardar"
+							action="#{laboratorioController.editarLaboratorio}"
+							update=":tabViewFormulariosEditar :formPrincipal" />
+						<p:commandButton value="Cancelar"
+							oncomplete="dialogAdminEditar.hide()" />
+					</h:panelGrid>
+				</h:form>
+			</center>
+		</p:dialog>
+
+
+
+	</ui:define>
+</ui:composition>
+</html>

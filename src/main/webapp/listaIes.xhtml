@@ -1,0 +1,47 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<f:metadata>
+	<f:event listener="#{ingresoController.retornarIngresoPorPerfil}"
+		type="preRenderView"></f:event>
+</f:metadata>
+
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="tituloPagina">IES</ui:define>
+	<ui:define name="menuPrincipal"></ui:define>
+	<ui:define name="etiquetaIES"></ui:define>
+	<ui:define name="etiquetaCarrera"></ui:define>
+	<ui:define name="contenido">
+		<h:form id="formlistaIES">
+			<center>
+				<p:panel>
+					<f:facet name="header">
+						<h:outputText style="font-size:16px;"
+							value="INSTITUTOS TÉCNICOS Y TECNOLÓGICOS" />
+					</f:facet>
+					<p:dataTable value="#{listaIesController.listaIes}" var="uni"
+						selectionMode="single" selection="#{listaIesController.ies}"
+						rowKey="#{uni.id}" scrollable="true" scrollHeight="400">
+
+						<p:ajax event="rowSelect" update=":formlistaIES"
+							listener="#{listaIesController.cargarCarrerasPorIes}" />
+
+						<p:column headerText="CÓDIGO" width="100" >
+							<h:outputText value="#{uni.codigo}" />
+						</p:column>
+						<p:column headerText="IES" >
+							<h:outputText value="#{uni.nombre}" />
+						</p:column>
+						<p:column headerText="SIGLAS" width="100">
+							<h:outputText value="#{uni.siglas}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</center>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

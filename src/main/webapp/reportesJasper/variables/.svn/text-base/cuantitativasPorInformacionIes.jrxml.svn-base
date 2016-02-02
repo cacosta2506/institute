@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="asignaturas" pageWidth="635" pageHeight="842" columnWidth="595" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="35d6e52b-5f9e-4c41-82d9-feea5b1646da">
+	<property name="ireport.zoom" value="1.1000000000000005"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="alternateStyle" backcolor="#D1D1D1">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue() % 2 == 0)]]></conditionExpression>
+			<style backcolor="#FFFFFF"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["/home/joffre/desarrollo/reportes/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="par_logo" class="java.lang.String"/>
+	<parameter name="ies" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="variableProcesoDTO" class="ec.gob.ceaaces.catalogo.dtos.catalogos.VariableProcesoDTO">
+		<fieldDescription><![CDATA[variableProcesoDTO]]></fieldDescription>
+	</field>
+	<field name="valorInicial" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="145" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="bdaef255-977e-4f74-8285-ec90ed89dec9" x="0" y="82" width="595" height="33"/>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[VARIABLES CUANTITATIVAS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="57a31389-c3e4-4c78-9491-e5b30184099f" x="0" y="117" width="477" height="27"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[DESCRIPCIÓN]]></text>
+			</staticText>
+			<image>
+				<reportElement uuid="28ecae0c-d22d-4e1b-b5a2-25383fb21bae" x="0" y="0" width="145" height="33"/>
+				<imageExpression><![CDATA[$P{par_logo}]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement uuid="0078d556-c78c-47b9-b9ae-fe7f4ae7db20" mode="Opaque" x="0" y="33" width="595" height="2" backcolor="#0B08EB"/>
+				<textElement/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy h:mm">
+				<reportElement uuid="07569b58-6f3e-4dbb-83e4-e85ddb2cbd19" x="477" y="0" width="118" height="33"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="d2855a1b-a87e-4d7c-8e60-a1c5948fe982" x="145" y="0" width="332" height="33"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Fecha de generación:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="16dca06b-2f0a-4b40-9fdf-3830c1b6a307" x="477" y="117" width="118" height="27"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[VALOR]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="948ae5e1-38b9-4d0b-82d0-ea639994872d" stretchType="RelativeToTallestObject" x="0" y="35" width="595" height="47"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="24"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{ies}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Prevent">
+			<textField>
+				<reportElement uuid="c8130abb-3926-4487-b693-071272ad9d61" style="alternateStyle" mode="Opaque" x="0" y="0" width="477" height="20"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{variableProcesoDTO}.getDescripcion()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="9865119c-c1ca-444a-81f5-c4adb574a678" style="alternateStyle" mode="Opaque" x="477" y="0" width="118" height="20"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Justified"/>
+				<textFieldExpression><![CDATA[$F{valorInicial}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

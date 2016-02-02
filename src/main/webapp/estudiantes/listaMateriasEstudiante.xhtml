@@ -1,0 +1,48 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="tituloPagina">Listado de Asignaturas por Matricula</ui:define>
+	<ui:define name="menuPrincipal"></ui:define>
+	<ui:define name="contenido">
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="form" acceptcharset="iso-8859-1">
+
+			<center>
+				<p:panel header="Listas de Materias">
+				Id Carrera: <p:inputText
+						value="#{listaMateriasEstudianteController.idCarrera}" />
+					<p:commandButton value="Update" update="materias" process="@parent"
+						actionListener="#{listaMateriasEstudianteController.updateLista}" />
+
+					<p:dataTable
+						value="#{listaMateriasEstudianteController.listaCarreraEstudianteMalla}"
+						var="materia" id="materias" paginator="true"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="10,20,50" rows="10">
+						<p:column headerText="CODIGO">
+							<h:outputText value="#{materia.asignaturaDTO.codigo}" />
+						</p:column>
+						<p:column headerText="Materia">
+							<h:inputTextarea value="#{materia.asignaturaDTO.nombre}"
+								readonly="true" />
+						</p:column>
+						<p:column headerText="Aprobado">
+							<h:inputTextarea value="#{materia.aprobada}" readonly="true" />
+						</p:column>
+						<p:ajax event="page"
+							listener="#{listaMateriasEstudianteController.updateLista}"
+							update=":form:materias" />
+
+					</p:dataTable>
+				</p:panel>
+			</center>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

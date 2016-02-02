@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition>
+
+	<p:dialog id="editarFormacionDlgId" header="Formación"
+		widgetVar="editarFormacionDlg" modal="true">
+<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<h:form id="formacionFormId" acceptcharset="iso-8859-1">
+			<center>
+				<p:fieldset legend="Información General">
+					<h:panelGrid id="panelFormacion" columns="4" cellpadding="10"
+						cellspacing="10">
+
+						<h:outputText style="float:right;" value="Pais:">
+						</h:outputText>
+						<p:selectOneMenu style="width:300px;"
+							value="#{docenteController.idPaisFormacion}">
+							<p:ajax event="change" update="@this panelIes" global="false" />
+							<f:selectItem itemLabel="--Seleccionar--" />
+							<f:selectItems value="#{docenteController.paises}" var="pa"
+								itemValue="#{pa.id}" itemLabel="#{pa.nombre}" />
+						</p:selectOneMenu>
+
+						<h:outputText style="float:right;" value="IES:">
+						</h:outputText>
+						<h:panelGrid id="panelIes" columns="3" cellpadding="1"
+							cellspacing="1">
+							<h:inputText id="txtIes" style="width:210px;"
+								onkeyup="this.value = this.value.toUpperCase()"
+								disabled="#{docenteController.idPaisFormacion == 1 ? true : false}"
+								value="#{docenteController.formacionDocente.nombreIesInternacional}" />
+							<p:commandButton
+								disabled="#{docenteController.idPaisFormacion != 1 ? true : false}"
+								icon="ui-icon-search" title="IES Ecuador"
+								update=":tabViewFormularios:formIes"
+								oncomplete="dialogBuscarIes.show()"
+								action="#{docenteController.cargarIes}">
+							</p:commandButton>
+							<p:commandButton global="false"
+								disabled="#{docenteController.idPaisFormacion != 1 ? true : false}"
+								title="cancelar" icon="ui-icon-close" update="txtIes"
+								action="#{docenteController.cancelarIesFormacion}">
+								<f:setPropertyActionListener value=""
+									target="#{docenteController.formacionDocente.nombreIesInternacional}" />
+							</p:commandButton>
+						</h:panelGrid>
+
+						<h:outputText value="Nivel: " style="float:right;">
+						</h:outputText>
+						<p:selectOneMenu style="width:300px;"
+							value="#{docenteController.formacionDocente.nivel}">
+							<p:ajax event="change" global="false" process="@this txtIes"
+								update=":tabViewFormularios:formacionFormId" />
+							<f:selectItem itemLabel="--Seleccionar--" />
+							<f:selectItem itemLabel="TÉCNICO" itemValue="TECNICO" />
+							<f:selectItem itemLabel="TECNÓLOGO" itemValue="TECNOLOGO" />
+							<f:selectItem itemLabel="TERCER NIVEL" itemValue="TERCER NIVEL" />
+							<f:selectItem itemLabel="CUARTO NIVEL" itemValue="CUARTO NIVEL" />
+						</p:selectOneMenu>
+						<h:outputText value=""
+							rendered="#{docenteController.formacionDocente.nivel=='CUARTO NIVEL'}" />
+						<h:outputText value=""
+							rendered="#{docenteController.formacionDocente.nivel=='CUARTO NIVEL'}" />
+
+						<h:outputText value="Grado: " style="float:right;"
+							rendered="#{docenteController.formacionDocente.nivel=='CUARTO NIVEL'}">
+						</h:outputText>
+
+						<p:selectOneMenu style="width:300px;"
+							rendered="#{docenteController.formacionDocente.nivel=='CUARTO NIVEL'}"
+							valueChangeListener="#{docenteController.seleccionarGradoTitulo}"
+							value="#{docenteController.idNivelTituloSelecionado}">
+							<p:ajax event="change" global="false"
+								process="txtNomTitulo1 txtNomTitulo2"
+								update=":tabViewFormularios:formacionFormId" />
+							<f:selectItem itemLabel="--Seleccionar--" />
+							<f:selectItems value="#{docenteController.listaNivelTituloGrado}"
+								var="grado" itemValue="#{grado.id}" itemLabel="#{grado.nombre}" />
+							<f:selectItem itemLabel="OTROS" itemValue="-1" />
+						</p:selectOneMenu>
+
+						<h:outputText value=""
+							rendered="#{docenteController.idNivelTituloSelecionado == -1}" />
+						<h:outputText value=""
+							rendered="#{docenteController.idNivelTituloSelecionado == -1}" />
+						<h:outputText value="Otros:" style="float:right;"
+							rendered="#{docenteController.idNivelTituloSelecionado == -1}" />
+						
+						<p:selectOneMenu id="otrosSelect" style="width:300px"
+							rendered="#{docenteController.idNivelTituloSelecionado == -1}"
+							valueChangeListener="#{docenteController.seleccionarGradoTitulo}"
+							value="#{docenteController.idNivelTituloSelecionadoOtros}">
+							<p:ajax update="@this :tabViewFormularios:formacionFormId"
+								process="txtNomTitulo1 txtNomTitulo2" event="change"
+								global="false" />
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems value="#{docenteController.listaNivelTituloOtros}"
+								var="li" itemLabel="#{li.nombre}" itemValue="#{li.id}" />
+						</p:selectOneMenu>
+
+						<h:outputText
+							value="#{docenteController.gradoSeleccionado.nombre} EN:"
+							style="float:right; width:150px;"
+							rendered="#{docenteController.formacionDocente.nivel=='CUARTO NIVEL'}">
+
+						</h:outputText>
+						<h:inputText style="width:300px;" id="txtNomTitulo1"
+							rendered="#{docenteController.formacionDocente.nivel=='CUARTO NIVEL'}"
+							onkeyup="this.value = this.value.toUpperCase()"
+							value="#{docenteController.formacionDocente.titulo}" />
+
+						<h:outputText value="Titulo " style="float:right;"
+							rendered="#{docenteController.formacionDocente.nivel!='CUARTO NIVEL'}">
+
+						</h:outputText>
+						<h:inputText style="width:300px;" id="txtNomTitulo2"
+							rendered="#{docenteController.formacionDocente.nivel!='CUARTO NIVEL'}"
+							value="#{docenteController.formacionDocente.titulo}"
+							onkeyup="this.value = this.value.toUpperCase()" />
+
+						<h:outputText style="float:right;" value="Estado: " />
+
+						<p:selectOneRadio id="orCursando"
+							value="#{docenteController.formacionDocente.cursando}">
+							<f:selectItem itemLabel="Terminado" itemValue="false" />
+							<f:selectItem itemLabel="En curso" itemValue="true" />
+							<p:ajax event="change" update="@form" global="false"
+								process="@this txtNomTitulo1 txtNomTitulo2" />
+						</p:selectOneRadio>
+
+						<h:outputText style="float:right;" value="Fecha obtuvo el título:"
+							rendered="#{not docenteController.formacionDocente.cursando}" />
+						<p:calendar style="width:200px;"
+							rendered="#{not docenteController.formacionDocente.cursando}"
+							value="#{docenteController.formacionDocente.fechaGraduacion}"
+							navigator="true" effect="slide" pattern="dd-MM-yyyy"
+							yearRange="c-20:c+20" mindate="#{docenteController.fechaMin}"
+							maxdate="#{docenteController.fechaActual}">
+							<p:ajax event="dateSelect" update="@this" global="false" />
+						</p:calendar>
+
+						<h:outputText style="float:right;" value="Registro Senescyt:"
+							rendered="#{not docenteController.formacionDocente.cursando}" />
+						<h:inputText style="width:300px;"
+							value="#{docenteController.formacionDocente.numeroRegistroSenescyt}"
+							rendered="#{not docenteController.formacionDocente.cursando}" />
+
+						<h:outputText style="float:right;" value="Fecha Registro:"
+							rendered="#{not docenteController.formacionDocente.cursando}" />
+						<p:calendar style="width:200px;"
+							rendered="#{not docenteController.formacionDocente.cursando}"
+							value="#{docenteController.formacionDocente.fechaRegistroSenescyt}"
+							navigator="true" effect="slide" pattern="dd-MM-yyyy"
+							yearRange="c-20:c+20" mindate="#{docenteController.fechaMin}"
+							maxdate="#{docenteController.fechaActual}">
+							<p:ajax event="dateSelect" update="@this" global="false" />
+						</p:calendar>
+
+						<h:outputText style="float:right;"
+							rendered="#{docenteController.formacionDocente.cursando}"
+							value="Fecha de inicio de estudios:" />
+						<p:calendar style="width:200px;"
+							rendered="#{docenteController.formacionDocente.cursando}"
+							value="#{docenteController.formacionDocente.fechaInicioEstudios}"
+							navigator="true" effect="slide" pattern="dd-MM-yyyy"
+							yearRange="c-20:c+20" mindate="#{docenteController.fechaMin}"
+							maxdate="#{docenteController.fechaActual}">
+							<p:ajax event="dateSelect" update="@this" global="false" />
+						</p:calendar>
+					</h:panelGrid>
+				</p:fieldset>
+				<p:fieldset legend="Evaluación"
+					rendered="#{docenteController.alertaEvaluador}">
+					<h:panelGrid columns="2" cellspacing="5">
+						<h:outputText value="Aceptado Evaluador:" />
+						<p:selectOneMenu
+							value="#{docenteController.formacionDocente.aceptadoEvaluador}"
+							style="width:210px;" tabindex="6">
+							<f:selectItem itemLabel="Sí" itemValue="TRUE" />
+							<f:selectItem itemLabel="No" itemValue="FALSE" />
+
+							<p:ajax event="change" update="@this" global="false" />
+						</p:selectOneMenu>
+
+
+						<h:outputText value="Observación Evaluador:" />
+						<h:inputTextarea id="txtObservacionFP" tabindex="7"
+							style="resize:none; width:250px;" cols="30"
+							value="#{docenteController.formacionDocente.observacionEvaluador}" required="true" requiredMessage="Debe ingresar una observación" />
+					</h:panelGrid>
+				</p:fieldset>
+				<br />
+				<h:panelGrid columns="2" cellpadding="10" cellspacing="10">
+					<p:commandButton value="Guardar"
+						action="#{docenteController.guardarFormacion}"
+						oncomplete="verificarErroresFormacion(xhr, status, args)"
+						update="@form :tabViewFormularios:formFormacion" />
+					<p:commandButton value="Cerrar"
+						oncomplete="editarFormacionDlg.hide()" async="true"
+						process="@this" action="#{docenteController.cancelarFormacion}">
+						<p:resetInput target=":editarFormacionDlgId" />
+					</p:commandButton>
+				</h:panelGrid>
+			</center>
+		</h:form>
+	</p:dialog>
+	<p:dialog id="dlgBuscarIes" widgetVar="dialogBuscarIes"
+		closeOnEscape="false" header="INSTITUCIONES DE EDUCACIÓN SUPERIOR"
+		resizable="false" modal="true" draggable="false">
+		<h:form id="formIes" acceptcharset="iso-8859-1">
+			<center>
+				<p:panel style="overflow:scroll;height:500px;">
+					<p:dataTable id="tablaIes" value="#{docenteController.listaIes}"
+						var="ies" emptyMessage="No se encontraron IES">
+						<p:column headerText="Código" filterBy="#{ies.codigo}"
+							filterMatchMode="contains">
+							<h:outputText style="font-size:10px;" value="#{ies.codigo}" />
+						</p:column>
+						<p:column headerText="IES" filterBy="#{ies.nombre}"
+							filterMatchMode="contains">
+							<h:outputText style="font-size:10px;" value="#{ies.nombre}" />
+						</p:column>
+						<p:column headerText="SELECCIONAR">
+							<center>
+								<p:commandButton style="width:20px;height:20px;"
+									title="Seleccionar" icon="ui-icon-check"
+									oncomplete="dialogBuscarIes.hide()"
+									update=":tabViewFormularios:formacionFormId">
+									<f:setPropertyActionListener value="#{ies}"
+										target="#{docenteController.iesFormacion}" />
+								</p:commandButton>
+							</center>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</center>
+		</h:form>
+	</p:dialog>
+</ui:composition>
+</html>

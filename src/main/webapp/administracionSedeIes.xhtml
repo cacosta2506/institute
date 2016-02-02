@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage value="images/saving.gif" />
+			</center>
+		</p:dialog>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<p:growl id="msg" showDetail="false" autoUpdate="true" sticky="true" />
+
+		<h:form id="formulario" acceptcharset="iso-8859-1">
+			<p:panel header="ADMINISTRACIÓN DE MATRIZ/EXTENSIÓN"
+				style="text-align:center;">
+				<p:commandButton rendered="#{!adminSedeIesDistriFisicaController.alertaEvaluador}"
+					action="#{adminSedeIesDistriFisicaController.nuevaSedeIes}"
+					value="Nuevo" style="float:right">
+					<f:setPropertyActionListener
+						target="#{adminSedeIesDistriFisicaController.sedeIesDto}"
+						value="#{adminSedeIesController.sedeIesDto}" />
+				</p:commandButton>
+				<br />
+				<br />
+				<br />
+				<p:dataTable id="tablaSedeIes" var="tblSedeIes"
+					value="#{adminSedeIesController.listaSedeIesDto}"
+					widgetVar="tablSedeIes" border="1" style="width:auto;height:auto"
+					paginator="true" rows="10"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15"
+					emptyMessage="No se encontraron registros">
+
+					<p:column headerText="Código">
+						<h:outputText value="#{tblSedeIes.codigo}" />
+					</p:column>
+
+					<p:column id="idNombres" filterBy="#{tblSedeIes.nombre}"
+						headerText="Nombres" filterMatchMode="contains">
+						<h:outputText value="#{tblSedeIes.nombre}" />
+					</p:column>
+
+					<p:column headerText="Tipo">
+						<h:outputText value="#{tblSedeIes.tipoSede}">
+						</h:outputText>
+					</p:column>
+
+					<p:column headerText="Fecha Creación">
+						<h:outputText value="#{tblSedeIes.fechaCreacion}">
+						</h:outputText>
+					</p:column>
+
+					<p:column headerText="Acciones" style="width:100px">
+						<p:commandButton
+							action="#{adminSedeIesDistriFisicaController.editarSedeIes}"
+							icon="ui-icon-folder-open" style="width:24px;height:24px;">
+							<f:setPropertyActionListener
+								target="#{adminSedeIesDistriFisicaController.sedeIesDto}"
+								value="#{tblSedeIes}" />
+						</p:commandButton>
+						<p:commandButton onclick="deleteConfirmation.show()"
+							title="eliminar" icon="ui-icon-close" rendered="#{!adminSedeIesController.alertaEvaluador}"
+							style="width:24px;height:24px;">
+							<f:setPropertyActionListener
+								target="#{adminSedeIesController.sedeIesDto}"
+								value="#{tblSedeIes}" />
+						</p:commandButton>
+					</p:column>
+				</p:dataTable>
+			</p:panel>
+		</h:form>
+		<p:confirmDialog id="delConfirmation"
+			message="Está seguro de eliminar?" header="Confirmación"
+			severity="alert" widgetVar="deleteConfirmation">
+			<p:commandButton id="go" value="Si" update=":formulario"
+				oncomplete="deleteConfirmation.hide()"
+				actionListener="#{adminSedeIesController.eliminarSedeIes}" />
+			<p:commandButton id="cancel" value="No"
+				oncimplete="deleteConfirmation.hide()" type="button" />
+		</p:confirmDialog>
+	</ui:define>
+</ui:composition>
+</html>

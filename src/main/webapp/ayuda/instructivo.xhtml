@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+<ui:define name="tituloPagina">Instructivo</ui:define>
+	<ui:define name="contenido">
+		<p:media value="/resources/files/instructivo.pdf"
+			width="100%" style="height: 500px;">  
+    		Para descargar el instructivo haz click <h:outputLink
+				value="#{request.contextPath}/resources/files/instructivo.pdf">aqui</h:outputLink>.  
+		</p:media>
+	</ui:define>
+</ui:composition>
+</html>

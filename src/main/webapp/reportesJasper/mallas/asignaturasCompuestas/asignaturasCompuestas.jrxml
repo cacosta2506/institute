@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="compuestas" pageWidth="635" pageHeight="842" columnWidth="595" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="35d6e52b-5f9e-4c41-82d9-feea5b1646da">
+	<property name="ireport.zoom" value="1.1000000000000005"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["/home/eteran/desarrollo/reportes/compuestas/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="parameter1" class="java.lang.Object" isForPrompting="false">
+		<property name="prueba" value=""/>
+		<defaultValueExpression><![CDATA[$F{asignaturasDTO}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="par_logo" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="areaFormacion" class="ec.gob.ceaaces.institutos.enumeraciones.AreaFormacionOrganizacionEnum"/>
+	<field name="ejeTransversal" class="java.lang.String"/>
+	<field name="organizacionDelAprendizaje" class="java.lang.String"/>
+	<field name="asignaturasDTO" class="java.util.List"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="137" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="46" width="595" height="33" uuid="bdaef255-977e-4f74-8285-ec90ed89dec9"/>
+				<textElement textAlignment="Center">
+					<font size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ASIGNATURAS COMPUESTAS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="95" width="595" height="27" uuid="57a31389-c3e4-4c78-9491-e5b30184099f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[INFORMACIÓN GENERAL]]></text>
+			</staticText>
+			<image>
+				<reportElement x="0" y="0" width="145" height="32" uuid="28ecae0c-d22d-4e1b-b5a2-25383fb21bae"/>
+				<imageExpression><![CDATA[$P{par_logo}]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="33" width="595" height="2" backcolor="#0B08EB" uuid="0078d556-c78c-47b9-b9ae-fe7f4ae7db20"/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy h:mm">
+				<reportElement x="477" y="0" width="118" height="33" uuid="07569b58-6f3e-4dbb-83e4-e85ddb2cbd19"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="145" y="0" width="332" height="33" uuid="d2855a1b-a87e-4d7c-8e60-a1c5948fe982"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Fecha de generación:]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="60" splitType="Prevent">
+			<staticText>
+				<reportElement x="0" y="0" width="147" height="30" uuid="e87b51db-160f-463c-a553-5e6ac0fcb143"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="2.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Información general]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" evaluationTime="Band">
+				<reportElement stretchType="RelativeToTallestObject" x="147" y="0" width="448" height="30" uuid="483f1f61-7708-4e79-b00a-ff4b9a54c711"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="2.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{areaFormacion}.getValor()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="31" y="39" width="116" height="21" uuid="b3b08bf2-ef0a-4670-a22a-896d011329f0">
+					<printWhenExpression><![CDATA[$F{asignaturasDTO} != null && !$F{asignaturasDTO}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[ASIGNATURAS:]]></text>
+			</staticText>
+		</band>
+		<band height="8">
+			<subreport>
+				<reportElement x="32" y="0" width="445" height="8" isPrintWhenDetailOverflows="true" uuid="4743a9b8-8245-4f62-97f2-f7bf5c006ad2"/>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{asignaturasDTO})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "asignaturasCompuestas_asignatura.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

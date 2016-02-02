@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formCabecera" acceptcharset="iso-8859-1">
+			<p:growl id="mensajesPrincipal" autoUpdate="false"
+				showDetail="false" closable="true" />
+		</h:form>
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+			<f:facet name="header"></f:facet>
+			<p:confirmDialog id="deleteConfirmDialog"
+				message="Está seguro de eliminar la Actividad de Vinculación?"
+				header="Iniciando proceso de eliminación" severity="alert"
+				widgetVar="deleteConfirmation">
+				<div align="center">
+					<p:commandButton id="confirm" value="Si"
+						update=":formPrincipal :formCabecera"
+						oncomplete="deleteConfirmation.hide()"
+						action="#{actividadVincController.eliminarActividad}" />
+					<p:commandButton id="decline" value="No"
+						onclick="deleteConfirmation.hide()" type="button" />
+				</div>
+			</p:confirmDialog>
+
+			<center>
+				<p:panel header="ADMINISTRACIÓN DE ACTIVIDADES DE VINCULACIÓN"
+					style="text-align:center;">
+					<p:outputPanel
+						rendered="#{!actividadVincController.alertaEvaluador}">
+						<p:commandButton style="float:right;" value="Nuevo"
+							action="#{actividadVincController.nuevaActividad}"
+							update=":formAdmin">
+						</p:commandButton>
+					</p:outputPanel>
+					<br />
+					<br />
+					<br />
+					<h:outputText
+						style="font-size:12px;float:left;color:#0078D0;font-weight:bold;"
+						value="Nro. actividades de vinculación registradas: #{actividadVincController.totalActividades}" />
+					<br />
+					<p:dataTable id="tablaActividades"
+						value="#{actividadVincController.listaActividadVinculacionDTO}"
+						var="av" emptyMessage="No se encontraron registros"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15"
+						style="width:auto;height:auto"
+						paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+
+						<p:column headerText="Nombre" >
+							<h:inputTextarea value="#{av.nombre}" readonly="true" cols="100" rows="3"/>
+						</p:column>
+						<p:column headerText="Fecha Inicio">
+							<h:outputText value="#{av.fechaInicio}" />
+						</p:column>
+						<p:column headerText="Fecha Fin">
+							<h:outputText value="#{av.fechaFin}" />
+						</p:column>
+						<p:column headerText="Descripción">
+							<h:inputTextarea value="#{av.descripcion}" readonly="true"
+								cols="40" rows="3"/>
+						</p:column>
+						<p:column headerText="Evaluación" rendered="#{actividadVincController.alertaEvaluador}">
+							<h:outputText value="#{av.aceptadoEvaluador ? 'SI': 'NO'}"/>
+						</p:column>
+						<p:column headerText="Observación" rendered="#{actividadVincController.alertaEvaluador}">
+							<h:inputTextarea value="#{av.observacionEvaluador}"
+								readonly="true" cols="40" rows="3"/>
+						</p:column>
+						<!-- editar -->
+						<p:column
+							headerText="#{!actividadVincController.alertaEvaluador ? 'Acciones' : 'Verificación'}">
+							<p:commandButton title="Editar"
+							action="#{actividadVincController.editarActividadVinculacion(av.id)}"
+								 icon="ui-icon-pencil"
+								update=":formAdmin :formCabecera:mensajesPrincipal" style="width:24px;height:24px;" process="@this" immediate="true">
+								<f:setPropertyActionListener
+									target="#{actividadVincController.actividadVinculacionDTO}"
+									value="#{av}" />
+							</p:commandButton>
+							<p:commandButton title="Eliminar"
+								oncomplete="deleteConfirmation.show()" icon="ui-icon-close"
+								style="width:24px;height:24px;"
+								rendered="#{!actividadVincController.alertaEvaluador}">
+								<f:setPropertyActionListener
+									target="#{actividadVincController.actividadVinculacionDTO}"
+									value="#{av}" />
+							</p:commandButton>
+							<p:commandButton title="Mostrar Evidencias"
+								rendered="#{actividadVincController.alertaEvaluador}"
+								icon="ui-icon-circle-triangle-s"
+								update=":formPrincipal:campoEvidencia :formPrincipal:tablaEConcepto"
+								action="#{actividadVincController.cargarEvidencia}"
+								immediate="true">
+								<f:setPropertyActionListener
+									target="#{actividadVincController.actividadVinculacionDTO}"
+									value="#{av}" />
+							</p:commandButton>
+
+							<p:outputPanel
+								rendered="#{actividadVincController.alertaEvaluador and av.faseIesDTO.faseProcesoDTO.faseDTO.id == '1'}">
+								<i class="fa fa-exclamation-triangle"
+									style="color: #E8E870; text-align: center; font-size: 18px;"></i>
+							</p:outputPanel>
+
+							<p:outputPanel
+								rendered="#{actividadVincController.alertaEvaluador and av.faseIesDTO.faseProcesoDTO.faseDTO.id == '2'}">
+
+								<i class="fa fa-check"
+									style="color: green; text-align: center; font-size: 14px;"></i>
+							</p:outputPanel>
+
+							<p:outputPanel
+								rendered="#{(av.verificarEvidencia and actividadVincController.alertaEvaluador) ? true : false}">
+								<p:graphicImage id="nuevo" library="img" name="nuevo.gif"
+									style="text-align: center; font-size: 20px;" />
+							</p:outputPanel>
+						</p:column>
+
+						<p:column headerText="Histórico">
+							<p:commandLink value="Histórico"
+								actionListener="#{actividadVincController.obtenerHistoricoActivVinc(av)}"
+								update="@form" oncomplete="historicoModal.show()" async="true"
+								process="@this">
+								<f:setPropertyActionListener
+									target="#{actividadVincController.actividadVincSeleccionada}"
+									value="#{av}" />
+							</p:commandLink>
+
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</center>
+
+			<p:outputPanel rendered="#{actividadVincController.alertaEvaluador}">
+				<p:fieldset id="campoEvidencia" legend="Evidencias"
+					style="margin:  20px 0px 0px 0px;">
+					<p:outputLabel style="font-weight: bold;"
+						value="#{actividadVincController.actividadVinculacionDTO.nombre}" />
+					<br />
+					<p:dataTable id="tablaEConcepto" var="objEvidencia"
+						value="#{actividadVincController.listaEvidenciaConceptoDto}"
+						emptyMessage="No hay Conceptos">
+
+						<p:column headerText="Evidencias">
+							<h:outputText value="#{objEvidencia.nombre}" />
+						</p:column>
+
+						<p:column headerText="Lista Archivos">
+							<p:dataTable value="#{objEvidencia.evidenciasDTO}"
+								var="evidencia" emptyMessage="No hay Evidencias">
+								<p:column>
+									<h:outputText value="#{evidencia.nombreArchivo}" />
+								</p:column>
+
+								<p:column>
+									<p:commandButton title="descargar" icon="ui-icon-document"
+										oncomplete="dlgDescarga.show()" process="@this"
+										update=":formPrincipal"
+										actionListener="#{actividadVincController.enviarEvidencia(evidencia)}">
+									</p:commandButton>
+
+								</p:column>
+
+							</p:dataTable>
+						</p:column>
+
+					</p:dataTable>
+				</p:fieldset>
+			</p:outputPanel>
+			<!-- Historicos de Actividad -->
+
+			<p:dialog widgetVar="historicoModal" modal="true"
+				header="Histórico de : #{actividadVincController.actividadVincSeleccionada.nombre}"
+				resizable="false" closeOnEscape="false" showEffect="fade"
+				hideEffect="fade">
+				<br />
+				<p:dataTable id="tblhistoricos" var="vv"
+					value="#{actividadVincController.listaActividadHistorico}"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					style="width:900px" paginator="true" rows="10">
+
+					<p:column headerText="Nombre">
+						<h:inputTextarea value="#{vv.nombre}" readonly="true" cols="50"
+							style="resize:none;" rows="2" />
+					</p:column>
+					<p:column headerText="Fecha Inicio">
+						<h:outputText value="#{vv.fechaInicio}">
+							<f:convertDateTime pattern="dd-MM-yyyy" />
+						</h:outputText>
+					</p:column>
+
+					<p:column headerText="Fecha Fin">
+						<h:outputText value="#{vv.fechaFin}">
+							<f:convertDateTime pattern="dd-MM-yyyy" />
+						</h:outputText>
+					</p:column>
+					<p:column headerText="Evaluación">
+						<h:inputTextarea value="#{vv.aceptadoEvaluador ? 'SI': 'NO'}"
+							readonly="true" cols="40" style="resize:none;" rows="2" />
+					</p:column>
+
+					<p:column headerText="Observación"
+						style="text-align:left;width:200px; white-space:normal;">
+						<h:outputText value="#{vv.observacionEvaluador}" />
+					</p:column>
+
+					<p:column headerText="Usuario" style="width:80px">
+						<h:outputText value="#{vv.auditoria.usuarioModificacion}">
+						</h:outputText>
+					</p:column>
+					<p:column headerText="Fecha" style="width:80px">
+						<center>
+							<h:outputText value="#{vv.auditoria.fechaModificacion}">
+								<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+									timeZone="GMT-5" />
+							</h:outputText>
+						</center>
+					</p:column>
+				</p:dataTable>
+				<br></br>
+				<p:commandButton value="Cerrar" async="true" process="@this"
+					onclick="historicoModal.hide()" />
+			</p:dialog>
+			
+			<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+				resizable="false" closable="false" closeOnEscape="false"
+				widgetVar="dlgDescarga" modal="true">
+				<p:panel>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" style="width:100px"
+							icon="ui ui-icon-check" ajax="false" onclick="dlgDescarga.hide()">
+							<p:fileDownload
+								value="#{actividadVincController.documentoDescarga}" />
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgDescarga.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+				</p:panel>
+			</p:dialog>
+		</h:form>
+
+		<p:dialog widgetVar="dialogAdministracion" id="dialogAdministracionId"
+			header="Nuevo/Editar Actividad de Vinculación" resizable="true">
+			<center>
+				<h:form id="formAdmin" acceptcharset="iso-8859-1">
+					<p:messages id="mensajesPrincipal" autoUpdate="false"
+						showDetail="false" closable="true" />
+					<p:fieldset legend="Información General">
+						<h:panelGrid columns="2" cellspacing="5">
+							<h:outputText value="Nombre Actividad de Vinculación:" />
+							<h:inputTextarea id="txt_nombre" tabindex="1"
+								value="#{actividadVincController.actividadVinculacionDTO.nombre}"
+								cols="30" style="resize:none; width:250px" />
+
+							<h:outputText value="Fecha Inicio:" />
+							<p:calendar showButtonPanel="true" navigator="true" size="37"
+								tabindex="2" pattern="dd-MM-yyyy" id="calFechaInicio"
+								value="#{actividadVincController.actividadVinculacionDTO.fechaInicio}" />
+
+							<h:outputText value="Fecha Fin:" />
+							<p:calendar showButtonPanel="true" navigator="true" size="37"
+								tabindex="3" pattern="dd-MM-yyyy" id="calFechaFin"
+								value="#{actividadVincController.actividadVinculacionDTO.fechaFin}" />
+
+							<h:outputText
+								value="Breve descripción de la Actividad de Vinculación:" />
+							<h:inputTextarea id="txt_descrip" tabindex="4"
+								value="#{actividadVincController.actividadVinculacionDTO.descripcion}"
+								cols="30" style="resize:none; width:250px" />
+
+						</h:panelGrid>
+					</p:fieldset>
+					<p:fieldset legend="Evaluación"
+						rendered="#{actividadVincController.alertaEvaluador}">
+						<h:panelGrid columns="2" cellspacing="5">
+							<h:outputText value="Aceptado Evaluador:" />
+							<p:selectOneMenu
+								value="#{actividadVincController.actividadVinculacionDTO.aceptadoEvaluador}"
+								style="width:210px;" tabindex="6">
+								<f:selectItem itemLabel="Sí" itemValue="TRUE" />
+								<f:selectItem itemLabel="No" itemValue="FALSE" />
+
+								<p:ajax event="change" update="@this" global="false" />
+							</p:selectOneMenu>
+
+
+							<h:outputText value="Observación Evaluador:" />
+							<h:inputTextarea id="txtObservacion" tabindex="6"
+								style="resize:none; width:250px;" cols="30"
+								value="#{actividadVincController.actividadVinculacionDTO.observacionEvaluador}"
+								required="true" requiredMessage="Debe ingresar una observación" />
+						</h:panelGrid>
+					</p:fieldset>
+					<br />
+					<h:panelGrid columns="2">
+						<p:commandButton value="Guardar" tabindex="7"
+							action="#{actividadVincController.guardarActividadVinculacion}"
+							update=":formPrincipal :formAdmin" />
+
+						<p:commandButton value="Cancelar" tabindex="8"
+							oncomplete="dialogAdministracion.hide();">
+							<p:resetInput target=":dialogAdministracionId" />
+						</p:commandButton>
+					</h:panelGrid>
+				</h:form>
+			</center>
+		</p:dialog>
+
+
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage value="images/saving.gif" />
+			</center>
+		</p:dialog>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<p:messages id="messages" showDetail="false" autoUpdate="true"
+			showSummary="true" closable="true" globalOnly="true" />
+
+		<h:form id="formulario" acceptcharset="iso-8859-1">
+			<p:panel header="Información Malla Curricular"
+				style="text-align:center;font-size:large;">
+				<br />
+				<h:outputText value="Vigencia: "
+					style="text-align:center;font-size:medium;" />
+				<h:selectOneMenu value="#{adminMallaCurricularController.idMalla}">
+					<f:selectItems
+						value="#{adminMallaCurricularController.listaMallaCurricular}"
+						var="mc" itemValue="#{mc.id}"
+						itemLabel="#{mc.fechaInicioVigencia} -- #{mc.fechaFinVigencia}" />
+					<p:ajax update="tablaInforMallaCurricular"
+						listener="#{adminMallaCurricularController.consultarAsignaturas}" />
+				</h:selectOneMenu>
+
+				<br />
+				<br />
+
+				<p:dataTable id="tablaInforMallaCurricular" var="tblMallaC"
+					value="#{adminMallaCurricularController.listaAsignaturas}"
+					border="0" style="width:auto;height:auto" paginator="true" rows="5"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15">
+
+					<p:column headerText="Código Único">
+						<h:outputText value="#{tblMallaC.codigoUnico}"></h:outputText>
+					</p:column>
+
+					<p:column headerText="Matería">
+						<h:commandLink value="#{tblMallaC.nombre}">
+						</h:commandLink>
+					</p:column>
+
+					<p:column headerText="Pre Requisito">
+						<p:dataTable value="#{tblMallaC.preRequisitoMalla}" var="reqMalla">
+							<p:column width="50">
+								<p:commandLink value="#{reqMalla.asignaturaDTO.nombre}"
+									action="#{adminMallaCurricularController.informacionAsignaturaSelec}">
+									<f:setPropertyActionListener
+										target="#{adminMallaCurricularController.asignaturaSeleccionada}"
+										value="#{reqMalla.asignaturaDTO}">
+									</f:setPropertyActionListener>
+								</p:commandLink>
+								<h:outputText value="#{reqMalla.asignaturaDTO.id}"></h:outputText>
+							</p:column>
+						</p:dataTable>
+					</p:column>
+
+					<p:column headerText="Co Requisito">
+						<p:dataTable value="#{tblMallaC.corRequisitoMalla}" var="reqMalla">
+							<p:column>
+								<p:commandLink value="#{reqMalla.asignaturaDTO.nombre}"
+									oncomplete="dlgInfAsig.show()"
+									action="#{adminMallaCurricularController.informacionAsignaturaSelec}">
+									<f:setPropertyActionListener
+										target="#{adminMallaCurricularController.idAsignatura}"
+										value="#{reqMalla.asignaturaDTO.id}">
+									</f:setPropertyActionListener>
+								</p:commandLink>
+							</p:column>
+						</p:dataTable>
+					</p:column>
+
+				</p:dataTable>
+			</p:panel>
+		</h:form>
+
+		<p:dialog id="modalInfAsignatura" widgetVar="dlgInfAsig" modal="true">
+			<div align="center">
+				<h:form id="formInfAsignatura" acceptcharset="iso-8859-1">
+					<p:messages id="detmessages" showDetail="true" autoUpdate="true"
+						showSummary="false" closable="true" />
+					<fieldset>
+						<h:outputText style="font-weight: bold;"
+							value="Información Asignatura" />
+						<h:panelGrid columns="1" cellspacing="10" cellpadding="5"
+							id="pg_infAsig">
+
+							<p:tabView id="tabView">
+								<p:tab id="tab0" title="General">
+									<h:panelGrid columns="2" cellpadding="10" cellspacing="10">
+										<h:outputText value="Código Único: " style="font-weight: bold" />
+										<h:outputText
+											value="#{adminMallaCurricularController.asignaturaSeleccionada.codigoUnico}" />
+
+										<h:outputText value="Nombre: " style="font-weight: bold" />
+										<h:outputText
+											value="#{adminMallaCurricularController.asignaturaSeleccionada.nombre}" />
+
+										<h:outputText value="# Créditos: " style="font-weight: bold" />
+										<h:outputText
+											value="#{adminMallaCurricularController.asignaturaSeleccionada.numeroCreditos}" />
+
+										<h:outputText value="Nivel Formación: "
+											style="font-weight: bold" />
+										<h:outputText
+											value="#{adminMallaCurricularController.asignaturaSeleccionada.nivelFormacionEnum}" />
+
+										<h:outputText value="Área Conocimiento: "
+											style="font-weight: bold" />
+										<h:outputText
+											value="#{adminMallaCurricularController.asignaturaSeleccionada.subAreaConocimientoDTO.nombre}" />
+									</h:panelGrid>
+								</p:tab>
+
+								<p:tab id="tab1" title="Pre Requisitos">
+									<h:panelGrid columns="1" cellpadding="10">
+										<p:dataTable
+											value="#{adminMallaCurricularController.asignaturaSeleccionada.preRequisitoMalla}"
+											var="reqMalla">
+											<p:column width="50" headerText="Asignatura">
+												<h:outputText value="#{reqMalla.asignaturaDTO.nombre}"></h:outputText>
+											</p:column>
+											<p:column width="50" headerText="Cŕeditos">
+												<h:outputText value="#{reqMalla.asignaturaDTO.numeroCreditos}"></h:outputText>
+											</p:column>
+											<p:column width="50" headerText="Área Conocimiento">
+												<h:outputText value="#{reqMalla.asignaturaDTO.subAreaConocimientoDTO.nombre}"></h:outputText>
+											</p:column>
+										</p:dataTable>
+									</h:panelGrid>
+								</p:tab>
+
+								<p:tab id="tab2" title="Co Requisitos">
+									<h:panelGrid columns="1" cellpadding="10">
+										<p:dataTable
+											value="#{adminMallaCurricularController.asignaturaSeleccionada.corRequisitoMalla}"
+											var="coreqMalla">
+											<p:column width="100" headerText="Asignatura">
+												<h:outputText value="#{coreqMalla.asignaturaDTO.nombre}"></h:outputText>
+											</p:column>
+											<p:column width="100" headerText="Cŕeditos">
+												<h:outputText value="#{coreqMalla.asignaturaDTO.numeroCreditos}"></h:outputText>
+											</p:column>
+											<p:column width="100" headerText="Área Conocimiento">
+												<h:outputText value="#{coreqMalla.asignaturaDTO.subAreaConocimientoDTO.nombre}"></h:outputText>
+											</p:column>
+										</p:dataTable>
+									</h:panelGrid>
+								</p:tab>
+
+							</p:tabView>
+						</h:panelGrid>
+					</fieldset>
+				</h:form>
+			</div>
+		</p:dialog>
+
+
+
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,112 @@
+@CHARSET "UTF-8";
+
+body {
+	padding: 10px 0px 0px 0px;
+	margin: 0;
+	line-height: 1em;
+	background-color: #DCDCDC;
+}
+
+#menuAyuda {
+	margin: 0 auto 0 auto;
+	padding-top: 5px;
+	width: 700px;
+	height: 30px;
+	background-color: #4682B4;
+	color: white;
+	text-align: center;
+	font-family: serif;
+	font-size: 12pt;
+	-webkit-box-shadow: 3px 3px 5px #999;
+  	-moz-box-shadow: 3px 3px 5px #999;
+}
+
+#cuerpoAyuda {
+	padding-top:10px;
+	margin: 0 auto 0 auto;
+	width: 700px;
+	height: auto;	
+	background-color: #F5F5F5;
+	-webkit-box-shadow: 3px 3px 5px #999;
+  	-moz-box-shadow: 3px 3px 5px #999;
+}
+
+.contenidoAyuda{
+	font-size:1.1em;
+	text-align:justify;
+	margin:0px 35px 30px 35px;
+	padding-bottom: 40px;
+}
+
+.temaAyuda{
+	font-size: 1.1em;
+	font-weight: bold;
+	font-style: italic;
+}
+
+#divManualErrorValidacion{
+	background-image: url('../images/manual/manualErrorValidacion.png');
+	background-position:center;
+	background-repeat: no-repeat;
+	border: 1px solid #4682B4;
+	width: 500px;	
+	height: 60px;
+	margin:0 auto 0 auto;
+}
+#divManualMensajeValidacion{
+	background-image: url('../images/manual/manualMensajeValidacion.png');
+	background-position:center;
+	background-repeat: no-repeat;
+	border: 1px solid #4682B4;
+	width: 525px;	
+	height: 50px;
+	margin:0 auto 0 auto;
+}
+#divManualNuevaInstitucion{
+	background-image: url('../images/manual/manualNuevaInstitucion.png');
+	background-position:center;
+	background-repeat: no-repeat;
+	border: 1px solid #4682B4;
+	width: 440px;
+	height: 110px;
+	margin:0 auto 0 auto;
+}
+#divManualProcesosInteres{
+	background-image: url('../images/manual/manualProcesosInteres.png');
+	background-position:center;
+	background-repeat: no-repeat;
+	border: 1px solid #4682B4;
+	width: 305px;
+	height: 125px;
+	margin:0 auto 0 auto;
+}
+#divManualBotonGuardar{
+	background-image: url('../images/manual/manualBotonGuardar.png');
+	background-position:center;
+	background-repeat: no-repeat;
+	border: 1px solid #4682B4;
+	width: 120px;
+	height: 30px;
+	margin:0 auto 0 auto;
+}
+#divManualBotonesNavegacion{
+	background-image: url('../images/manual/manualBotonesNavegacion.png');
+	background-position:center;
+	background-repeat: no-repeat;
+	border: 1px solid #4682B4;
+	width: 160px;
+	height: 24px;
+	margin:0 auto 0 auto;
+}
+#divNota{	
+	width: 590px;
+	height: 30px;
+	font-size:1em;
+	margin-top:10px;
+	padding: 7px 8px 14px 25px;
+	background-repeat: no-repeat;
+	background-position: 5px center;	
+	border: 0.5px solid #00529B;
+	background-color: #F7F8E0;
+	background-image: url('../images/icons/info1.png');
+}

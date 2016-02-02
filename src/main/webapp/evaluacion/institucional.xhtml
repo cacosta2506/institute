@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<script type="text/javascript"
+			src="${facesContext.externalContext.request.contextPath}/resources/js/validacionesUtil.js"></script>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formCabecera" acceptcharset="iso-8859-1">
+			<p:growl id="messagesCarreras" showDetail="false" />
+			<p:ajaxStatus onstart="statusDialog.show();"
+				onsuccess="statusDialog.hide();" />
+			<p:dialog modal="true" widgetVar="statusDialog" resizable="false"
+				header="Espere por favor." draggable="false" closable="false">
+				<p:graphicImage name="ajax-loader.gif" library="img" />
+			</p:dialog>
+		</h:form>
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+			<p:growl id="messagesCarreras" showDetail="false" />
+			<center>
+				<p:panel header="VARIABLES">
+					<br />
+					<p:dataTable id="tblVariablesInstitucional" var="vv"
+						value="#{evaluacionInstitucionalController.listaVariablesInstitucional}"
+						style="width:1200px" emptyMessage="No se encontraron registros.."
+						editable="true" editMode="cell">
+
+						<p:column headerText="Variable">
+							<h:outputText value="#{vv.variableValoracion.variable.etiqueta}" />
+						</p:column>
+						<p:column headerText="Valor Verificado">
+							<center>
+								<h:outputText value="#{vv.valor}"
+									rendered="#{vv.variableValoracion.valoracionMedio != null}" />
+								<p:selectOneMenu id="secciones_institucional"
+									rendered="#{vv.variableValoracion.valoracionMedio == null}"
+									value="#{vv.valor}">
+									<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+									<f:selectItem itemLabel="ALTO" itemValue="ALTO" />
+									<f:selectItem itemLabel="MEDIO" itemValue="MEDIO" />
+									<f:selectItem itemLabel="BAJO" itemValue="BAJO" />
+									<p:ajax event="change" update="@this" process="@this"
+										async="true" global="false" />
+								</p:selectOneMenu>
+							</center>
+						</p:column>
+						<p:column headerText="Observación"
+							style="width:300px; white-space:normal;">
+
+							<p:inputTextarea value="#{vv.observacion}" rows="2" cols="50"
+								style="resize:none;" />
+
+						</p:column>
+						<p:column headerText="Criterios">
+							<center>
+								<p:commandLink value="Criterios"
+									rendered="#{vv.variableValoracion.valoracionMedio != null}"
+									oncomplete="dlgMuestraCriterios.show();"
+									action="#{evaluacionInstitucionalController.cargarCriteriosEvaluacionCualitativas}"
+									update=":formCriterios">
+									<f:setPropertyActionListener
+										target="#{evaluacionInstitucionalController.valorVariableCualitativaDTO}"
+										value="#{vv}" />
+								</p:commandLink>
+
+
+							</center>
+						</p:column>
+						<p:column headerText="Evidencia">
+							<center>
+								<p:commandButton title="Mostrar Evidencias"
+									icon="ui-icon-circle-triangle-s" update="@form"
+									action="#{evaluacionInstitucionalController.cargarListaEvidencias(vv.variableValoracion.variable.id)}"
+									async="true" process="@this">
+									<f:setPropertyActionListener
+										target="#{evaluacionInstitucionalController.valorVariableCualitativaDTO}"
+										value="#{vv}" />
+								</p:commandButton>
+
+								<p:outputPanel rendered="#{vv.verificarEvidencia}">
+									<p:graphicImage id="nuevo" library="img" name="nuevo.gif"
+										style="text-align: center; font-size: 20px;" />
+
+								</p:outputPanel>
+							</center>
+						</p:column>
+
+						<p:column headerText="Última modificación"
+							style="width:80px; white-space:normal;">
+							<h:outputText value="#{vv.auditoriaDTO.usuarioModificacion}" />
+							<span></span>
+							<h:outputText value="#{vv.auditoriaDTO.fechaModificacion}">
+								<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+									timeZone="GMT-5" />
+							</h:outputText>
+						</p:column>
+
+						<p:column headerText="Histórico">
+							<center>
+								<p:commandLink value="Histórico"
+									actionListener="#{evaluacionInstitucionalController.obtenerHistoricoVariableCualitativa(vv)}"
+									update="@form" oncomplete="historicoModal.show()" async="true"
+									process="@this">
+									<f:setPropertyActionListener
+										target="#{evaluacionInstitucionalController.valorVariableCualitativaDTO}"
+										value="#{vv}" />
+								</p:commandLink>
+							</center>
+						</p:column>
+					</p:dataTable>
+					<br />
+					<p:commandButton value="Guardar" update="@form"
+						action="#{evaluacionInstitucionalController.guardarObservacionVariablesCualitativas}" />
+				</p:panel>
+
+				<p:dialog widgetVar="historicoModal" modal="true"
+					header="Histórico de la variable: #{evaluacionInstitucionalController.valorVariableCualitativaDTO.variableValoracion.variable.etiqueta}"
+					resizable="false" closeOnEscape="false" showEffect="fade"
+					hideEffect="fade">
+					<br />
+					<p:dataTable id="tblhistoricos" var="vv"
+						value="#{evaluacionInstitucionalController.historicosVariableCualitativa}"
+						paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						style="width:600px" paginator="true" rows="10">
+						<p:column headerText="Valor Verificado" style="width:80px">
+							<h:outputText value="#{vv.valor}" />
+						</p:column>
+						<p:column headerText="Observación" style="white-space: normal; width:40%">
+							<h:inputTextarea rows="3" disabled="true" value="#{vv.observacion}" />
+						</p:column>
+						<p:column headerText="Usuario" style="width:80px">
+							<h:outputText value="#{vv.auditoriaDTO.usuarioModificacion}">
+							</h:outputText>
+						</p:column>
+						<p:column headerText="Fecha" style="width:80px">
+							<center>
+								<h:outputText value="#{vv.auditoriaDTO.fechaModificacion}">
+									<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+										timeZone="GMT-5" />
+								</h:outputText>
+							</center>
+						</p:column>
+					</p:dataTable>
+					<br></br>
+					<p:commandButton value="Cerrar" async="true" process="@this"
+						onclick="historicoModal.hide()" />
+				</p:dialog>
+
+				<p:outputPanel
+					rendered="#{evaluacionInstitucionalController.mostrarEvidencias}">
+					<p:fieldset legend="Evidencias" style="margin:20px 0px 0px 0px;">
+
+						<p:dataTable id="tablaEConcepto" var="evidenciaconcepto"
+							value="#{evaluacionInstitucionalController.listaEvidenciaConcepto}"
+							emptyMessage="No se requiere evidencia">
+
+							<p:column headerText="Evidencias">
+								<h:outputText value="#{evidenciaconcepto.nombre}" />
+							</p:column>
+							<p:column headerText="Lista Archivos">
+								<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+									var="evidencia" emptyMessage="No hay Evidencias">
+									<p:column>
+										<h:panelGrid>
+											<h:outputText value="#{evidencia.nombreArchivo}" />
+											<h:outputText
+												value="#{evidencia.auditoriaDTO.fechaModificacion}">
+												<f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss"
+													timeZone="GMT-5" />
+											</h:outputText>
+										</h:panelGrid>
+									</p:column>
+									<p:column>
+										<h:outputText value="#{evidencia.origen}" />
+									</p:column>
+									<p:column>
+										<p:commandButton title="descargar" icon="ui-icon-document"
+											oncomplete="dlgDescarga.show()" update=":formPrincipal"
+											process="@this"
+											actionListener="#{evaluacionInstitucionalController.enviarEvidencia(evidencia)}">
+										</p:commandButton>
+										<p:commandButton title="eliminar evidencia"
+											rendered="#{evidencia.origen=='EVALUADOR'}"
+											icon="ui-icon-close" oncomplete="dlgEliminar.show()"
+											process="@this" update=":formPrincipal">
+											<f:setPropertyActionListener
+												target="#{evaluacionInstitucionalController.evidenciaSeleccionada}"
+												value="#{evidencia}" />
+										</p:commandButton>
+									</p:column>
+								</p:dataTable>
+							</p:column>
+
+							<p:column headerText="Acciones">
+								<p:commandButton value="Cargar Evidencias"
+									oncomplete="dlgCargarEvidencia.show()" update=":formEvidencia">
+									<f:setPropertyActionListener
+										target="#{evaluacionInstitucionalController.evidenciaConceptoSeleccionado}"
+										value="#{evidenciaconcepto}" />
+								</p:commandButton>
+							</p:column>
+						</p:dataTable>
+
+
+					</p:fieldset>
+				</p:outputPanel>
+				<p:confirmDialog id="cfEliminar" widgetVar="dlgEliminar"
+					header="Eliminar Evidencia" severity="alert"
+					message="¿Desea eliminar la evidencia seleccionada?">
+					<center>
+						<h:panelGrid columns="3">
+							<p:commandButton value="Si" update=":formPrincipal"
+								actionListener="#{evaluacionInstitucionalController.eliminarEvidencia}"
+								onclick="dlgEliminar.hide()" style="width:100px"
+								icon="ui ui-icon-check" />
+							<p:spacer width="10" />
+							<p:commandButton value="No" onclick="dlgEliminar.hide()"
+								style="width:100px" icon="ui ui-icon-closethick" />
+						</h:panelGrid>
+					</center>
+				</p:confirmDialog>
+
+
+			</center>
+		</h:form>
+
+		<!-- DIALOGO PARA PRESENTAR LOS CRITERIOS POR VARIABLE -->
+		<p:dialog id="modalDialogCriterios" header="Verificar/Ver"
+			widgetVar="dlgMuestraCriterios" modal="true" width="90%" height="500">
+			<div align="center">
+				<h:form id="formCriterios" acceptcharset="iso-8859-1">
+					<p:fieldset
+						legend="#{evaluacionInstitucionalController.valorVariableCualitativaDTO.variableValoracion.variable.etiqueta}">
+						<p:growl id="messagesCriterios" showDetail="false" />
+						<h:panelGrid columns="1" cellspacing="10">
+							<p:dataTable id="tbl_Criterios" var="criterios" rows="6"
+								value="#{evaluacionInstitucionalController.listaCriterios}"
+								paginator="true" scrollWidth="1000">
+								<p:column headerText="Criterio" style="white-space: normal">
+									<h:outputText value="#{criterios.criterioEvaluarDTO.etiqueta}" />
+								</p:column>
+								<p:column headerText="Cumple "
+									style="width:250px;white-space:normal;text-align:center">
+									<p:inputText value="#{criterios.cumple}" maxlength="3" size="3"
+										onkeypress="return validarIngresoSoloNumeros(event)"
+										rendered="#{criterios.tipoCampoIngreso == 'INPUT'}"></p:inputText>
+
+									<p:selectOneMenu value="#{criterios.cumple}"
+										rendered="#{criterios.tipoCampoIngreso != 'INPUT'}">
+										<f:selectItem itemLabel="--- seleccione ---" itemValue="-1" />
+										<f:selectItem itemLabel="Sí" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="0" />
+										<p:ajax event="change" update="@this" global="false"
+											async="true" />
+									</p:selectOneMenu>
+								</p:column>
+								<p:column headerText="Observación"
+									style="width:300px; white-space:normal;">
+									<p:inputTextarea value="#{criterios.observacion}" rows="4"
+										cols="30" style="resize:none;">
+									</p:inputTextarea>
+								</p:column>
+								<p:column sortBy="#{criterios.auditoria.fechaModificacion}"
+									headerText="Fecha Modificacion" style="font-size:9px;">
+									<h:outputText style="font-size:10px;"
+										value="#{criterios.auditoria.fechaModificacion}">
+										<f:convertDateTime pattern="dd/MM/yyyy" />
+									</h:outputText>
+								</p:column>
+								<p:column headerText="Historicos">
+									<p:commandLink value="Visualizar"
+										actionListener="#{evaluacionInstitucionalController.cargarHistoricoResultadosCriterio(criterios.id)}"
+										update=":historicoResultado"
+										oncomplete="historicoResultadoModal.show()">
+									</p:commandLink>
+								</p:column>
+							</p:dataTable>
+						</h:panelGrid>
+						<p:spacer height="5" />
+						<p:commandButton value="Guardar" update="@form :formPrincipal"
+							action="#{evaluacionInstitucionalController.guardarResultadosCriteriosVariable}" />
+						<p:spacer width="20" />
+						<p:commandButton value="Salir" onclick="confirmation.show()" />
+						<p:spacer height="5" />
+					</p:fieldset>
+				</h:form>
+			</div>
+		</p:dialog>
+
+
+		<p:dialog widgetVar="historicoResultadoModal" id="historicoResultado"
+			modal="true" header="Histórico" resizable="false"
+			closeOnEscape="false" showEffect="fade" hideEffect="fade">
+			<br />
+			<center>
+				<p:dataTable var="vv"
+					value="#{evaluacionInstitucionalController.listaResultadosCriteriosHistorico}"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					style="width:900px" paginator="true" rows="10">
+					<p:column headerText="Valor Verificado" style="width:80px">
+						<h:outputText value="#{vv.cumple}" />
+					</p:column>
+					<p:column headerText="Observación" style="white-space: normal">
+						<h:outputText value="#{vv.observacion}" />
+					</p:column>
+					<p:column headerText="Usuario" style="width:80px">
+						<h:outputText value="#{vv.auditoria.usuarioModificacion}">
+						</h:outputText>
+					</p:column>
+					<p:column headerText="Fecha" style="width:80px">
+						<center>
+							<h:outputText value="#{vv.auditoria.fechaModificacion}">
+								<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+									timeZone="GMT-5" />
+							</h:outputText>
+						</center>
+					</p:column>
+				</p:dataTable>
+				<br></br>
+				<p:commandButton value="Cerrar" async="true" process="@this"
+					onclick="historicoResultadoModal.hide()" />
+			</center>
+		</p:dialog>
+
+		<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+			resizable="false" closable="false" closeOnEscape="false"
+			widgetVar="dlgDescarga" modal="true">
+			<h:form>
+				<p:panel>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" style="width:100px"
+							icon="ui ui-icon-check" ajax="false" onclick="dlgDescarga.hide()">
+							<p:fileDownload
+								value="#{evaluacionInstitucionalController.documentoDescarga}" />
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgDescarga.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+				</p:panel>
+			</h:form>
+		</p:dialog>
+		<p:dialog id="idInforEvidencia" header="Cargar Evidencias"
+			resizable="false" closable="true" closeOnEscape="false"
+			widgetVar="dlgCargarEvidencia" modal="true">
+			<p:panel>
+
+				<h:form id="formEvidencia" enctype="multipart/form-data" acceptcharset="iso-8859-1">
+
+					<p:fileUpload id="idUpload" mode="simple"
+						allowTypes="/(\.|\/)(pdf|doc|docx|xls|xlsx|ppt|pptx|jpeg|jpg|png)$/"
+						value="#{evaluacionInstitucionalController.file}" />
+
+					<p:commandButton process="idUpload" value="Cargar" ajax="false"
+						actionListener="#{evaluacionInstitucionalController.uploadfile}" />
+
+
+
+				</h:form>
+
+
+			</p:panel>
+		</p:dialog>
+
+	</ui:define>
+</ui:composition>
+</html>

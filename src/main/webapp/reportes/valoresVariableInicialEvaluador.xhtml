@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:l="http://www.lapis.com/jsf/exporter">
+<f:metadata>
+	<f:event listener="#{reporteVariablesController.obtenerDatosIniciales}"
+		type="preRenderView"></f:event>
+</f:metadata>
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false"
+			header="Espere por favor, esto puede tomar algunos segundos">
+			<center>
+				<p:graphicImage value="../images/saving.gif" alt="..." />
+			</center>
+		</p:dialog>
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+			<p:growl id="growl" sticky="true"></p:growl>
+			<h:panelGrid columns="2">
+				<p:commandButton value="Generar Reporte"  rendered="#{reporteVariablesController.generarReporte}"
+					update="panelResultadoCuantitativas"
+					action="#{reporteVariablesController.generarValoresInicial}"></p:commandButton>
+			</h:panelGrid>
+			<p:panel id="panelResultadoCuantitativas"
+				header="VARIABLES CUANTITATIVAS" rendered="true">
+				<p:dataTable id="tblResultadoCuantitativas"
+					value="#{reporteVariablesController.listaValoresVariablesEvaluador}"
+					var="valorVariable" paginator="true" rows="15"
+					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15">
+
+					<p:column headerText="Variable">
+						<h:outputText style="white-space: normal"
+							value="#{valorVariable.variableProcesoDTO.variableDTO.etiqueta}" />
+					</p:column>
+
+					<p:column headerText="Valor">
+						<h:outputText value="#{valorVariable.valorInicial}" />
+					</p:column>
+
+					<p:column headerText="Ver Detalle">
+						<h:commandLink value="Ver Detalle"
+							rendered="#{valorVariable.variableProcesoDTO.variableDTO.tablaMuestra=='docentes'}"
+							action="#{reporteVariablesController.obtenerDetalle(valorVariable)}">
+							<p:ajax
+								update=":formDetallePersonas :formDetallePublicaciones :formDetalleProducciones :formDetalleProyectos :formDetalleActividades"></p:ajax>
+						</h:commandLink>
+
+					</p:column>
+
+
+				</p:dataTable>
+				<h:panelGrid columns="1">
+					<p:commandButton title="Exportar Reporte" value="Exportar Reporte"
+						rendered="false" immediate="true"
+						oncomplete="document.getElementById('formPrincipal:reporteXls').click();">
+					</p:commandButton>
+				</h:panelGrid>
+				<p:commandLink value="" id="reporteXls" ajax="false"
+					immediate="true" style="float:left"
+					action="#{reporteVariablesController.presentarReporteEvaluadorXls}">
+				</p:commandLink>
+			</p:panel>
+
+		</h:form>
+		<p:dialog widgetVar="dlgPersonas" id="modalPersonas"
+			header="Resultado" width="700">
+			<h:form id="formDetallePersonas" acceptcharset="iso-8859-1">
+				<center>
+					<p:dataTable id="tblPersonas" rows="20" paginator="true"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15"
+						value="#{reporteVariablesController.listaPersonas}" var="persona">
+						<f:facet name="header">
+							<h:outputText value="DOCENTES/ESTUDIANTES" />
+						</f:facet>
+						<p:column headerText="Identificación">
+							<h:outputText value="#{persona.identificacion}" />
+						</p:column>
+
+						<p:column headerText="Nombres">
+							<h:outputText value="#{persona.nombres}" />
+						</p:column>
+
+						<p:column headerText="Apellido Paterno">
+							<h:outputText value="#{persona.apellidoPaterno}" />
+						</p:column>
+
+						<p:column headerText="Apellido Materno">
+							<h:outputText value="#{persona.apellidoMaterno}" />
+						</p:column>
+					</p:dataTable>
+					<h:panelGrid columns="1">
+						<p:commandButton value="Aceptar" onclick="dlgPersonas.hide()" />
+					</h:panelGrid>
+				</center>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgPublicaciones" id="modalPublicaciones"
+			header="Resultado" width="700">
+			<h:form id="formDetallePublicaciones" acceptcharset="iso-8859-1">
+				<center>
+					<p:dataTable id="tblPublicaciones" rows="15" paginator="true"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15"
+						value="#{reporteVariablesController.listaPublicaciones}"
+						var="publicacion">
+						<f:facet name="header">
+							<h:outputText value="PUBLICACIONES" />
+						</f:facet>
+						<p:column headerText="Titulo" style="white-space: normal">
+							<h:outputText value="#{publicacion.titulo}" />
+						</p:column>
+
+						<p:column headerText="Tipo">
+							<h:outputText value="#{publicacion.tipo}" />
+						</p:column>
+
+
+						<p:column headerText="Nombre revista" style="white-space: normal">
+							<h:outputText value="#{publicacion.nombreRevista}" />
+						</p:column>
+
+						<p:column headerText="Fecha publicación">
+							<h:outputText value="#{publicacion.fechaPublicacion}">
+								<f:convertDateTime pattern="dd-MM-yyyy" />
+							</h:outputText>
+						</p:column>
+
+					</p:dataTable>
+					<h:panelGrid columns="1">
+						<p:commandButton value="Aceptar" onclick="dlgPublicaciones.hide()"></p:commandButton>
+					</h:panelGrid>
+				</center>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgProducciones" id="modalProducciones"
+			header="Resultado" width="700">
+			<h:form id="formDetalleProducciones" acceptcharset="iso-8859-1">
+				<center>
+					<p:dataTable id="tblProducciones" rows="15" paginator="true"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15"
+						value="#{reporteVariablesController.listaProducciones}"
+						var="produccion">
+						<f:facet name="header">
+							<h:outputText value="PRODUCCIONES" />
+						</f:facet>
+						<p:column headerText="Nombre" style="white-space: normal">
+							<h:outputText value="#{produccion.nombre}" />
+						</p:column>
+
+						<p:column headerText="Tipo">
+							<h:outputText value="#{produccion.tipo}" />
+						</p:column>
+
+						<p:column headerText="Fecha presentación">
+							<h:outputText value="#{presentacion.fechaPresentacion}">
+								<f:convertDateTime pattern="dd-MM-yyyy" />
+							</h:outputText>
+						</p:column>
+
+					</p:dataTable>
+					<h:panelGrid columns="1">
+						<p:commandButton value="Aceptar" onclick="dlgProducciones.hide()"></p:commandButton>
+					</h:panelGrid>
+				</center>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgProyectos" id="modalProyectos"
+			header="Resultado" width="700">
+			<h:form id="formDetalleProyectos" acceptcharset="iso-8859-1">
+				<center>
+					<p:dataTable id="tblProyectos" rows="15" paginator="true"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15"
+						value="#{reporteVariablesController.listaProyectos}"
+						var="proyecto">
+						<f:facet name="header">
+							<h:outputText value="PROYECTOS" />
+						</f:facet>
+						<p:column headerText="Nombre" style="white-space: normal">
+							<h:outputText value="#{proyecto.nombre}" />
+						</p:column>
+
+						<p:column headerText="Tipo">
+							<h:outputText value="#{proyecto.tipo}" />
+						</p:column>
+
+						<p:column headerText="Institución beneficiaria"
+							style="white-space: normal">
+							<h:outputText value="#{proyecto.institucionBeneficiaria}" />
+						</p:column>
+
+						<p:column headerText="Fecha inicio">
+							<h:outputText value="#{proyecto.fechaInicio}">
+								<f:convertDateTime pattern="dd-MM-yyyy" />
+							</h:outputText>
+						</p:column>
+
+						<p:column headerText="Fecha fin planeado">
+							<h:outputText value="#{proyecto.fechaFinPlaneado}">
+								<f:convertDateTime pattern="dd-MM-yyyy" />
+							</h:outputText>
+						</p:column>
+
+						<p:column headerText="Fecha fin real">
+							<h:outputText value="#{proyecto.fechaFinReal}">
+								<f:convertDateTime pattern="dd-MM-yyyy" />
+							</h:outputText>
+						</p:column>
+
+					</p:dataTable>
+					<h:panelGrid columns="1">
+						<p:commandButton value="Aceptar" onclick="dlgProyectos.hide()"></p:commandButton>
+					</h:panelGrid>
+				</center>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgActividades" id="modalActividades"
+			header="Resultado" width="700">
+			<h:form id="formDetalleActividades" acceptcharset="iso-8859-1">
+				<center>
+					<p:dataTable id="tblActividades" rows="15" paginator="true"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15"
+						value="#{reporteVariablesController.listaActividades}"
+						var="actividad">
+						<f:facet name="header">
+							<h:outputText value="ACTIVIDADES DE VINCULACIÓN" />
+						</f:facet>
+						<p:column headerText="Nombre" style="white-space: normal">
+							<h:outputText value="#{actividad.nombre}" />
+						</p:column>
+
+						<p:column headerText="Fecha inicio">
+							<h:outputText value="#{actividad.fechaInicio}">
+								<f:convertDateTime pattern="dd-MM-yyyy" />
+							</h:outputText>
+						</p:column>
+
+						<p:column headerText="Fecha fin">
+							<h:outputText value="#{actividad.fechaFin}">
+								<f:convertDateTime pattern="dd-MM-yyyy" />
+							</h:outputText>
+						</p:column>
+
+					</p:dataTable>
+					<h:panelGrid columns="1">
+						<p:commandButton value="Aceptar" onclick="dlgActividades.hide()"></p:commandButton>
+					</h:panelGrid>
+				</center>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgConvenios" id="modalConvenios"
+			header="Resultado" width="700">
+			<h:form id="formDetalleConvenios" acceptcharset="iso-8859-1">
+				<center>
+					<p:dataTable id="tblConvenios" rows="15" paginator="true"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15"
+						value="#{reporteVariablesController.listaConvenios}"
+						var="convenio">
+						<f:facet name="header">
+							<h:outputText value="CONVENIOS" />
+						</f:facet>
+						<p:column headerText="Nombre" style="white-space: normal">
+							<h:outputText value="#{convenio.nombre}" />
+						</p:column>
+
+						<p:column headerText="Nombre institución">
+							<h:outputText value="#{convenio.nombreInstitucion}" />
+						</p:column>
+
+						<p:column headerText="Fecha inicio">
+							<h:outputText value="#{conevio.fechaInicio}">
+								<f:convertDateTime pattern="dd-MM-yyyy" />
+							</h:outputText>
+						</p:column>
+
+						<p:column headerText="Fecha fin">
+							<h:outputText value="#{actividad.fechaFin}">
+								<f:convertDateTime pattern="dd-MM-yyyy" />
+							</h:outputText>
+						</p:column>
+
+					</p:dataTable>
+					<h:panelGrid columns="1">
+						<p:commandButton value="Aceptar" onclick="dlgConvenios.hide()"></p:commandButton>
+					</h:panelGrid>
+				</center>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgCarreras" id="modalCarreras"
+			header="Resultado" width="700">
+			<h:form id="formDetalleCarreras" acceptcharset="iso-8859-1">
+				<center>
+					<p:dataTable id="tblCarreras" rows="15" paginator="true"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15"
+						value="#{reporteVariablesController.listaCarreras}" var="carrera">
+						<f:facet name="header">
+							<h:outputText value="CARRERAS VIGENTES" />
+						</f:facet>
+						<p:column headerText="Nombre" style="white-space: normal">
+							<h:outputText value="#{carrera.carreraDTO.nombre}" />
+						</p:column>
+
+						<p:column headerText="Nivel">
+							<h:outputText value="#{convenio.carreraDTO.nivel}" />
+						</p:column>
+
+						<p:column headerText="Modalidad">
+							<h:outputText value="#{convenio.carreraDTO.modalidad}" />
+						</p:column>
+					</p:dataTable>
+					<h:panelGrid columns="1">
+						<p:commandButton value="Aceptar" onclick="dlgCarreras.hide()"></p:commandButton>
+					</h:panelGrid>
+				</center>
+			</h:form>
+		</p:dialog>
+
+
+	</ui:define>
+</ui:composition>
+</html>

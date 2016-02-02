@@ -1,0 +1,967 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+
+	<ui:define name="tituloPagina">Mallas Curriculares</ui:define>
+	<ui:define name="etiquetaCarrera"></ui:define>
+	<ui:define name="contenido">
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<script type="text/javascript"
+			src="${facesContext.externalContext.request.contextPath}/js/validacionesUtil.js"></script>
+
+		<script language="javascript">
+			function verificarErroresMallas(xhr, status, args) {
+				if (!(args.validationFailed || !args.cerrarVentana)) {
+					dlgCrearEditarMallaId.hide();
+				}
+			}
+		</script>
+		<style>
+.ui-cell-editor-output {
+	height: 50px;
+}
+
+.ui-tooltip {
+	min-width: 100px;
+	max-width: 500px;
+	font-size: 12px;
+}
+
+.estilocolumna {
+	padding: 2px 0px !important;
+}
+</style>
+
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage value="images/saving.gif" />
+			</center>
+		</p:dialog>
+
+		<center>
+
+			<div class="info2">
+				<p class="titulo-mensaje">Información Importante:</p>
+				<p>1) Debe seleccionar una Matríz o Extensión y una Carrera</p>
+				<p>2) Para crear una nueva Malla haga click en el botón Nuevo</p>
+				<p>3) Para administrar Asignaturas, seleccione la malla que
+					corresponda</p>
+				<p>4) Para agregar requisitos a una Asignatura, seleccione la
+					Asignatura que corresponda</p>
+			</div>
+			<br />
+
+			<p:panel>
+				<br />
+				<h:form id="formMallas" acceptcharset="iso-8859-1">
+					<h:inputHidden value="#{reporteController.auxiliar}" />
+					<p:growl id="msgMallas" autoUpdate="false" showDetail="false"
+						life="3500" />
+
+					<h:panelGrid columns="7">
+						<h:outputText value="MATRIZ/EXTENSIÓN: "
+							style="font-weight:bold;float:right;font-size:14px;" />
+						<p:spacer width="5" />
+						<p:selectOneMenu value="#{mallasController.idSede}">
+							<p:ajax event="change" update=":formMallas"
+								listener="#{mallasController.cargarCarreras}" />
+							<f:selectItem itemLabel="--seleccionar--" itemValue="" />
+							<f:selectItems value="#{mallasController.infoIes.sedeIes}"
+								var="sede" itemValue="#{sede.id}" itemLabel="#{sede.nombre}" />
+						</p:selectOneMenu>
+						<p:spacer width="15" />
+						<h:outputText value="Carrera: "
+							style="font-weight:bold;float:right;font-size:14px;" />
+						<p:spacer width="5" />
+						<p:selectOneMenu id="selectCarreras" style="width:270px;"
+							converter="infoCarreraConverter" filter="true"
+							filterMatchMode="startsWith" effect="fade"
+							disabled="#{mallasController.carreras.size() > 0 ? false : true}"
+							value="#{mallasController.carreraSeleccionada}" var="karr">
+							<p:ajax event="change" update="@this :formMallas"
+								listener="#{mallasController.cargarMallas}" />
+							<f:selectItem itemLabel="--seleccionar--" itemValue="" />
+							<f:selectItems value="#{mallasController.carreras}" var="carr"
+								itemValue="#{carr}" itemLabel="#{carr.carreraIesDTO.label}" />
+							<p:column>
+								<h:outputText style="font-size:11px;width: 265px;"
+									value="#{karr.carreraIesDTO.label}" />
+							</p:column>
+						</p:selectOneMenu>
+
+					</h:panelGrid>
+
+					<p:panel>
+
+						<p:commandButton value="Nuevo" title="Nueva malla curricular"
+							disabled="#{!mallasController.verNuevaMalla}"
+							actionListener="#{mallasController.nuevaMalla}" process="@this"
+							async="true" oncomplete="dlgCrearEditarMallaId.show()"
+							onclick="dlgCrearEditarMallaId.titlebar.children('span.ui-dialog-title').html('Nueva Malla');"
+							update=":formCrearEditarMallaId"
+							style="float:right;margin-right:10px;">
+							<f:setPropertyActionListener
+								target="#{mallasController.esCopiaMalla}" value="#{false}" />
+						</p:commandButton>
+
+						<p:commandButton value="Importar Malla"
+							title="Importar malla curricular"
+							disabled="#{!mallasController.verNuevaMalla}" process="@this"
+							async="true" actionListener="#{mallasController.importarMalla}"
+							oncomplete="dlgImportarMallaId.show()"
+							update=":formImportarMallaId"
+							style="float:right;margin-right:10px;">
+						</p:commandButton>
+
+						<br />
+						<br />
+						<br />
+
+						<p:dataTable id="tablaMallas" value="#{mallasController.mallas}"
+							rowKey="#{malla.id}" selectionMode="single" paginator="true"
+							rows="10" selection="#{mallasController.mallaSeleccionada}"
+							var="malla" emptyMessage="No se encontraron registros"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+							rowsPerPageTemplate="5,10,15">
+
+							<f:facet name="header">
+								<h:outputText value="Mallas Curriculares Ingresadas"
+									style="font-size:16px;font-weight:bold;float:left;" />
+							</f:facet>
+
+							<p:ajax event="rowSelect" update=":formMallas"
+								listener="#{mallasController.cargarAsignaturas}" />
+
+							<p:column headerText="Malla">
+								<h:outputText value="#{malla.codigoUnico}" />
+								<h:outputText id="reformaId" style="font-weight:bold"
+									rendered="#{malla.reforma != null}" value=" (Reformada)" />
+								<p:tooltip id="tooltipReformaId" for="reformaId"
+									value="#{malla.reformaTexto}" trackMouse="true"
+									rendered="#{malla.reformaTexto != null}" />
+							</p:column>
+							<p:column headerText="Fecha Inicio">
+								<h:outputText value="#{malla.fechaInicioVigencia}">
+									<f:convertDateTime pattern="dd-MM-yyyy" />
+								</h:outputText>
+							</p:column>
+							<p:column headerText="Fecha Fin">
+								<h:outputText value="#{malla.fechaFinVigencia}">
+									<f:convertDateTime pattern="dd-MM-yyyy" />
+								</h:outputText>
+							</p:column>
+							<p:column headerText="Estado">
+								<h:outputText
+									value="#{malla.activo == true ? 'VIGENTE' : 'NO VIGENTE'}" />
+							</p:column>
+							<p:column headerText="Créditos">
+								<h:outputText value="#{malla.creditosConTesis}" />
+							</p:column>
+							<p:column headerText="Organización">
+								<h:outputText
+									value="#{malla.organizacionMallaEnum.value == 'ANIOS' ? 'AÑOS' : malla.organizacionMallaEnum.value}" />
+							</p:column>
+							<p:column headerText="Niveles">
+								<h:outputText value="#{malla.numeroNiveles}" />
+							</p:column>
+							<p:column headerText="Acciones" style="text-align:center">
+								<p:commandButton title="editar" icon="ui-icon-pencil"
+									async="true"
+									onclick="dlgCrearEditarMallaId.titlebar.children('span.ui-dialog-title').html('Editar Malla');"
+									process="@this" update=":formCrearEditarMallaId"
+									actionListener="#{mallasController.editarMalla(malla,true)}">
+									<f:setPropertyActionListener
+										target="#{mallasController.esCopiaMalla}" value="#{false}" />
+								</p:commandButton>
+								<p:commandButton title="eliminar" icon="ui-icon-close"
+									async="true" process="@this"
+									oncomplete="eliminarMallaDlg.show()" update=":eliminarMallaId">
+									<f:setPropertyActionListener
+										target="#{mallasController.mallaCrearEditar}" value="#{malla}" />
+								</p:commandButton>
+								<p:commandButton title="reporte general" rendered="false"
+									icon="ui-icon-document-b" immediate="true"
+									oncomplete="document.getElementById('formMallas:reporteXls').click();"
+									action="#{mallasController.generarReporteMalla(malla)}">
+								</p:commandButton>
+								<p:commandButton title="reporte detallado (excel)"
+									icon="ui-icon-calculator"
+									immediate="true"
+									oncomplete="document.getElementById('formMallas:reporteXls').click();"
+									action="#{mallasController.generarReporteGrafico(malla)}">
+								</p:commandButton>
+								<h:commandLink immediate="true" title="reporte detallado (web)"									
+									actionListener="#{mallasController.generarReporteGraficoWeb(malla)}"
+									action="/presentarReporteGrafico.jsf?faces-redirect=true"
+									target="_blank">
+									<h:panelGroup layout="block"
+										style="height: 26px; width: 26px; vertical-align:top"
+										styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only">
+										<span style="border-bottom: 1px solid #2C82FC"
+											class="ui-button-icon-left ui-icon ui-c ui-icon-calculator"></span>
+									</h:panelGroup>
+								</h:commandLink>
+								<p:commandButton title="reforma de malla" icon="ui-icon-copy"
+									async="true"
+									onclick="dlgCrearEditarMallaId.titlebar.children('span.ui-dialog-title').html('Reforma Malla');"
+									process="@this" update=":formCrearEditarMallaId"
+									actionListener="#{mallasController.editarMalla(malla,false)}">
+									<f:setPropertyActionListener
+										target="#{mallasController.esCopiaMalla}" value="#{true}" />
+								</p:commandButton>
+							</p:column>
+						</p:dataTable>
+					</p:panel>
+					<p:commandLink value="" id="reporteXls" ajax="false"
+						immediate="true" style="float:left"
+						action="#{mallasController.presentarReporteXls}">
+					</p:commandLink>
+					<p:panel
+						rendered="#{mallasController.mallaSeleccionada.id != null ? true : false}">
+
+						<h:panelGrid id="pgTotalCreditos" columns="3" style="float:left;">
+							<h:outputText style="font-weight:bold;font-size:14px;"
+								value="Total créditos registrados:" />
+							<p:spacer width="5" />
+							<h:outputText style="font-size:14px;"
+								value="#{mallasController.totalCreditos}" />
+						</h:panelGrid>
+
+						<p:commandButton id="btnNuevaAsignatura" title="Nueva asignatura"
+							style="float:right;margin-right:10px;" update=":formAsignatura"
+							oncomplete="dialogAsignatura.show()" global="false" value="Nuevo"
+							action="#{mallasController.obtenerAsignatura(true)}"
+							actionListener="#{mallasController.tomarNombreComponente}" />
+
+						<br />
+						<br />
+						<br />
+
+						<p:dataTable id="tablaAsignaturas"
+							filteredValue="#{mallasController.materiasFiltros}"
+							value="#{mallasController.materias}" var="mat" rowKey="#{mat.id}"
+							selectionMode="single" paginator="true" rows="10"
+							selection="#{mallasController.materiaSeleccionada}"
+							emptyMessage="No tiene asignaturas">
+
+							<f:facet name="header">
+								<h:outputText value="Asignaturas"
+									style="font-size:16px;font-weight:bold;float:left;" />
+							</f:facet>
+
+							<p:ajax event="filter" global="false"
+								update=":formMallas:tablaAsignaturas"
+								listener="#{mallasController.obtenerFiltros}" />
+
+							<p:column headerText="Tipo Asignatura"
+								filterBy="#{mat.tipoAsignatura}">
+								<h:outputText value="#{mat.tipoAsignatura}" />
+							</p:column>
+							<p:column headerText="Código" filterBy="#{mat.codigo}">
+								<h:outputText value="#{mat.codigo}" />
+							</p:column>
+							<p:column headerText="Nombre" filterBy="#{mat.nombre}">
+								<h:outputText value="#{mat.nombre}" />
+							</p:column>
+							<p:column headerText="Créditos">
+								<h:outputText value="#{mat.numeroCreditos}" />
+							</p:column>
+							<p:column headerText="Nivel" filterBy="#{mat.nivelMateria}">
+								<h:outputText value="#{mat.nivelMateria}" />
+							</p:column>
+							<p:column headerText="Tipo" filterBy="#{mat.areaFormacion}">
+								<h:outputText value="#{mat.areaFormacion}" />
+							</p:column>
+							<p:column headerText="Acciones">
+								<p:commandButton id="btnEditarAsignatura" title="editar"
+									icon="ui-icon-pencil"
+									action="#{mallasController.obtenerAsignatura(true)}"
+									actionListener="#{mallasController.tomarNombreComponente}"
+									update=":formAsignatura :formMallas:msgMallas">
+									<f:setPropertyActionListener value="#{mat}"
+										target="#{mallasController.asignatura}" />
+									<f:setPropertyActionListener value="#{mat.tipoAsignatura}"
+										target="#{mallasController.tipoAsignatura}" />
+									<f:setPropertyActionListener value="#{mat}"
+										target="#{mallasController.padreAsignatura}" />
+								</p:commandButton>
+								<p:spacer width="5" />
+								<p:commandButton title="eliminar" icon="ui-icon-close"
+									action="#{mallasController.obtenerAsignatura(false)}"
+									oncomplete="dialogEliminarAsignatura.show()"
+									update=":formEliminarAsignatura :formMallas:msgMallas">
+									<f:setPropertyActionListener value="#{mat}"
+										target="#{mallasController.asignatura}" />
+								</p:commandButton>
+							</p:column>
+						</p:dataTable>
+					</p:panel>
+
+					<p:fieldset id="fsTablaRequisitos" legend="Requisitos:"
+						rendered="false">
+
+						<p:messages id="msgRequisitos" autoUpdate="false"
+							showDetail="false" closable="false" />
+
+						<br />
+
+						<h:panelGrid columns="7" style="float:left;">
+							<h:outputText value="Asignatura:"
+								style="float:right;font-size:14px;font-weight:bold;" />
+							<p:spacer width="5" />
+							<h:outputText
+								value="#{mallasController.materiaSeleccionada.nombre}" />
+							<p:spacer width="10" />
+							<h:outputText value="Codigo: "
+								style="float:right;font-size:14px;font-weight:bold;" />
+							<p:spacer width="5" />
+							<h:outputText
+								value="#{mallasController.materiaSeleccionada.codigo}" />
+						</h:panelGrid>
+
+						<br />
+
+						<table width="100%">
+							<tr>
+								<td width="50%"><h:panelGrid id="tablasRequisitos"
+										columns="1">
+
+										<p:fieldset legend="Pre-requisitos disponibles:">
+
+											<p:dataTable id="tablaPres" selectionMode="single"
+												filteredValue="#{mallasController.preRequisitosFiltros}"
+												value="#{mallasController.preRequisitos}" var="prereq"
+												selection="#{mallasController.preSeleccionado}"
+												rowKey="#{prereq.id}" paginator="true" rows="5"
+												emptyMessage="No tiene pre-requisitos">
+
+												<p:ajax event="rowSelect" global="false"
+													update="@this :formMallas:tablaReqAsignatura :formMallas:msgRequisitos"
+													listener="#{mallasController.cargarRequisitosAsignatura}" />
+
+												<p:column headerText="Código" filterBy="#{prereq.codigo}">
+													<h:outputText value="#{prereq.codigo}" />
+												</p:column>
+												<p:column headerText="Nivel"
+													filterBy="#{prereq.nivelMateria}">
+													<h:outputText value="#{prereq.nivelMateria}" />
+												</p:column>
+												<p:column headerText="Nombre" filterBy="#{prereq.nombre}">
+													<h:outputText value="#{prereq.nombre}" />
+												</p:column>
+											</p:dataTable>
+
+										</p:fieldset>
+
+										<p:fieldset legend="Co-requisitos disponibles:">
+
+											<p:dataTable id="tablaCos"
+												filteredValue="#{mallasController.coRequisitosFiltros}"
+												value="#{mallasController.coRequisitos}" var="coreq"
+												selectionMode="single" emptyMessage="No tiene co-requisitos"
+												selection="#{mallasController.coSeleccionado}"
+												rowKey="#{coreq.id}" paginator="true" rows="5">
+
+												<p:ajax event="rowSelect" global="false" process="@this"
+													update="@this :formMallas:tablaReqAsignatura :formMallas:msgRequisitos"
+													listener="#{mallasController.cargarRequisitosAsignatura}" />
+
+												<p:column headerText="Código" filterBy="#{coreq.codigo}">
+													<h:outputText value="#{coreq.codigo}" />
+												</p:column>
+												<p:column headerText="Nivel"
+													filterBy="#{coreq.nivelMateria}">
+													<h:outputText value="#{coreq.nivelMateria}" />
+												</p:column>
+												<p:column headerText="Nombre" filterBy="#{coreq.nombre}">
+													<h:outputText value="#{coreq.nombre}" />
+												</p:column>
+											</p:dataTable>
+
+										</p:fieldset>
+
+									</h:panelGrid></td>
+
+								<td width="50%" valign="top"><p:fieldset
+										legend="Requisitos Seleccionados:">
+										<center>
+											<p:dataTable id="tablaReqAsignatura" selectionMode="single"
+												selection="#{mallasController.reqSeleccionado}"
+												rowKey="#{requi.asignaturaRequisitoDTO.id}"
+												value="#{mallasController.requisitos}" var="requi"
+												paginator="true" rows="10" rowIndexVar="index"
+												emptyMessage="No tiene requisitos seleccionados">
+
+												<p:ajax event="rowSelect" global="false" process="@form"
+													update="@this :formMallas:tablasRequisitos :formMallas:msgRequisitos"
+													listener="#{mallasController.quitarRequisito}" />
+
+												<p:column headerText="N°">
+													   #{index + 1}
+													</p:column>
+
+												<p:column headerText="Código">
+													<h:outputText
+														value="#{requi.asignaturaRequisitoDTO.codigo}" />
+												</p:column>
+												<p:column headerText="Nombre">
+													<h:outputText
+														value="#{requi.asignaturaRequisitoDTO.nombre}" />
+												</p:column>
+												<p:column headerText="Nivel">
+													<h:outputText
+														value="#{requi.asignaturaRequisitoDTO.nivelMateria}" />
+												</p:column>
+												<p:column headerText="Tipo">
+													<h:outputText value="#{requi.tipoEnum.value}" />
+												</p:column>
+											</p:dataTable>
+											<br /> <br />
+											<p:commandButton value="Guardar" title="Guardar requisitos"
+												actionListener="#{mallasController.tomarNombreComponente}"
+												action="#{mallasController.registrarRequisitosAsignatura}"
+												update=":formMallas:tablaReqAsignatura :formMallas:tablasRequisitos :formMallas:msgRequisitos" />
+										</center>
+									</p:fieldset></td>
+							</tr>
+						</table>
+					</p:fieldset>
+
+				</h:form>
+			</p:panel>
+		</center>
+
+		<p:dialog id="modalCrearEditarMallaId" header="Malla"
+			widgetVar="dlgCrearEditarMallaId" modal="true">
+			<div align="center">
+				<h:form id="formCrearEditarMallaId" acceptcharset="iso-8859-1">
+					<p:growl id="msgCrearEditarMalla" showDetail="false" life="2500" />
+					<p:fieldset>
+						<h:panelGrid columns="5" cellspacing="10" cellpadding="5">
+
+							<h:outputText value="Código: " />
+							<h:outputText value=" "
+								rendered="#{mallasController.esCopiaMalla}">
+							</h:outputText>
+							<h:outputText
+								value="#{mallasController.mallaCrearEditar.codigoUnico}"
+								rendered="#{!mallasController.esCopiaMalla}">
+							</h:outputText>
+
+
+							<h:outputText value="" />
+							<h:outputText value="" />
+							<h:outputText value="" />
+
+
+							<h:outputText value="Fecha Inicio: " />
+							<p:calendar required="true" id="fechaInicioId"
+								requiredMessage="La fecha de inicio es requerida"
+								value="#{mallasController.mallaCrearEditar.fechaInicioVigencia}"
+								maxlength="10" size="10" navigator="true" effect="slide"
+								onfocus="jQuery(this).mask('99-99-9999')" pattern="dd-MM-yyyy">
+								<p:ajax event="dateSelect" update="@this" />
+							</p:calendar>
+							<h:outputText value=" " />
+
+							<h:outputText value="Fecha Fin (opcional): " />
+							<p:calendar
+								value="#{mallasController.mallaCrearEditar.fechaFinVigencia}"
+								onfocus="jQuery(this).mask('99-99-9999')" maxlength="10"
+								size="10" navigator="true" effect="slide" pattern="dd-MM-yyyy">
+								<p:ajax event="dateSelect" update="@this" />
+							</p:calendar>
+
+
+							<h:outputText value="Organización Malla: " />
+							<p:selectOneMenu
+								value="#{mallasController.organizacionMallaSelect}"
+								required="true"
+								requiredMessage="La organización de la malla es requerida"
+								style="width:210px;">
+								<p:ajax event="change" async="true" process="@this"
+									update="@this :formCrearEditarMallaId:textosId :formCrearEditarMallaId:controlesId"
+									listener="#{mallasController.cargarNiveles}" />
+								<f:selectItem itemLabel="--Seleccionar--" itemValue="0" />
+								<f:selectItems value="#{mallasController.organizacionMalla}" />
+							</p:selectOneMenu>
+							<h:outputText value=" " />
+
+							<h:panelGrid columns="1" id="textosId"
+								columnClasses="estilocolumna">
+								<h:outputText value="Niveles:"
+									rendered="#{mallasController.organizacionMallaSelect != 'OTRA' and mallasController.organizacionMallaSelect != '0'}" />
+								<h:outputText value=" "
+									rendered="#{mallasController.organizacionMallaSelect == '0'}" />
+							</h:panelGrid>
+							<h:panelGrid columns="1" id="controlesId"
+								columnClasses="estilocolumna">
+								<p:selectOneMenu value="#{mallasController.numeroNivelesSelect}"
+									rendered="#{mallasController.organizacionMallaSelect != 'OTRA' and mallasController.organizacionMallaSelect != '0'}"
+									id="nivelesId" style="width:210px;">
+									<p:ajax event="change" async="true" process="@this" />
+									<f:selectItem itemLabel="--Seleccionar--" itemValue="0" />
+									<f:selectItems value="#{mallasController.niveles}" />
+								</p:selectOneMenu>
+								<h:outputText value=" "
+									rendered="#{mallasController.organizacionMallaSelect == '0'}" />
+							</h:panelGrid>
+
+							<h:outputText value="Meses sin Tesis: " />
+							<p:inputText onkeypress="return validarIngresoSoloNumeros(event)"
+								maxlength="3" size="3" required="true"
+								requiredMessage="El número de meses sin tesis es requerido"
+								value="#{mallasController.mallaCrearEditar.aniosSinTesis}">
+							</p:inputText>
+							<h:outputText value=" " />
+
+							<h:outputText value="Meses con tesis: " />
+							<p:inputText onkeypress="return validarIngresoSoloNumeros(event)"
+								maxlength="3" size="3" required="true"
+								requiredMessage="El número de meses con tesis es requerido"
+								value="#{mallasController.mallaCrearEditar.aniosConTesis}">
+							</p:inputText>
+
+							<h:outputText value="Créditos sin tesis: " />
+							<p:inputText
+								onkeypress="return validarIngresoNumeroDecimal(this, event)"
+								maxlength="8" size="8" required="true"
+								requiredMessage="El número de créditos sin tesis es requerido"
+								value="#{mallasController.mallaCrearEditar.creditosSinTesis}">
+							</p:inputText>
+							<h:outputText value=" " />
+
+							<h:outputText value="Créditos con tesis: " />
+							<p:inputText
+								onkeypress="return validarIngresoNumeroDecimal(this, event)"
+								maxlength="8" size="8" required="true"
+								requiredMessage="El número de créditos con tesis es requerido"
+								value="#{mallasController.mallaCrearEditar.creditosConTesis}">
+							</p:inputText>
+
+							<h:outputText value="Observación (opcional): " />
+							<p:inputTextarea maxlength="230" size="40" style="resize:none;"
+								rows="2"
+								value="#{mallasController.mallaCrearEditar.descripcion}" />
+							<h:outputText value=" " />
+
+						</h:panelGrid>
+						<p:spacer width="10" />
+					</p:fieldset>
+
+					<p:commandButton value="Guardar"
+						update=":formCrearEditarMallaId:msgCrearEditarMalla :formMallas :formMallas:tablaMallas"
+						action="#{mallasController.guardarMalla(false)}"
+						oncomplete="verificarErroresMallas(xhr, status, args)" />
+
+					<p:spacer width="20" />
+					<p:commandButton value="Salir" process="@this" async="true"
+						update="@form"
+						action="#{mallasController.cancelarCrearEditarMalla}"
+						oncomplete="dlgCrearEditarMallaId.hide()">
+						<p:resetInput target=":formCrearEditarMallaId" />
+					</p:commandButton>
+				</h:form>
+			</div>
+		</p:dialog>
+
+
+		<p:confirmDialog id="eliminarMallaId"
+			message="Está seguro que desea eliminar la malla?"
+			header="Confirmación" severity="alert" widgetVar="eliminarMallaDlg">
+			<p:commandButton value="Si" update=":formMallas"
+				oncomplete="eliminarMallaDlg.hide()"
+				actionListener="#{mallasController.eliminarMalla}" />
+			<p:commandButton value="No" async="true" process="@this"
+				onclick="eliminarMallaDlg.hide()" />
+		</p:confirmDialog>
+
+		<p:dialog id="dlgAsignatura" widgetVar="dialogAsignatura" modal="true"
+			resizable="false" closeOnEscape="false" showEffect="fade"
+			hideEffect="fade" header="#{mallasController.asignatura.nombre}">
+			<h:form id="formAsignatura" acceptcharset="iso-8859-1">
+
+				<p:messages id="msgAsignatura" autoUpdate="false" showDetail="false" />
+
+				<center>
+					<p:panel header="#{mallasController.asignatura.nombre}">
+
+						<p:outputPanel>
+							<h:panelGrid columns="7">
+								<h:outputText value="Código:" />
+								<p:spacer width="5" />
+								<p:inputText value="#{mallasController.asignatura.codigo}"
+									style="width:200px;" />
+								<p:spacer width="15" />
+								<h:outputText value="Nombre:" />
+								<p:spacer width="5" />
+								<p:inputText value="#{mallasController.asignatura.nombre}"
+									style="width:200px;"
+									onkeyup="this.value = this.value.toUpperCase()" />
+
+								<h:outputText value="Número de créditos:" />
+								<p:spacer width="5" />
+								<p:inputText
+									onkeypress="return validarIngresoNumeroDecimal(this, event)"
+									value="#{mallasController.asignatura.numeroCreditos}"
+									style="width:200px;" />
+								<p:spacer width="15" />
+								<h:outputText value="Tipo Asignatura:" />
+								<p:spacer width="5" />
+								<p:selectOneMenu
+									value="#{mallasController.asignatura.areaFormacion}"
+									style="width:200px;">
+									<p:ajax event="change" update="@this" process="@this"
+										global="false" />
+									<f:selectItem itemLabel="--seleccionar--" />
+									<f:selectItems value="#{mallasController.areasDeFormacion}"
+										var="areaF" itemValue="#{areaF}" itemLabel="#{areaF}" />
+								</p:selectOneMenu>
+
+								<h:outputText value="Nivel Asignatura:" />
+								<p:spacer width="5" />
+								<p:selectOneMenu
+									value="#{mallasController.asignatura.nivelMateria}">
+									<f:selectItems
+										value="#{mallasController.nivelesMallaSeleccionada}"
+										var="nmalla" itemValue="#{nmalla}" itemLabel="#{nmalla}" />
+								</p:selectOneMenu>
+								<p:spacer width="15" />
+								<h:outputText value="Organización Curricular:" />
+								<p:spacer width="5" />
+								<p:selectOneMenu
+									value="#{mallasController.asignatura.organizacionCurricular}"
+									style="width:200px;">
+									<p:ajax event="change" update="@this" global="false" />
+									<f:selectItem itemLabel="--seleccionar--" />
+									<f:selectItems
+										value="#{mallasController.organizacionCurricular}"
+										var="orgCurr" itemValue="#{orgCurr.id}"
+										itemLabel="#{orgCurr.areaFormacion.valor}" />
+								</p:selectOneMenu>
+
+								<p:spacer width="5" />
+								<p:spacer width="5" />
+							</h:panelGrid>
+						</p:outputPanel>
+
+						<p:separator />
+
+						<h:panelGrid columns="3">
+							<p:commandButton value="Guardar"
+								actionListener="#{mallasController.tomarNombreComponente}"
+								action="#{mallasController.registrarAsignatura}"
+								update=":formAsignatura :formMallas:tablaAsignaturas :formMallas" />
+							<p:spacer width="30" />
+							<p:commandButton value="Salir" onclick="dialogAsignatura.hide()" />
+						</h:panelGrid>
+
+						<p:outputPanel rendered="#{mallasController.verTablaHijas}">
+							<p:outputPanel
+								rendered="#{mallasController.asignatura.id == null ? false : true}">
+								<p:separator />
+
+								<h:panelGrid columns="3" style="float:left;">
+									<h:outputText style="font-weight:bold;font-size:14px;"
+										value="Total créditos registrados:" />
+									<p:spacer width="5" />
+									<h:outputText style="font-size:14px;"
+										value="#{mallasController.totalCreditosHijas}" />
+								</h:panelGrid>
+
+								<p:commandButton id="btnNuevaHijaAsignatura"
+									update=":formAsignatura :formAsignaturaHija"
+									actionListener="#{mallasController.tomarNombreComponente}"
+									value="Nuevo" title="Nueva asignatura hija"
+									style="float:right;margin-right:10px;" />
+
+								<br />
+								<br />
+								<br />
+
+								<p:dataTable id="tablaHijas" paginator="true" rows="10"
+									value="#{mallasController.hijas}" var="asigHija"
+									emptyMessage="No tiene asignaturas"
+									paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+									rowsPerPageTemplate="5,10">
+									<p:column headerText="Código">
+										<h:outputText value="#{asigHija.codigo}" />
+									</p:column>
+									<p:column headerText="Nombre">
+										<h:outputText value="#{asigHija.nombre}" />
+									</p:column>
+									<p:column headerText="Créditos">
+										<h:outputText value="#{asigHija.numeroCreditos}" />
+									</p:column>
+									<p:column headerText="Obligatoria">
+										<h:outputText value="#{asigHija.obligatorio ? 'SI' : 'NO'}" />
+									</p:column>
+									<p:column headerText="Acciones">
+										<p:commandButton title="editar" icon="ui-icon-pencil"
+											oncomplete="dialogAsignaturaHija.show()"
+											update=":formAsignaturaHija" global="false">
+											<f:setPropertyActionListener value="#{asigHija}"
+												target="#{mallasController.hijaAsignatura}" />
+											<f:setPropertyActionListener
+												value="#{asigHija.numeroCreditos}"
+												target="#{mallasController.creditosAsignatura}" />
+										</p:commandButton>
+										<p:commandButton title="eliminar" icon="ui-icon-close"
+											oncomplete="dialogEliminarAsignaturaHija.show()"
+											update=":formEliminarAsignaturaHija">
+											<f:setPropertyActionListener value="#{asigHija}"
+												target="#{mallasController.hijaAsignatura}" />
+										</p:commandButton>
+									</p:column>
+								</p:dataTable>
+							</p:outputPanel>
+						</p:outputPanel>
+					</p:panel>
+				</center>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="dlgAsignaturaHija" widgetVar="dialogAsignaturaHija"
+			modal="true" resizable="false" closeOnEscape="false"
+			showEffect="fade" hideEffect="fade" header="Asignatura Hija">
+			<h:form id="formAsignaturaHija" acceptcharset="iso-8859-1">
+				<center>
+
+					<p:panel>
+						<h:panelGrid columns="3">
+
+							<h:outputText value="Código:" />
+							<p:spacer width="5" />
+							<p:inputText value="#{mallasController.hijaAsignatura.codigo}"
+								style="width:200px;" />
+
+							<h:outputText value="Nombre:" />
+							<p:spacer width="5" />
+							<p:inputText value="#{mallasController.hijaAsignatura.nombre}"
+								style="width:200px;"
+								onkeyup="this.value = this.value.toUpperCase()" />
+
+							<h:outputText value="Número de créditos:" />
+							<p:spacer width="5" />
+							<p:inputText
+								onkeypress="return validarIngresoNumeroDecimal(this, event)"
+								value="#{mallasController.hijaAsignatura.numeroCreditos}"
+								style="width:200px;" />
+
+							<p:spacer width="5" />
+							<p:spacer width="5" />
+							<h:panelGrid columns="3">
+								<p:selectBooleanCheckbox
+									value="#{mallasController.hijaAsignatura.obligatorio}">
+									<p:ajax event="change" update="@this" global="false" />
+								</p:selectBooleanCheckbox>
+								<p:spacer width="10" />
+								<h:outputText value="Obligatoria" />
+							</h:panelGrid>
+						</h:panelGrid>
+
+						<p:separator />
+
+						<h:panelGrid columns="3">
+							<p:commandButton id="btnGuardarHija" value="Guardar"
+								action="#{mallasController.registrarAsignaturaHija}"
+								update=":formAsignatura :formAsignaturaHija :formMallas:msgMallas" />
+							<p:spacer width="30" />
+							<p:commandButton id="btnCancelarHija" value="Salir"
+								update=":formAsignatura" onclick="dialogAsignaturaHija.hide()" />
+						</h:panelGrid>
+
+					</p:panel>
+				</center>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="dglEliminarAsignatura" header="Confirmación"
+			widgetVar="dialogEliminarAsignatura" modal="true" resizable="false"
+			closable="false" closeOnEscape="false">
+			<center>
+				<h:form id="formEliminarAsignatura" acceptcharset="iso-8859-1">
+					<h:panelGrid columns="3">
+						<p:commandButton disabled="true" icon="ui-icon-alert" />
+						<p:spacer width="10" />
+						<h:panelGrid columns="1">
+							<h:outputText rendered="#{mallasController.hijas.size() > 0}"
+								value="Al eliminar esta asignatura tambien eliminara las asignaturas hijas:" />
+							<p:dataList rendered="#{mallasController.hijas.size() > 0}"
+								rowIndexVar="index" value="#{mallasController.hijas}" var="ahj"
+								type="ordered">								
+							#{index + 1} <p:spacer width="5" /> #{ahj.codigo}
+							</p:dataList>
+							<h:outputText
+								value="Está seguro que desea eliminar la asignatura #{mallasController.asignatura.codigo}?" />
+						</h:panelGrid>
+					</h:panelGrid>
+					<p:separator />
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" id="btnEliminarAsignatura"
+							update=":formMallas:tablaAsignaturas :formMallas :formMallas:msgMallas"
+							oncomplete="dialogEliminarAsignatura.hide()"
+							actionListener="#{mallasController.tomarNombreComponente}"
+							action="#{mallasController.registrarAsignatura}" />
+						<p:spacer width="20" />
+						<p:commandButton value="No" process="@this" async="true"
+							onclick="dialogEliminarAsignatura.hide()" />
+					</h:panelGrid>
+				</h:form>
+			</center>
+		</p:dialog>
+
+		<p:dialog id="dglEliminarAsignaturaHija" header="Confirmación"
+			widgetVar="dialogEliminarAsignaturaHija" modal="true"
+			resizable="false" closable="false" closeOnEscape="false">
+			<center>
+				<h:form id="formEliminarAsignaturaHija" acceptcharset="iso-8859-1">
+					<h:panelGrid columns="3">
+						<p:commandButton disabled="true" icon="ui-icon-alert" />
+						<p:spacer width="10" />
+						<h:outputText
+							value="Está seguro que desea eliminar la asignatura #{mallasController.hijaAsignatura.codigo}?" />
+					</h:panelGrid>
+					<p:separator />
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" id="btnEliminarHijaAsignatura"
+							update=":formAsignatura:tablaHijas :formAsignatura:msgAsignatura"
+							oncomplete="dialogEliminarAsignaturaHija.hide()"
+							actionListener="#{mallasController.tomarNombreComponente}"
+							action="#{mallasController.registrarAsignaturaHija}" />
+						<p:spacer width="20" />
+						<p:commandButton value="No" process="@this" async="true"
+							onclick="dialogEliminarAsignaturaHija.hide()" />
+					</h:panelGrid>
+				</h:form>
+			</center>
+		</p:dialog>
+
+		<p:dialog id="modalImportarMallaId" header="Importar Malla"
+			widgetVar="dlgImportarMallaId" modal="true">
+			<div align="center">
+				<h:form id="formImportarMallaId" acceptcharset="iso-8859-1">
+					<p:growl id="msgImportarMalla" showDetail="false" life="2500" />
+					<p:fieldset>
+						<h:panelGrid columns="7">
+							<h:outputText value="MATRIZ/EXTENSIÓN: "
+								style="font-weight:bold;float:right;font-size:14px;" />
+							<p:spacer width="5" />
+							<p:selectOneMenu value="#{mallasController.idSedeImportacion}">
+								<p:ajax event="change" update="@form"
+									listener="#{mallasController.cargarCarrerasImportacion}" />
+								<f:selectItem itemLabel="--seleccionar--" itemValue="" />
+								<f:selectItems value="#{mallasController.sedesImportacion}"
+									var="sede" itemValue="#{sede.id}" itemLabel="#{sede.nombre}" />
+							</p:selectOneMenu>
+							<p:spacer width="15" />
+							<h:outputText value="Carrera: "
+								style="font-weight:bold;float:right;font-size:14px;" />
+							<p:spacer width="5" />
+							<p:selectOneMenu style="width:270px;" filter="true"
+								converter="infoCarreraImportacionConverter"
+								filterMatchMode="startsWith" effect="fade"
+								disabled="#{mallasController.carrerasImportacion.size() > 0 ? false : true}"
+								value="#{mallasController.carreraSeleccionadaImportacion}"
+								var="karr">
+								<p:ajax event="change" update="@form" global="false"
+									listener="#{mallasController.cargarMallasImportacion}" />
+								<f:selectItem itemLabel="--seleccionar--" itemValue="" />
+								<f:selectItems value="#{mallasController.carrerasImportacion}"
+									var="carr" itemValue="#{carr}"
+									itemLabel="#{carr.carreraIesDTO.label}" />
+								<p:column>
+									<h:outputText style="font-size:11px;width: 265px;"
+										value="#{karr.carreraIesDTO.label}" />
+								</p:column>
+							</p:selectOneMenu>
+						</h:panelGrid>
+						<br></br>
+						<br></br>
+
+						<p:dataTable id="tablaMallasImportacion"
+							value="#{mallasController.mallasImportacion}"
+							rowKey="#{malla.id}" paginator="true" rowIndexVar="rowIx"
+							rows="10"
+							rowStyleClass="#{empty rowIx or rowIx mod 2 ne 0 ? 'filaImpar' : ''}"
+							var="malla" emptyMessage="No tiene mallas curriculares"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+							rowsPerPageTemplate="5,10,15">
+
+							<f:facet name="header">
+								<h:outputText value="Mallas Curriculares"
+									style="font-size:12px;font-weight:bold;float:left;" />
+							</f:facet>
+							<p:column headerText="Malla">
+								<h:outputText value="#{malla.codigoUnico}" />
+								<h:outputText id="reformaImportacionId" style="font-weight:bold"
+									rendered="#{malla.reforma != null}" value=" (Reformada)" />
+							</p:column>
+							<p:column headerText="Descripcion" style="white-space: 30px;">
+								<h:inputTextarea value="#{malla.descripcion}" rows="2" cols="50"
+									disabled="true" style="resize:none;" />
+
+							</p:column>
+							<p:column headerText="Fecha Inicio">
+								<h:outputText value="#{malla.fechaInicioVigencia}">
+									<f:convertDateTime pattern="dd-MM-yyyy" />
+								</h:outputText>
+							</p:column>
+							<p:column headerText="Fecha Fin">
+								<h:outputText value="#{malla.fechaFinVigencia}">
+									<f:convertDateTime pattern="dd-MM-yyyy" />
+								</h:outputText>
+							</p:column>
+							<p:column headerText=" ">
+								<p:commandLink value="Importar" title="importar"
+									style="color:#5385AB;text-decoration:underline;font-weight:bold"
+									oncomplete="dglImportarMalla.show()"
+									actionListener="#{mallasController.editarMalla(malla,false)}"
+									update=":formConfirmacionImportarMallaId">
+								</p:commandLink>
+							</p:column>
+						</p:dataTable>
+					</p:fieldset>
+					<p:spacer width="20" />
+					<p:commandButton value="Cancelar" process="@this" async="true"
+						onclick="dlgImportarMallaId.hide()" />
+				</h:form>
+			</div>
+		</p:dialog>
+
+		<p:dialog header="Confirmación" widgetVar="dglImportarMalla"
+			modal="true" resizable="false" closable="false" closeOnEscape="false">
+			<center>
+				<h:form id="formConfirmacionImportarMallaId" acceptcharset="iso-8859-1">
+					<h:panelGrid columns="3">
+						<p:commandButton disabled="true" icon="ui-icon-alert" />
+						<p:spacer width="10" />
+						<h:outputText
+							value="Está seguro que desea importar la malla: #{mallasController.mallaCrearEditar.codigoUnico}?" />
+					</h:panelGrid>
+					<p:separator />
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" update=":formMallas"
+							oncomplete="dglImportarMalla.hide(); dlgImportarMallaId.hide();"
+							action="#{mallasController.crearMallaImportada}" />
+						<p:spacer width="20" />
+						<p:commandButton value="No" process="@this" async="true"
+							onclick="dglImportarMalla.hide()" />
+					</h:panelGrid>
+				</h:form>
+			</center>
+		</p:dialog>
+
+	</ui:define>
+</ui:composition>
+</html>

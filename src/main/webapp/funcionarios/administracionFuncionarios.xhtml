@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<h:form id="formAdministracion" acceptcharset="iso-8859-1">
+			<p:messages id="mensajes" autoUpdate="true" showDetail="false"
+				closable="true" />
+
+			<h:outputText style="visibility:hidden;font-size:0px;"
+				value="#{funcinarioController.carreraSeleccionada.nombre}" />
+			<center>
+				<p:panel header="ADMINISTRACIÓN DE FUNCIONARIOS">
+
+					<h:panelGrid columns="3" cellpadding="0" cellspacing="1"
+						style="float:left;">
+						<h:outputText style="float:right;font-size:10px;"
+							value="Identificación:" />
+						<h:inputText value="#{funcionarioController.identificacion}" />
+						<p:commandButton style="width:20px;height:20px"
+							update=":formAdministracion" icon="ui-icon-search" title="Buscar"
+							action="#{funcionarioController.buscarFuncionarioPorCedula}" />
+					</h:panelGrid>
+
+					<p:commandButton style="float:right;" value="Nuevo" rendered="#{!funcionarioController.alertaEvaluador}"
+						action="#{funcionarioController.nuevo}" update="@all"
+						actionListener="#{funcionarioController.iniciarNuevoFuncionario}">
+						<f:setPropertyActionListener value="Datos Personales"
+							target="#{funcionarioController.pestania}" />
+					</p:commandButton>
+					<br />
+					<br />
+
+					<h:panelGrid id="paginadores" columns="3">
+						<p:commandButton style="width:80px;" title="atras"
+							icon="ui-icon-arrowreturnthick-1-w" id="btnAtras"
+							disabled="#{funcionarioController.indice > 0 ? false : true}"
+							actionListener="#{funcionarioController.modificarIndice}"
+							action="#{funcionarioController.listarFuncionarios}"
+							update=":formAdministracion" />
+						<p:spacer />
+						<p:commandButton style="width:80px;" title="siguiente"
+							update=":formAdministracion" icon="ui-icon-arrowreturnthick-1-e"
+							disabled="#{not estudianteController.habilitarSiguiente}"
+							actionListener="#{funcionarioController.modificarIndice}"
+							process="@this"
+							action="#{funcionarioController.listarFuncionarios}"
+							id="btnSiguiente" />
+					</h:panelGrid>
+
+					<h:panelGrid columns="2" style="float:right;">
+						<h:outputText value="registros: " />
+						<p:selectOneMenu value="#{funcionarioController.registros}"
+							immediate="true"
+							valueChangeListener="#{funcionarioController.tomarRango}">
+							<p:ajax event="change" update="@this :formAdministracion" />
+							<f:selectItems value="#{funcionarioController.rangos}" var="ran"
+								itemValue="#{ran}" itemLabel="#{ran}" />
+						</p:selectOneMenu>
+					</h:panelGrid>
+					<br />
+					<br />
+					<br />
+					<h:outputText
+						style="font-size:14px;float:left;color:#0078D0;font-weight:bold;"
+						value="Total funcionarios: #{funcionarioController.numeroFuncionarios}" />
+					<br />
+					<br />
+
+					<p:dataTable id="tablaFuncionarios" paginator="false"
+						scrollHeight="500" scrollable="true"
+						filteredValue="#{funcionarioController.funcionariosFiltros}"
+						value="#{funcionarioController.funcionarios}" var="func"
+						emptyMessage="No se encontraron registros">
+
+						<p:column headerText="Identificación"
+							filterBy="#{func.identificacion}">
+							<h:outputText value="#{func.identificacion}" />
+						</p:column>
+
+						<p:column headerText="Apellidos"
+							filterBy="#{func.apellidoPaterno}">
+							<h:outputText
+								value="#{func.apellidoPaterno} #{func.apellidoMaterno}" />
+						</p:column>
+
+						<p:column headerText="Nombres" filterBy="#{doc.nombres}">
+							<h:outputText value="#{func.nombres}" />
+						</p:column>
+
+						<p:column headerText="Discapacidad">
+							<h:outputText value="#{func.discapacidad.value}" />
+						</p:column>
+
+						<p:column headerText="Acciones">
+							<center>
+								<p:commandButton title="seleccionar" icon="ui-icon-pencil"
+									action="#{funcionarioController.nuevo}"
+									style="width:16px;height:16px;">
+									<f:setPropertyActionListener
+										target="#{funcionarioController.funcionarioSeleccionado}"
+										value="#{func}" />
+									<f:setPropertyActionListener value="0"
+										target="#{funcionarioController.indiceTab}" />
+								</p:commandButton>
+								<p:commandButton title="eliminar" icon="ui-icon-close"
+									oncomplete="dialogEliminarFunc.show()"
+									update=":formEliminarFunc" style="width:16px;height:16px;">
+									<f:setPropertyActionListener value="#{func}"
+										target="#{funcionarioController.funcionarioSeleccionado}" />
+								</p:commandButton>
+							</center>
+						</p:column>
+
+					</p:dataTable>
+
+				</p:panel>
+			</center>
+		</h:form>
+
+
+		<p:dialog id="dlgEliminarFunc" widgetVar="dialogEliminarFunc"
+			modal="true" closable="false" header="Confirmacion"
+			closeOnEscape="false" resizable="false" showEffect="fade">
+			<h:form id="formEliminarFunc" acceptcharset="iso-8859-1">
+				<center>
+					<h:panelGrid columns="2">
+						<p:commandButton icon="ui-icon-alert" disabled="true" />
+						<h:outputText value="¿Desea eliminar el Funcionario seleccionado?" />
+					</h:panelGrid>
+					<h:panelGrid columns="1">
+						<h:inputTextarea readonly="true" cols="50" rows="3"
+							value="#{funcionarioController.funcionarioSeleccionado.apellidoPaterno} #{funcionarioController.funcionarioSeleccionado.apellidoMaterno} #{funcionarioController.funcionarioSeleccionado.nombres}" />
+					</h:panelGrid>
+					<p:separator />
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" oncomplete="dialogEliminarFunc.hide()"
+							action="#{funcionarioController.eliminarFuncionario}"
+							update=":formAdministracion" />
+						<p:commandButton value="No" onclick="dialogEliminarFunc.hide()" />
+					</h:panelGrid>
+				</center>
+			</h:form>
+		</p:dialog>
+
+	</ui:define>
+
+</ui:composition>
+</html>

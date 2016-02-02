@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:l="http://www.lapis.com/jsf/exporter">
+
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+			<p:growl id="growl" sticky="true"></p:growl>
+			<p:panel header="VARIABLES">
+				<h:panelGrid columns="2">
+					<h:outputText value="Seleccione el Proceso: " />
+					<h:selectOneMenu
+						valueChangeListener="#{resultadoController.seleccionarProceso}"
+						value="#{resultadoController.procesoSeleccionado.id}">
+						<f:selectItem itemLabel="--Seleccionar--" />
+						<f:selectItems value="#{resultadoController.procesosEvaluacion}"
+							var="proc" itemValue="#{proc.id}" itemLabel="#{proc.nombre}" />
+						<p:ajax process="@this" update=":formPrincipal"></p:ajax>
+					</h:selectOneMenu>
+				</h:panelGrid>
+				<p:panel id="panelResultadoCuantitativas"
+					header="VARIABLES CUANTITATIVAS">
+					<p:dataTable id="tblResultadoCuantitativas"
+						value="#{resultadoController.listaVariablesCuantitativas}"
+						var="resultado" paginator="true" rows="7"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15">
+
+						<p:column headerText="Variable">
+							<h:inputTextarea readonly="true" cols="150"
+								value="#{resultado.valorVariableDTO.variableProcesoDTO.variableDTO.etiqueta}" />
+						</p:column>
+
+						<p:column headerText="Valor">
+							<h:outputText value="#{resultado.valorVariableDTO.valor}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+
+				<p:panel id="panelResultadoCualitativas"
+					header="VARIABLES CUALITATIVAS">
+
+					<p:dataTable id="tblResultadoVariablesCualitativas"
+						paginator="true"
+						value="#{resultadoController.listaVariablesCualitativas}"
+						var="resultado" rows="7"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15">
+						<p:column headerText="Nombre">
+							<h:inputTextarea readonly="true" cols="150"
+								value="#{resultado.valorVariableDTO.variableProcesoDTO.variableDTO.etiqueta}" />
+						</p:column>
+						<p:column headerText="Valor">
+							<h:outputText value="#{resultado.valorVariableDTO.valor}" />
+						</p:column>
+					</p:dataTable>
+
+
+				</p:panel>
+			</p:panel>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage name="saving.gif" library="img" />
+			</center>
+		</p:dialog>
+
+		<p:messages id="messages" showDetail="false" autoUpdate="true"
+			showSummary="true" closable="true" globalOnly="true" />
+
+		<h:form id="formulario" acceptcharset="iso-8859-1">
+			<p:panel header="EVIDENCIA INSTITUCIONAL" style="text-align:left;">
+
+				<p:fieldset legend="Evidencias" style="margin:  20px 0px 0px 0px;">
+					<p:dataTable id="tablaEConcepto" var="evidenciaconcepto"
+						value="#{evidenciaInstitucionalController.listaEvidenciaIES}"
+						emptyMessage="No se requiere evidencia">
+
+						<p:column headerText="Evidencias">
+							<h:outputText value="#{evidenciaconcepto.nombre}" />
+						</p:column>
+						<p:column headerText="Lista Archivos">
+							<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+								var="evidencia" emptyMessage="No hay Evidencias">
+
+								<p:column>
+									<h:outputText value="#{evidencia.nombreArchivo}" />
+
+								</p:column>
+								<p:column>
+
+									<p:commandButton title="descargar" icon="ui-icon-document"
+										oncomplete="dlgDescarga.show()" update=":formulario"
+										process="@this"
+										actionListener="#{evidenciaInstitucionalController.enviarEvidencia(evidencia)}">
+									</p:commandButton>
+								</p:column>
+
+							</p:dataTable>
+						</p:column>
+					</p:dataTable>
+
+				</p:fieldset>
+			</p:panel>
+			<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+				resizable="false" closable="false" closeOnEscape="false"
+				widgetVar="dlgDescarga" modal="true">
+				<p:panel>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" update=":formulario"
+							style="width:100px" icon="ui ui-icon-check" ajax="false"
+							onclick="dlgDescarga.hide()">
+							<p:fileDownload
+								value="#{evidenciaInstitucionalController.documentoDescarga}" />
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgDescarga.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+
+
+				</p:panel>
+
+			</p:dialog>
+
+			<p:confirmDialog id="cfEliminar" widgetVar="dlgEliminar"
+				header="Eliminar Evidencia" severity="alert"
+				message="¿Desea eliminar la evidencia seleccionada?">
+				<center>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" update=":formulario"
+							actionListener="#{evidenciaInstitucionalController.eliminarEvidencia}"
+							onclick="dlgEliminar.hide()" style="width:100px"
+							icon="ui ui-icon-check" />
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgEliminar.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+				</center>
+			</p:confirmDialog>
+
+
+		</h:form>
+		<p:dialog id="idInforEvidencia" header="Cargar Evidencias"
+			resizable="false" closable="true" closeOnEscape="false"
+			widgetVar="dlgCargarEvidencia" modal="true">
+			<p:panel>
+				<h:form id="formEvidencia" enctype="multipart/form-data" acceptcharset="iso-8859-1">
+					<p:fileUpload id="idUpload" mode="simple"
+						allowTypes="/(\.|\/)(pdf|doc|docx|xls|xlsx|ppt|pptx|jpeg|jpg|png)$/"
+						value="#{evidenciaInstitucionalController.file}" />
+					<p:commandButton process="idUpload" value="Cargar" ajax="false"
+						actionListener="#{evidenciaInstitucionalController.uploadfile}" />
+				</h:form>
+			</p:panel>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

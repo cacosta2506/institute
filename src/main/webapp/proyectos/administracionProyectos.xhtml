@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+
+	<ui:define name="contenido">
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage value="../images/saving.gif" />
+			</center>
+		</p:dialog>
+<h:inputHidden value="#{ingresoController.onlyRead}" />
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+<h:inputHidden value="#{ingresoController.onlyRead}" />
+		<h:inputHidden
+			value="#{editarProyectoPresupuestoParticipacionController.opcion}" />
+
+		<h:form id="formulario" acceptcharset="iso-8859-1">
+			<p:growl id="messages" showDetail="false" autoUpdate="true"
+				showSummary="true"></p:growl>
+			<p:panel header="ADMINISTRACIÓN DE PROYECTOS"
+				style="text-align:center;">
+				<p:outputPanel rendered="#{!proyectoController.alertaEvaluador}">
+					<p:commandButton action="#{proyectoController.nuevoProyecto}"
+						value="Nuevo" style="float:right" process="@this"
+						partialSubmit="true">
+						<f:setPropertyActionListener
+							target="#{proyectoPresupuestoParticipacionController.proyectoDto}"
+							value="#{proyectoController.proyectoDto}" />
+					</p:commandButton>
+				</p:outputPanel>
+				<br />
+				<br />
+				<br />
+				<h:outputText
+					style="font-size:12px;float:left;color:#0078D0;font-weight:bold;"
+					value="Nro. proyectos registrados: #{proyectoController.totalProyectos}" />
+				<br />
+				<p:dataTable id="tablaProyecto" var="tblProyecto"
+					value="#{proyectoController.listaProyectoDto}"
+					widgetVar="tablSedeIes" border="1" style="width:auto;height:auto"
+					paginator="true" rows="10"
+					emptyMessage="No se encontraron registros"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15">
+
+					<p:column id="idNombres" filterBy="#{tblProyecto.nombre}"
+						headerText="Nombre" filterMatchMode="contains"
+						style="text-align: left;">
+						<h:inputTextarea value="#{tblProyecto.nombre}" cols="80"
+							readonly="true" />
+					</p:column>
+
+					<p:column headerText="Tipo">
+						<h:outputText value="#{tblProyecto.tipo.value}" />
+					</p:column>
+
+					<p:column headerText="Inicio Inicio">
+						<h:outputText value="#{tblProyecto.fechaInicio}" />
+					</p:column>
+
+					<p:column headerText="Fin Planteado">
+						<h:outputText value="#{tblProyecto.fechaFinPlaneado}" />
+					</p:column>
+					
+					<p:column headerText="Fin Real">
+						<h:outputText value="#{tblProyecto.fechaFinReal}" />
+					</p:column>
+
+					<p:column filterBy="#{tblProyecto.descripcion}"
+						headerText="Descripción">
+						<h:inputTextarea value="#{tblProyecto.descripcion}" readonly="true" cols="120" rows="4"/>
+					</p:column>
+
+					<p:column headerText="Evaluación"
+						rendered="#{proyectoController.alertaEvaluador}">
+						<h:outputText style="font-size:10px;"
+							value="#{tblProyecto.aceptadoEvaluador ? 'SI': 'NO'}" />
+					</p:column>
+					<p:column headerText="Observación"
+						rendered="#{proyectoController.alertaEvaluador}">
+						<h:inputTextarea  value="#{tblProyecto.observacionEvaluador}" readonly="true" cols="120" rows="4"/>
+					</p:column>
+					<p:column
+						headerText="#{!proyectoController.alertaEvaluador ? 'Acciones' : 'Verificación'}">
+						<p:commandButton id="editar" icon="ui-icon-pencil"
+							style="width:24px;height:24px;"
+							action="#{proyectoController.editarProyectos(tblProyecto.id)}">
+						</p:commandButton>
+						<p:commandButton icon="ui-icon-close" title="eliminar"
+							style="width:24px;height:24px;"
+							action="#{proyectoController.comprobarProyecto(tblProyecto.id)}"
+							rendered="#{!proyectoController.alertaEvaluador}">
+						</p:commandButton>
+						<p:commandButton title="Mostrar Evidencias"
+							icon="ui-icon-circle-triangle-s" style="width:24px;height:24px;"
+							update=":formulario:campoEvidencia"
+							action="#{proyectoController.cargarEvidencia}" immediate="true"
+							rendered="#{proyectoController.alertaEvaluador}">
+							<f:setPropertyActionListener
+								target="#{proyectoController.proyectoDto}"
+								value="#{tblProyecto}" />
+						</p:commandButton>
+
+						<p:outputPanel
+							rendered="#{proyectoController.alertaEvaluador and tblProyecto.faseIesDTO.faseProcesoDTO.faseDTO.id == '1'}">
+							<i class="fa fa-exclamation-triangle"
+								style="color: #E8E870; text-align: center; font-size: 18px;"></i>
+						</p:outputPanel>
+
+						<p:outputPanel
+							rendered="#{proyectoController.alertaEvaluador and tblProyecto.faseIesDTO.faseProcesoDTO.faseDTO.id == '2'}">
+
+							<i class="fa fa-check"
+								style="color: green; text-align: center; font-size: 14px;"></i>
+						</p:outputPanel>
+
+						<p:outputPanel
+							rendered="#{(tblProyecto.verificarEvidencia and proyectoController.alertaEvaluador) ? true : false}">
+							<p:graphicImage id="nuevo" library="img" name="nuevo.gif"
+								style="text-align: center; font-size: 20px;" />
+
+						</p:outputPanel>
+
+					</p:column>
+					<p:column headerText="Histórico">
+						<p:commandLink value="Histórico"
+							actionListener="#{proyectoController.obtenerHistoricoProyecto(tblProyecto)}"
+							update="@form" oncomplete="historicoModal.show()" async="true"
+							process="@this">
+							<f:setPropertyActionListener
+								target="#{proyectoController.proyectoSeleccionado}"
+								value="#{tblProyecto}" />
+						</p:commandLink>
+
+					</p:column>
+				</p:dataTable>
+			</p:panel>
+			<p:outputPanel rendered="#{proyectoController.alertaEvaluador}">
+				<p:fieldset id="campoEvidencia" legend="Evidencias"
+					style="margin:  20px 0px 0px 0px;">
+					<p:outputLabel style="font-weight: bold;"
+						value="#{proyectoController.proyectoDto.nombre}" />
+					<p:dataTable id="tablaEConcepto" var="objEvidencia"
+						value="#{proyectoController.listaEvidenciaConceptoDto}"
+						emptyMessage="No hay Conceptos">
+
+						<p:column headerText="Evidencias">
+							<h:outputText value="#{objEvidencia.nombre}" />
+						</p:column>
+
+						<p:column headerText="Lista Archivos">
+							<p:dataTable value="#{objEvidencia.evidenciasDTO}"
+								var="evidencia" emptyMessage="No hay Evidencias">
+								<p:column>
+									<h:outputText value="#{evidencia.nombreArchivo}" />
+								</p:column>
+
+								<p:column>
+									<p:commandButton title="descargar" icon="ui-icon-document"
+										oncomplete="dlgDescarga.show()" process="@this"
+										update=":formulario"
+										actionListener="#{proyectoController.enviarEvidencia(evidencia)}">
+									</p:commandButton>
+								</p:column>
+							</p:dataTable>
+						</p:column>
+					</p:dataTable>
+				</p:fieldset>
+			</p:outputPanel>
+
+			<!-- Historicos de Proyectos -->
+
+			<p:dialog widgetVar="historicoModal" modal="true"
+				header="Histórico del Proyecto: #{proyectoController.proyectoSeleccionado.nombre}"
+				resizable="false" closeOnEscape="false" showEffect="fade"
+				hideEffect="fade">
+				<br />
+				<p:dataTable id="tblhistoricos" var="vv"
+					value="#{proyectoController.listaProyectoHistorico}"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"					 paginator="true" rows="10">
+					<p:column headerText="Tipo">
+						<h:outputText value="#{vv.tipo.value}" />
+					</p:column>
+
+					<p:column headerText="Fecha Inicio">
+						<h:outputText value="#{vv.fechaInicio}" />
+					</p:column>
+
+					<p:column headerText="Fin Planteado">
+						<h:outputText value="#{vv.fechaFinPlaneado}" />
+					</p:column>
+
+					<p:column headerText="Observación"
+						style="text-align:left;width:200px; white-space:normal;">
+						<h:outputText value="#{vv.descripcion}" />
+					</p:column>
+
+					<p:column headerText="Usuario" style="width:80px">
+						<h:outputText value="#{vv.auditoriaDTO.usuarioModificacion}">
+						</h:outputText>
+					</p:column>
+					<p:column headerText="Fecha" style="width:80px">
+						<center>
+							<h:outputText value="#{vv.auditoriaDTO.fechaModificacion}">
+								<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+									timeZone="GMT-5" />
+							</h:outputText>
+						</center>
+					</p:column>
+				</p:dataTable>
+				<br></br>
+				<p:commandButton value="Cerrar" async="true" process="@this"
+					onclick="historicoModal.hide()" />
+			</p:dialog>
+			<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+				resizable="false" closable="false" closeOnEscape="false"
+				widgetVar="dlgDescarga" modal="true">
+				<p:panel>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" style="width:100px"
+							icon="ui ui-icon-check" ajax="false" onclick="dlgDescarga.hide()">
+							<p:fileDownload value="#{proyectoController.documentoDescarga}" />
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgDescarga.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+				</p:panel>
+			</p:dialog>
+
+
+
+			<p:confirmDialog id="delConfirmation"
+				message="Está seguro de eliminar?" header="Confirmación"
+				severity="alert" widgetVar="deleteConfirmation">
+				<p:commandButton id="go" value="Si" ajax="false"
+					oncomplete="deleteConfirmation.hide()"
+					actionListener="#{proyectoController.eliminarProyecto}" />
+				<p:commandButton id="cancel" value="No"
+					onclick="deleteConfirmation.hide()" type="button" />
+			</p:confirmDialog>
+			<p:confirmDialog id="delConfirmation2"
+				message="El Proyecto tiene Presupuestos y Participaciones Activas, Está seguro de eliminar?"
+				header="Confirmación" severity="alert"
+				widgetVar="deleteConfirmation2">
+				<p:commandButton id="go2" value="Si" ajax="false"
+					oncomplete="deleteConfirmation2.hide()"
+					actionListener="#{proyectoController.eliminarProyecto}" />
+				<p:commandButton id="cancel2" value="No"
+					onclick="deleteConfirmation2.hide()" type="button" />
+			</p:confirmDialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>
+</html>

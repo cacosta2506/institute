@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formConvenios" acceptcharset="iso-8859-1">
+			<p:growl id="mensajesDialogConvenio" autoUpdate="false"
+				showDetail="false" closable="true" />
+			<f:facet name="header"></f:facet>
+			<p:confirmDialog id="deleteConfirmDialog"
+				message="Está seguro de eliminar el Convenio?"
+				header="Iniciando proceso de eliminación" severity="alert"
+				widgetVar="deleteConfirmation">
+				<div align="center">
+					<p:commandButton id="confirm" value="Si"
+						update=":formConvenios "
+						oncomplete="deleteConfirmation.hide()"
+						action="#{convenioController.eliminarConvenio}" />
+					<p:commandButton id="decline" value="No"
+						onclick="deleteConfirmation.hide()" type="button" />
+				</div>
+			</p:confirmDialog>
+
+
+			<p:panel header="ADMINISTRACIÓN DE CONVENIOS VIGENTES"
+				style="text-align:center;">
+				<p:outputPanel rendered="#{!convenioController.alertaEvaluador}">
+					<p:commandButton style="float:right;" value="Nuevo"
+						action="#{convenioController.nuevoConvenio}"
+						update=":formAdmConvenio">
+					</p:commandButton>
+				</p:outputPanel>
+				<br />
+				<br />
+				<br />
+				<h:outputText
+					style="font-size:12px;float:left;color:#0078D0;font-weight:bold;"
+					value="Nro. convenios registrados: #{convenioController.totalConvenios}" />
+				<br />
+				<p:dataTable id="tablaConvenios"
+					value="#{convenioController.listaConvenioVigenteDTO}" var="cv"
+					emptyMessage="No se encontraron registros" paginator="true"
+					rows="10" rowsPerPageTemplate="5,10,15"
+					style="width:auto;height:auto"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+
+					<p:column headerText="Nombre" filterBy="#{cv.nombre}">
+						<h:inputTextarea value="#{cv.nombre}" readonly="true" cols="50"
+							style="resize:none;" rows="4" />
+					</p:column>
+
+					<p:column headerText="Fecha Inicio">
+						<h:outputText value="#{cv.fechaInicio}">
+							<f:convertDateTime pattern="dd-MM-yyyy" />
+						</h:outputText>
+					</p:column>
+
+					<p:column headerText="Fecha Fin">
+						<h:outputText value="#{cv.fechaFin}">
+							<f:convertDateTime pattern="dd-MM-yyyy" />
+						</h:outputText>
+					</p:column>
+
+					<p:column headerText="Institución firma convenio">
+						<h:inputTextarea value="#{cv.nombreInstitucion}" readonly="true"
+							cols="40" style="resize:none;" rows="4" />
+					</p:column>
+					<p:column headerText="Descripción">
+						<h:inputTextarea value="#{cv.descripcion}" readonly="true"
+							cols="40" style="resize:none;" rows="4" />
+					</p:column>
+					<p:column headerText="Evaluación"
+						rendered="#{convenioController.alertaEvaluador}">
+						<h:outputText value="#{cv.aceptadoEvaluador ? 'SI': 'NO'}" />
+					</p:column>
+					<p:column headerText="Observación"
+						rendered="#{convenioController.alertaEvaluador}">
+						<h:inputTextarea value="#{cv.observacionEvaluador}"
+							readonly="true" cols="40" style="resize:none;" rows="4" />
+					</p:column>
+
+					<!-- editar -->
+					<p:column
+						headerText="#{!convenioController.alertaEvaluador ? 'Acciones' : 'Verificación'}">
+						<p:commandButton icon="ui-icon-pencil" update=":formAdmConvenio :formConvenios"
+							style="width:24px;height:24px;"
+							action="#{convenioController.editarConvenio()}">
+							<f:setPropertyActionListener
+								target="#{convenioController.convenioVigenteDTO}" value="#{cv}" />
+						</p:commandButton>
+						<p:commandButton oncomplete="deleteConfirmation.show();"
+							title="eliminar" icon="ui-icon-close"
+							style="width:24px;height:24px;"
+							rendered="#{!convenioController.alertaEvaluador}">
+							<f:setPropertyActionListener
+								target="#{convenioController.convenioVigenteDTO}" value="#{cv}" />
+						</p:commandButton>
+						<p:commandButton title="Mostrar Evidencias"
+							icon="ui-icon-circle-triangle-s" ajax="false"
+							action="#{convenioController.cargarEConcepto}"
+							style="width:24px;height:24px;"
+							rendered="#{convenioController.alertaEvaluador}">
+							<f:setPropertyActionListener
+								target="#{convenioController.convenioVigenteDTO}" value="#{cv}" />
+						</p:commandButton>
+
+						<p:outputPanel
+							rendered="#{convenioController.alertaEvaluador and cv.faseIesDTO.faseProcesoDTO.faseDTO.id == '1'}">
+							<i class="fa fa-exclamation-triangle"
+								style="color: #E8E870; text-align: center; font-size: 18px;"></i>
+						</p:outputPanel>
+
+						<p:outputPanel
+							rendered="#{convenioController.alertaEvaluador and cv.faseIesDTO.faseProcesoDTO.faseDTO.id == '2'}">
+
+							<i class="fa fa-check"
+								style="color: green; text-align: center; font-size: 14px;"></i>
+						</p:outputPanel>
+
+						<p:outputPanel
+							rendered="#{(cv.verificarEvidencia and convenioController.alertaEvaluador) ? true : false}">
+							<p:graphicImage id="nuevo" library="img" name="nuevo.gif"
+								style="text-align: center; font-size: 20px;" />
+
+						</p:outputPanel>
+					</p:column>
+					<p:column headerText="Histórico"
+						rendered="#{convenioController.alertaEvaluador}">
+						<p:commandLink value="Histórico"
+							actionListener="#{convenioController.obtenerHistoricoConvenio(cv)}"
+							update="@form" oncomplete="historicoModal.show()" async="true"
+							process="@this">
+							<f:setPropertyActionListener
+								target="#{convenioController.convenioSeleccionado}"
+								value="#{cv}" />
+						</p:commandLink>
+
+					</p:column>
+				</p:dataTable>
+				<p:outputPanel rendered="#{convenioController.evidenciaConcepto}">
+					<p:fieldset legend="Evidencias" style="margin:  20px 0px 0px 0px;">
+						<p:outputLabel
+							style="font-weight:bold; float:left; width:1200px; white-space:normal;"
+							value="#{convenioController.convenioVigenteDTO.nombre}" />
+
+						<br />
+						<br />
+						<br />
+						<p:dataTable id="tablaEConcepto" var="evidenciaconcepto"
+							value="#{convenioController.listaEvidenciaConcepto}"
+							emptyMessage="No hay Conceptos">
+
+							<p:column headerText="Evidencias">
+								<h:outputText style="width:200px; white-space:normal;"
+									value="#{evidenciaconcepto.nombre}" />
+							</p:column>
+							<p:column headerText="Lista Archivos">
+								<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+									var="evidencia" emptyMessage="No hay Evidencias">
+
+									<p:column>
+										<h:outputText value="#{evidencia.nombreArchivo}" />
+
+									</p:column>
+									<p:column>
+
+										<p:commandButton title="descargar" icon="ui-icon-document"
+											oncomplete="dlgDescarga.show()" update=":formAdmConvenio"
+											process="@this"
+											actionListener="#{convenioController.enviarEvidencia(evidencia)}">
+
+										</p:commandButton>
+
+
+									</p:column>
+
+								</p:dataTable>
+							</p:column>
+
+
+						</p:dataTable>
+
+					</p:fieldset>
+				</p:outputPanel>
+			</p:panel>
+			<!-- Historicos de Convenio -->
+
+			<p:dialog widgetVar="historicoModal" modal="true"
+				header="Histórico del Convenio : #{convenioController.convenioSeleccionado.nombre}"
+				resizable="false" closeOnEscape="false" showEffect="fade"
+				hideEffect="fade">
+				<br />
+				<p:dataTable id="tblhistoricos" var="vv"
+					value="#{convenioController.listaConvenioHistorico}"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					style="width:900px" paginator="true" rows="10">
+
+					<p:column headerText="Nombre">
+						<h:inputTextarea value="#{vv.nombre}" readonly="true" cols="50"
+							style="resize:none;" rows="2" />
+					</p:column>
+					<p:column headerText="Fecha Inicio">
+						<h:outputText value="#{vv.fechaInicio}">
+							<f:convertDateTime pattern="dd-MM-yyyy" />
+						</h:outputText>
+					</p:column>
+
+					<p:column headerText="Fecha Fin">
+						<h:outputText value="#{vv.fechaFin}">
+							<f:convertDateTime pattern="dd-MM-yyyy" />
+						</h:outputText>
+					</p:column>
+					<p:column headerText="Evaluación">
+						<h:inputTextarea value="#{vv.aceptadoEvaluador ? 'SI': 'NO'}"
+							readonly="true" cols="40" style="resize:none;" rows="2" />
+					</p:column>
+
+					<p:column headerText="Observación"
+						style="text-align:left;width:200px; white-space:normal;">
+						<h:outputText value="#{vv.observacionEvaluador}" />
+					</p:column>
+
+					<p:column headerText="Usuario" style="width:80px">
+						<h:outputText value="#{vv.auditoria.usuarioModificacion}">
+						</h:outputText>
+					</p:column>
+					<p:column headerText="Fecha" style="width:80px">
+						<center>
+							<h:outputText value="#{vv.auditoria.fechaModificacion}">
+								<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+									timeZone="GMT-5" />
+							</h:outputText>
+						</center>
+					</p:column>
+				</p:dataTable>
+				<br></br>
+				<p:commandButton value="Cerrar" async="true" process="@this"
+					onclick="historicoModal.hide()" />
+			</p:dialog>
+			<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+				resizable="false" closable="false" closeOnEscape="false"
+				widgetVar="dlgDescarga" modal="true">
+				<p:panel>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" update=":formAdmConvenio"
+							style="width:100px" icon="ui ui-icon-check" ajax="false"
+							onclick="dlgDescarga.hide()">
+							<p:fileDownload value="#{convenioController.documentoDescarga}" />
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgDescarga.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+
+
+				</p:panel>
+
+			</p:dialog>
+		</h:form>
+
+		<p:dialog widgetVar="dialogConvenio" id="dialogConvenioId"
+			header="Nuevo/Editar Convenio Vigente" resizable="true">
+			<center>
+				<h:form id="formAdmConvenio" acceptcharset="iso-8859-1">
+					<p:fieldset legend="Información General">
+						<h:panelGrid columns="2" cellspacing="5">
+
+							<h:outputText value="Nombre del convenio:" />
+							<h:inputTextarea id="txt_nombre" tabindex="1"
+								value="#{convenioController.convenioVigenteDTO.nombre}"
+								cols="30" style="resize:none; width:250px" rows="2" />
+
+							<h:outputText value="Fecha Inicio:" />
+							<p:calendar showButtonPanel="true" navigator="true" size="37"
+								pattern="dd-MM-yyyy" id="calFechaInicio" tabindex="7"
+								maxdate="#{docenteController.fechaActual}"
+								value="#{convenioController.convenioVigenteDTO.fechaInicio}" />
+
+							<h:outputText value="Fecha Fin:" />
+							<p:calendar showButtonPanel="true" navigator="true" size="37"
+								pattern="dd-MM-yyyy" id="calFechaFin" tabindex="7"
+								maxdate="#{docenteController.fechaActual}"
+								value="#{convenioController.convenioVigenteDTO.fechaFin}" />
+
+							<h:outputText value="Institución firma convenio" />
+							<h:inputTextarea id="txt_institucion" tabindex="4"
+								value="#{convenioController.convenioVigenteDTO.nombreInstitucion}"
+								cols="30" style="width:250px; resize:none;" rows="2" />
+
+							<h:outputText
+								value="Descripción del objeto del convenio (opcional):" />
+							<h:inputTextarea id="txt_descp" tabindex="5" rows="2"
+								value="#{convenioController.convenioVigenteDTO.descripcion}"
+								cols="30" style="resize:none; width:250px" />
+
+						</h:panelGrid>
+					</p:fieldset>
+
+					<p:fieldset legend="Evaluación"
+						rendered="#{convenioController.alertaEvaluador}">
+						<h:panelGrid columns="2" cellspacing="5">
+							<h:outputText value="Aceptado Evaluador: " />
+							<p:selectOneMenu
+								value="#{convenioController.convenioVigenteDTO.aceptadoEvaluador}"
+								style="width:210px;" tabindex="6">
+								<f:selectItem itemLabel="Sí" itemValue="TRUE" />
+								<f:selectItem itemLabel="No" itemValue="FALSE" />
+
+								<p:ajax event="change" update="@this" global="false" />
+							</p:selectOneMenu>
+
+
+							<h:outputText value="Observación Evaluador:" />
+							<h:inputTextarea id="txtObservacion"
+								style="resize:none; width:250px;" tabindex="7"
+								value="#{convenioController.convenioVigenteDTO.observacionEvaluador}"
+								cols="30" required="true"
+								requiredMessage="Debe ingresar una observación" />
+
+						</h:panelGrid>
+					</p:fieldset>
+					<br />
+					<h:panelGrid columns="2">
+						<p:commandButton value="Guardar" tabindex="8"
+							action="#{convenioController.guardarConvenioVigente}"
+							update=":formConvenios :formAdmConvenio" />
+						<p:commandButton value="Cerrar" tabindex="9"
+							oncomplete="dialogConvenio.hide();">
+							<p:resetInput target=":dialogConvenioId" />
+						</p:commandButton>
+					</h:panelGrid>
+
+				</h:form>
+			</center>
+		</p:dialog>
+
+
+	</ui:define>
+</ui:composition>
+</html>

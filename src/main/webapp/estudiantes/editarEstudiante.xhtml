@@ -1,0 +1,788 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+		<script language="javascript">
+      <!--
+	      function validarNumero(evt){
+	         var charCode = (evt.which) ? evt.which : event.keyCode
+	         if (charCode > 31 && (charCode < 48 || charCode > 57)){
+	            return false;
+	         }
+	         return true;
+	      }
+
+          function verificarErroresCarreras(xhr, status, args) {  
+              if(!(args.validationFailed || !args.cerrarVentana)) {    
+            	  dlgMatricula.hide();  
+              }  
+          }
+          
+      //-->
+   </script>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<p:panel>
+			<center>
+				<f:facet name="header">
+					<h:outputText value="ADMINISTRACIÓN DE ESTUDIANTES" />
+				</f:facet>
+			</center>
+			<h:form id="formMensajes" acceptcharset="iso-8859-1">
+				<p:commandButton value="Regresar" style="float:right"
+					action="#{estudianteController.regresarAdministracion}" />
+				<br />
+			</h:form>
+			<p:fieldset
+				legend="ESTUDIANTE: #{estudianteController.estudianteSeleccionado.apellidoPaterno} #{estudianteController.estudianteSeleccionado.apellidoMaterno} #{estudianteController.estudianteSeleccionado.nombres}">
+				<p:tabView id="tabGeneral"
+					activeIndex="#{estudianteController.pestaniaActiva}">
+					<p:ajax immediate="true" event="tabChange" />
+					<p:tab id="tab1" title="Datos Personales">
+						<h:form id="formEstudiantes" acceptcharset="iso-8859-1">
+							<p:growl id="growl" showDetail="true" sticky="true"
+								showSummary="false" />
+							<center>
+								<h:panelGrid columns="4" cellspacing="10" cellpadding="5"
+									style="border:none">
+									<h:outputText value="Documento:" />
+									<p:selectOneMenu style="width:250px;"
+										value="#{estudianteController.estudianteSeleccionado.tipoIdentificacion}">
+										<p:ajax event="change" update="@this" />
+										<f:selectItems
+											value="#{estudianteController.tipoDocumentaciones}" />
+									</p:selectOneMenu>
+
+									<h:outputText value="Identificación:" />
+									<p:inputText style="width:250px;"
+										value="#{estudianteController.estudianteSeleccionado.identificacion}">
+										<p:ajax event="blur" update="@this" />
+									</p:inputText>
+
+									<h:outputText value="Primer Apellido: " />
+									<p:inputText onkeyup="this.value = this.value.toUpperCase()"
+										style="width:250px;"
+										value="#{estudianteController.estudianteSeleccionado.apellidoPaterno}">
+										<p:ajax event="blur" update="@this" />
+									</p:inputText>
+
+									<h:outputText value="Segundo Apellido: " />
+									<p:inputText onkeyup="this.value = this.value.toUpperCase()"
+										style="width:250px;"
+										value="#{estudianteController.estudianteSeleccionado.apellidoMaterno}">
+										<p:ajax event="blur" update="@this" />
+									</p:inputText>
+
+									<h:outputText value="Nombres: " />
+									<p:inputText onkeyup="this.value = this.value.toUpperCase()"
+										style="width:250px;"
+										value="#{estudianteController.estudianteSeleccionado.nombres}">
+										<p:ajax event="blur" update="@this" />
+									</p:inputText>
+
+									<h:outputText value="Fecha Nacimiento (opcional)" />
+									<p:calendar id="calFechaNacimiento" effect="slideDown"
+										mindate="01/01/1980" size="37"
+										maxdate="#{estudianteController.maxFechaNacimiento}"
+										value="#{estudianteController.estudianteSeleccionado.fechaNacimiento}"
+										navigator="true" pattern="dd-MM-yyyy">
+										<p:ajax event="dateSelect" update="@this" />
+									</p:calendar>
+
+									<h:outputText value="Sexo:" />
+									<p:selectOneMenu style="width:250px;"
+										value="#{estudianteController.estudianteSeleccionado.sexo}">
+										<f:selectItems value="#{estudianteController.generosEnum}" />
+									</p:selectOneMenu>
+
+									<h:outputText value="País de origen (opcional):" />
+									<p:selectOneMenu style="width:250px;"
+										value="#{estudianteController.estudianteSeleccionado.paisOrigen.id}">
+										<f:selectItem itemLabel="--Seleccionar--" />
+										<f:selectItems value="#{estudianteController.listaPaisDTO}"
+											var="pais" itemLabel="#{pais.nombre}" itemValue="#{pais.id}" />
+									</p:selectOneMenu>
+
+									<h:outputText value="Discapacidad:" />
+									<p:selectOneMenu style="width:250px;"
+										value="#{estudianteController.estudianteSeleccionado.discapacidad}">
+										<p:ajax event="change" update=":tabGeneral:formEstudiantes"
+											global="false" />
+										<f:selectItems
+											value="#{estudianteController.discapacidadesEnum}" />
+									</p:selectOneMenu>
+
+									<h:outputText id="numConadis" style="float:right;"
+										value="Número Conadis:"
+										rendered="#{estudianteController.estudianteSeleccionado.discapacidad.value !='NINGUNA'}" />
+									<p:inputText style="width:250px;"
+										rendered="#{estudianteController.estudianteSeleccionado.discapacidad.value !='NINGUNA'}"
+										value="#{estudianteController.estudianteSeleccionado.numeroConadis}" />
+									<h:outputLabel value=""
+										rendered="#{estudianteController.estudianteSeleccionado.discapacidad.value =='NINGUNA'}" />
+									<h:outputLabel value=""
+										rendered="#{estudianteController.estudianteSeleccionado.discapacidad.value =='NINGUNA'}" />
+
+									<h:outputText value="Auto-identificación Étnica:" />
+									<p:selectOneMenu id="cmbidentificacionEtnica"
+										value="#{estudianteController.estudianteSeleccionado.etnia}"
+										label="Auto-identificación Étnica" style="width:250px"
+										tabindex="8">
+										<f:selectItem itemLabel="--Seleccionar--" />
+										<f:selectItems value="#{estudianteController.etnias}"
+											itemValue="#{etniaTipo}" itemLabel="#{etniaTipo}"
+											var="etniaTipo" />
+									</p:selectOneMenu>
+									<h:outputLabel value="" />
+									<h:outputLabel value="" />
+
+									<p:commandButton value="Guardar"
+										update="@form :formMensajes :tabGeneral"
+										action="#{estudianteController.guardarEstudiante}" />
+								</h:panelGrid>
+							</center>
+							<center>
+								<p:commandButton value="Siguiente &#62;&#62;"
+									disabled="#{estudianteController.estudianteSeleccionado.id==null}"
+									action="#{estudianteController.cambiarPestania(1)}"
+									update=":tabGeneral" />
+							</center>
+						</h:form>
+					</p:tab>
+
+					<p:tab id="tab2" title="Carreras">
+						<h:form id="formCarreras" acceptcharset="iso-8859-1">
+							<p:growl id="growl1" showDetail="true" sticky="true"
+								autoUpdate="true" showSummary="false" />
+							<center>
+								<h:panelGrid columns="2" cellpadding="10">
+									<p:commandButton
+										action="#{estudianteController.nuevaMatricula}"
+										oncomplete="dlgMatricula.show()" value="Nuevo"
+										update="@form :formMatriculaDetalle" style="float:right">
+									</p:commandButton>
+									<br />
+									<br />
+									<p:dataTable id="tablaMatricula" var="tablaMatricula"
+										value="#{estudianteController.listaCarreraEstudiante}"
+										widgetVar="tablaMatricula" border="1"
+										style="width:auto;height:auto" paginator="true" rows="10"
+										paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+										rowsPerPageTemplate="5,10,15">
+										<!-- codigo carrera -->
+
+										<p:column headerText="Código &lt;br/&gt; Carrera">
+											<h:outputText
+												value="#{tablaMatricula.carreraEstudianteDTO.informacionCarreraDTO.carreraIesDTO.codigo}" />
+										</p:column>
+
+										<p:column headerText="Carrera">
+											<h:outputText
+												value="#{tablaMatricula.carreraEstudianteDTO.informacionCarreraDTO.carreraIesDTO.nombre}" />
+										</p:column>
+
+										<!-- fecha inicio -->
+										<p:column headerText="Fecha Inicio &lt;br/&gt; Primer Nivel">
+											<h:outputText
+												value="#{tablaMatricula.carreraEstudianteDTO.fechaInicioPrimerNivel}">
+												<f:convertDateTime pattern="dd-MM-yyyy" />
+											</h:outputText>
+										</p:column>
+
+										<p:column
+											headerText="Fecha Ingreso &lt;br/&gt; por convalidación">
+											<h:outputText
+												value="#{tablaMatricula.carreraEstudianteDTO.fechaConvalidacion}">
+												<f:convertDateTime pattern="dd-MM-yyyy" />
+											</h:outputText>
+										</p:column>
+
+
+										<!-- fecha graduación -->
+										<p:column headerText="Fecha &lt;br/&gt; Graduación">
+											<h:outputText
+												value="#{tablaMatricula.carreraEstudianteDTO.fechaGraduacion}">
+												<f:convertDateTime pattern="dd-MM-yyyy" />
+											</h:outputText>
+										</p:column>
+
+										<p:column headerText="Acciones">
+											<p:commandButton disabled="#{not tablaMatricula.editable}"
+												action="#{estudianteController.editarMatricula}"
+												
+												update=":formMatriculaDetalle" icon="ui-icon-pencil"
+												style="width:24px;height:24px;">
+												<f:setPropertyActionListener
+													target="#{estudianteController.carreraEstudianteDTO}"
+													value="#{tablaMatricula.carreraEstudianteDTO}"></f:setPropertyActionListener>
+											</p:commandButton>
+											<p:commandButton
+												action="#{estudianteController.selectCarreraEstudiante}"
+												update="@form" icon="ui-icon-folder-open"
+												style="width:24px;height:24px;">
+												<f:setPropertyActionListener
+													target="#{estudianteController.carreraEstudianteDTO}"
+													value="#{tablaMatricula.carreraEstudianteDTO}"></f:setPropertyActionListener>
+											</p:commandButton>
+											<p:commandButton oncomplete="cfCarreras.show();"
+												title="eliminar" update="@form" icon="ui-icon-close"
+												style="width:24px;height:24px;">
+												<f:setPropertyActionListener
+													target="#{estudianteController.carreraEstudianteDTO}"
+													value="#{tablaMatricula.carreraEstudianteDTO}"></f:setPropertyActionListener>
+											</p:commandButton>
+										</p:column>
+
+									</p:dataTable>
+									<p:confirmDialog id="cdCarreras" header="Confirmación"
+										widgetVar="cfCarreras" severity="alert"
+										message="¿Está seguro de eliminar la carrera?"
+										showEffect="fade">
+										<center>
+											<p:commandButton value="Si" update="@form" process="@this"
+												oncomplete="cfCarreras.hide()"
+												action="#{estudianteController.eliminarMatricula}" />
+											<p:commandButton value="No" onclick="cfCarreras.hide()" />
+										</center>
+									</p:confirmDialog>
+								</h:panelGrid>
+								<br /> <br />
+
+								<p:outputPanel id="outpanelPeriodos"
+									rendered="#{estudianteController.carreraEstudianteDTO.id!=null}">
+									<h:panelGrid cellpadding="10">
+										<p:commandButton value="Nuevo" oncomplete="dlgPeriodo.show();"
+											process="@this" update=":formPeriodoAcademico"
+											action="#{estudianteController.nuevoPeriodo}"
+											style="float:right;" />
+										<h:outputText value="" />
+									</h:panelGrid>
+									<p:dataTable var="periodo" paginator="true"
+										value="#{estudianteController.listaCarreraEstudiantePeriodos}"
+										emptyMessage="No se encontraron registros">
+										<f:facet name="header">
+											<h:outputText
+												value="#{estudianteController.carreraEstudianteDTO.informacionCarreraDTO.carreraIesDTO.nombre}" />
+										</f:facet>
+										<p:column headerText="Periodo">
+											<h:outputText value="#{periodo.periodoAcademicoDTO}" />
+										</p:column>
+										<p:column headerText="Créditos aprobados">
+											<h:outputText value="#{periodo.numeroCreditosAprobados}" />
+										</p:column>
+										<p:column headerText="Acción">
+											<p:commandButton 
+												action="#{estudianteController.editarPeriodo}"
+												update=":formPeriodoAcademico" icon="ui-icon-pencil"
+												style="width:24px;height:24px;" process="@this">
+												<f:setPropertyActionListener
+													target="#{estudianteController.periodoSeleccionado}"
+													value="#{periodo}"></f:setPropertyActionListener>
+											</p:commandButton>
+											<p:commandButton oncomplete="cfPeriodos.show()"
+												title="eliminar" update=":formPeriodoAcademico"
+												icon="ui-icon-close" style="width:24px;height:24px;"
+												process="@this">
+												<f:setPropertyActionListener
+													target="#{estudianteController.periodoSeleccionado}"
+													value="#{periodo}"></f:setPropertyActionListener>
+											</p:commandButton>											
+										</p:column>
+										<p:columnGroup type="footer">
+											<p:row>
+												<p:column colspan="1" footerText="Total:"
+													style="text-align:right" />
+												<p:column footerText="#{estudianteController.totalCreditos}" />
+											</p:row>
+										</p:columnGroup>
+									</p:dataTable>
+								</p:outputPanel>
+								<br /> <br />
+
+								<p:commandButton value="&#60;&#60; Anterior"
+									action="#{estudianteController.cambiarPestania(0)}"
+									update=":tabGeneral" />
+								<p:commandButton value="Siguiente &#62;&#62;"
+									action="#{estudianteController.cambiarPestania(2)}"
+									update=":tabGeneral" />
+							</center>
+							<p:confirmDialog id="cdPeriodos" header="Confirmación"
+								widgetVar="cfPeriodos" severity="alert"
+								message="¿Está seguro de eliminar el periodo?" showEffect="fade">
+								<center>
+									<p:commandButton value="Si" update="@form" process="@this"
+										oncomplete="cfPeriodos.hide()"
+										action="#{estudianteController.eliminarPeriodo}" />
+									<p:commandButton value="No" onclick="cfPeriodos.hide()" />
+								</center>
+							</p:confirmDialog>
+
+						</h:form>
+					</p:tab>
+				</p:tabView>
+			</p:fieldset>
+		</p:panel>
+
+		<!--DIALOGO MATRICULA NUEVA-->
+		<p:dialog id="dialogMatricula" header="Editar" closable="false"
+			widgetVar="dlgMatricula" modal="true">
+			<div align="center"></div>
+			<h:form id="formMatriculaDetalle" acceptcharset="iso-8859-1">
+				<fieldset>
+					<h:panelGrid columns="2" cellspacing="10" cellpadding="5"
+						id="pgMatricula">
+						<h:outputText value="Carrera:" />
+						<h:inputTextarea
+							rendered="#{estudianteController.carreraEstudianteDTO.id!=null}"
+							readonly="true" style="width:250px;"
+							value="#{estudianteController.carreraSeleccionada.nombre}">
+						</h:inputTextarea>
+						<h:selectOneMenu
+							rendered="#{estudianteController.carreraEstudianteDTO.id==null}"
+							style="width:250px"
+							value="#{estudianteController.carreraSeleccionada.id}">
+							<f:selectItems value="#{estudianteController.carrerasIesDTO}"
+								var="car" itemValue="#{car.carreraIesDTO.id}"
+								itemLabel="#{car.carreraIesDTO}" />
+							<p:ajax event="change" process="@this"></p:ajax>
+						</h:selectOneMenu>
+
+						<h:outputText value="Ingreso por convalidación:" />
+						<p:selectOneRadio
+							value="#{estudianteController.ingresoPorConvalidacion}">
+							<f:selectItem itemValue="true" itemLabel="SI" />
+							<f:selectItem itemValue="false" itemLabel="NO" />
+							<p:ajax event="change" process="@this"
+								update=":formMatriculaDetalle"></p:ajax>
+						</p:selectOneRadio>
+
+						<h:outputText value="Graduado:"></h:outputText>
+						<p:selectOneRadio value="#{estudianteController.esGraduado}">
+							<f:selectItem itemValue="true" itemLabel="SI" />
+							<f:selectItem itemValue="false" itemLabel="NO" />
+							<p:ajax event="change" update=":formMatriculaDetalle"></p:ajax>
+						</p:selectOneRadio>
+
+
+						<h:outputText value="Fecha inicio primer nivel: "
+							rendered="#{!estudianteController.ingresoPorConvalidacion}" />
+						<p:calendar showButtonPanel="true" navigator="true" size="37"
+							rendered="#{!estudianteController.ingresoPorConvalidacion}"
+							mindate="01-01-2000" converter="#{calendarConverter}"
+							id="fechaInicioPrimerNivel" pattern="dd-MM-yyyy"
+							value="#{estudianteController.carreraEstudianteDTO.fechaInicioPrimerNivel}" />
+
+						<h:outputText value="Fecha ingreso por convalidación: "
+							rendered="#{estudianteController.ingresoPorConvalidacion}" />
+						<p:calendar showButtonPanel="true" navigator="true"
+							rendered="#{estudianteController.ingresoPorConvalidacion}"
+							mindate="01/01/2000" converter="#{calendarConverter}"
+							maxdate="#{estudianteController.fechaActual}"
+							id="calFechaConvalidacion" pattern="dd/MM/yyyy"
+							value="#{estudianteController.carreraEstudianteDTO.fechaConvalidacion}" />
+
+						<h:outputText value="Fecha graduación: "
+							rendered="#{estudianteController.esGraduado}" />
+						<p:calendar showButtonPanel="true" navigator="true"
+							rendered="#{estudianteController.esGraduado}"
+							pattern="dd-MM-yyyy" converter="#{calendarConverter}"
+							mindate="01-01-2000" id="fechaGraduacion" size="37"
+							value="#{estudianteController.carreraEstudianteDTO.fechaGraduacion}" />
+
+						<h:outputText value="Número Registro Senescyt: "
+							rendered="#{estudianteController.esGraduado}" />
+						<p:inputText
+							value="#{estudianteController.carreraEstudianteDTO.numeroRegistroSenescyt}"
+							rendered="#{estudianteController.esGraduado}" />
+
+					</h:panelGrid>
+				</fieldset>
+				<p:commandButton value="Guardar"
+					action="#{estudianteController.guardarMatricula}"
+					oncomplete="verificarErroresCarreras(xhr, status, args)"
+					update=":tabGeneral:formCarreras :formMatriculaDetalle" />
+				<p:spacer width="20" />
+				<p:commandButton value="Cerrar" onclick="dlgMatricula.hide();"
+					async="true" process="@this" />
+			</h:form>
+		</p:dialog>
+
+
+
+		<!--DIALOGO CODIGO MATRICULA -->
+		<p:dialog id="dialogoCodigoMatricula" header="Código Matricula"
+			widgetVar="dlgCodigoMatricula" modal="true">
+			<div align="center"></div>
+			<h:form id="formCodigoMatricula" acceptcharset="iso-8859-1">
+				<p:panel style="overflow-x:scroll; width: 800px;">	
+				Seleccione la carrera y presione Aceptar.	
+				<br />
+					<p:dataTable value="#{carreraController.listaCarrerasBuscar}"
+						scrollable="true" scrollHeight="300" rowKey="#{carrera.id}"
+						scrollRows="20" selectionMode="single" var="carrera"
+						selection="#{estudianteController.carreraSeleccionada}">
+
+						<p:column headerText="Código Carrera" filterBy="#{carrera.codigo}"
+							width="50" filterMatchMode="startsWith">
+							<h:outputText value="#{carrera.codigo}" />
+						</p:column>
+						<p:column headerText="Nombre" filterBy="#{carrera.nombre}"
+							width="500" filterMatchMode="contains">
+							<h:outputText value="#{carrera.nombre}" />
+						</p:column>
+					</p:dataTable>
+					<p:commandButton value="Aceptar" update=":formMatriculaDetalle"
+						oncomplete="dlgCodigoMatricula.hide()" />
+				</p:panel>
+			</h:form>
+		</p:dialog>
+
+		<!-- DIALOGO PERIODO -->
+		<p:dialog id="dialogPeriodo" header="Nuevo/Editar Periodo"
+			resizable="false" closable="false" widgetVar="dlgPeriodo"
+			modal="true">
+			<h:form id="formPeriodoAcademico" acceptcharset="iso-8859-1">
+				<h:panelGrid columns="2">
+					<h:outputText value="Periodo:" />
+					<h:selectOneMenu required="true"
+						requiredMessage="Seleccione el periodo académico"
+						value="#{estudianteController.periodoSeleccionado.periodoAcademicoDTO.id}">
+						<f:selectItem itemLabel="--Seleccionar--" />
+						<f:selectItems
+							value="#{estudianteController.listaPeriodosMatricula}"
+							var="periodo" itemValue="#{periodo.id}" itemLabel="#{periodo}" />
+						<p:ajax event="change" process="@this"></p:ajax>
+					</h:selectOneMenu>
+					<h:outputText value="Sección:" />
+					<h:selectOneMenu required="true"
+						requiredMessage="Seleccione sección"
+						value="#{estudianteController.periodoSeleccionado.seccion}">
+						<f:selectItem itemLabel="--Seleccionar--" />
+						<f:selectItems value="#{estudianteController.secciones}"
+							var="seccion" itemValue="#{seccion}" itemLabel="#{seccion.valor}" />
+						<p:ajax event="change" process="@this"></p:ajax>
+					</h:selectOneMenu>
+					<h:outputText value="Créditos aprobados" />
+					<p:inputMask mask="99"
+						value="#{estudianteController.periodoSeleccionado.numeroCreditosAprobados}" />
+				</h:panelGrid>
+				<br />
+				<center>
+					<p:commandButton value="Guardar"
+						action="#{estudianteController.guardarPeriodo}"
+						update=":tabGeneral:formCarreras"></p:commandButton>
+					<p:commandButton value="Cancelar"
+						action="#{estudianteController.nuevoPeriodo}"
+						oncomplete="dlgPeriodo.hide()" update="@form" immediate="true"></p:commandButton>
+				</center>
+			</h:form>
+		</p:dialog>
+
+		<!-- DIALOGO NUEVO CARRERA ESTUDIANTE MALLA -->
+		<p:dialog id="dlgNuevaAsig" widgetVar="dlgNuevoCarreraEstAsig"
+			header="Nuevo Registro" modal="true">
+			<h:form id="nuevaAsig" acceptcharset="iso-8859-1">
+				<p:fieldset legend="Datos Generales">
+					<p:outputPanel id="panelPeriodo">
+						<p:panel rendered="#{!estudianteController.nuevoPeriodo}">
+							<h:panelGrid columns="3" cellspacing="5">
+								<h:outputText value="Periodo: " />
+								<h:selectOneMenu
+									valueChangeListener="#{estudianteController.seleccionarPeriodo}"
+									value="#{estudianteController.periodoSeleccionado.id}">
+									<f:selectItem itemLabel="--Seleccionar--" />
+									<f:selectItems
+										value="#{estudianteController.listaCarreraEstudiantePeriodos}"
+										var="periodo" itemValue="#{periodo.id}"
+										itemLabel="#{periodo.periodoAcademicoDTO}" />
+									<p:ajax event="change" update="@form" />
+								</h:selectOneMenu>
+								<p:commandButton value="Nuevo" update=":nuevaAsig:panelPeriodo"
+									immediate="true"
+									action="#{estudianteController.crearNuevoPeriodo}">
+								</p:commandButton>
+							</h:panelGrid>
+						</p:panel>
+						<p:panel rendered="#{estudianteController.nuevoPeriodo}">
+							<h:panelGrid columns="4">
+								<p:outputLabel value="Fecha Inicio de Periodo:" />
+								<p:calendar navigator="true" effect="drop"
+									value="#{estudianteController.seleccion.fechaInicioPeriodo}"
+									mindate="#{estudianteController.minDate}"
+									maxdate="#{estudianteController.maxDate}" pattern="dd-MM-yyyy"
+									requiredMessage="Ingrese la fecha de Inicio">
+								</p:calendar>
+								<p:outputLabel value="Fecha Fin de Periodo:" />
+								<p:calendar navigator="true" effect="drop"
+									value="#{estudianteController.seleccion.fechaFinPeriodo}"
+									mindate="#{estudianteController.minDate}"
+									maxdate="#{estudianteController.maxDate}" pattern="dd-MM-yyyy">
+								</p:calendar>
+							</h:panelGrid>
+						</p:panel>
+					</p:outputPanel>
+
+					<h:panelGrid columns="4" cellpadding="10">
+						<h:outputLabel value="Malla: " />
+						<h:selectOneMenu
+							value="#{estudianteController.idMallaSeleccionada}"
+							valueChangeListener="#{estudianteController.obtenerAsignaturasDisponibles}">
+							<f:selectItem itemLabel="--Seleccionar--" />
+							<f:selectItems
+								value="#{estudianteController.listaMallas.entrySet()}"
+								var="malla" itemValue="#{malla.key}" itemLabel="#{malla.value}" />
+							<p:ajax event="change" update=":formMalla"
+								oncomplete="mallaDlg.show()"></p:ajax>
+						</h:selectOneMenu>
+						<h:outputText value="" />
+						<h:outputText value="" />
+						<p:outputLabel value="Asignatura" />
+						<p:inputTextarea readonly="true" cols="50" rows="2"
+							onclick="mallaDlg.show()"
+							value="#{estudianteController.selectAsignaturaDto.nombre}"
+							id="txtAsignaturaNombre" />
+						<h:outputText value="" />
+						<h:outputText value="" />
+						<p:outputLabel value="Matricula" />
+						<p:inputText id="txtMatriculaId"
+							value="#{estudianteController.seleccion.numeroMatricula}" />
+						<p:outputLabel value="Aprobada" />
+						<p:selectBooleanCheckbox
+							value="#{estudianteController.seleccion.aprobada}" />
+						<p:outputLabel value="Año" />
+						<p:spinner min="2003" max="2015" requiredMessage="Ingrese el año" />
+
+					</h:panelGrid>
+				</p:fieldset>
+				<div align="right">
+					<p:commandButton value="Guardar"
+						action="#{estudianteController.creaCarreraEstudianteAsignatura}"
+						update=":nuevaAsig :tabGeneral:formCarreras" />
+					<p:commandButton value="Cancelar" immediate="true"
+						oncomplete="dlgNuevoCarreraEstAsig.hide()"
+						action="#{estudianteController.limpiarValoresAsignatura}" />
+				</div>
+			</h:form>
+		</p:dialog>
+
+		<p:dialog widgetVar="mallaDlg" header="Malla: #{selectMalla}">
+			<h:form id="formMalla" acceptcharset="iso-8859-1">
+				<br />
+				<h4>Seleccione la asignatura que corresponde.</h4>
+				<br />
+				<p:dataTable var="asignatura2"
+					value="#{estudianteController.asignaturasDisponibles}" rows="5"
+					id="asigDisponibles" paginator="true">
+					<p:column headerText="CÓDIGO">
+						<p:outputLabel value="#{asignatura2.codigo}" />
+					</p:column>
+
+					<p:column headerText="Nº.CRÉDITOS" style="text-align:center;">
+						<p:outputLabel value="#{asignatura2.numeroCreditos}" />
+					</p:column>
+
+					<p:column headerText="NOMBRE">
+						<p:outputLabel value="#{asignatura2.nombre}" />
+					</p:column>
+					<p:column headerText="Nivel">
+						<p:outputLabel value="#{asignatura2.nivelFormacionEnum.value}" />
+					</p:column>
+					<p:column>
+						<p:commandLink value="Seleccionar" oncomplete="mallaDlg.hide()"
+							update=":nuevaAsig:txtAsignaturaNombre ">
+							<f:setPropertyActionListener value="#{asignatura2}"
+								target="#{estudianteController.selectAsignaturaDto}" />
+						</p:commandLink>
+					</p:column>
+				</p:dataTable>
+				<br />
+				<div align="right">
+					<p:commandButton value="Cancelar" onclick="mallaDlg.hide()" />
+				</div>
+			</h:form>
+		</p:dialog>
+		<p:dialog id="modalDocentes" header="Buscar Docente" width="800"
+			widgetVar="dlgDocentes" modal="true">
+			<h:form id="formDocentes" acceptcharset="iso-8859-1">
+				<center>
+
+					<h:panelGrid columns="3" cellpadding="0" cellspacing="1"
+						style="float:left;">
+						<h:outputText style="float:right;font-size:10px;" value="Cedula:" />
+						<h:inputText value="#{docenteController.identificacion}" />
+						<p:commandButton style="width:20px;height:20px"
+							update=":formDocentes" icon="ui-icon-search" title="Buscar"
+							action="#{docenteController.buscarDocentePorCedula}" />
+					</h:panelGrid>
+					<br /> <br />
+
+					<h:panelGrid id="paginadores" columns="3">
+						<p:commandButton style="width:80px;" title="atras"
+							icon="ui-icon-arrowreturnthick-1-w" id="btnAtras"
+							disabled="#{docenteController.indice > 0 ? false : true}"
+							actionListener="#{docenteController.modificarIndice}"
+							action="#{docenteController.listarDocentes}"
+							update=":formDocentes" />
+						<p:spacer />
+						<p:commandButton style="width:80px;" title="siguiente"
+							update=":formDocentes" icon="ui-icon-arrowreturnthick-1-e"
+							disabled="#{docenteController.habilitarSiguiente}"
+							actionListener="#{docenteController.modificarIndice}"
+							process="@this" action="#{docenteController.listarDocentes}"
+							id="btnSiguiente" />
+					</h:panelGrid>
+
+					<h:panelGrid columns="2">
+						<h:outputText value="Registros: " />
+						<p:selectOneMenu value="#{docenteController.registros}"
+							immediate="true"
+							valueChangeListener="#{docenteController.tomarRango}">
+							<p:ajax event="change" update=":formDocentes" />
+							<f:selectItems value="#{docenteController.rangos}" var="ran"
+								itemValue="#{ran}" itemLabel="#{ran}" />
+						</p:selectOneMenu>
+					</h:panelGrid>
+					<br />
+					<h:panelGrid columns="2">
+						<p:panel style="height:350px; overflow:scroll; overflow-x:hidden;">
+							<p:dataTable id="tablaDocentes" paginator="false"
+								filteredValue="#{docenteController.docentesFiltros}"
+								value="#{docenteController.docentes}" var="doc"
+								emptyMessage="No se encontraron docentes">
+
+								<p:column id="ced" headerText="Cedula"
+									filterBy="#{doc.identificacion}" width="100"
+									filterMatchMode="contains">
+									<h:outputText value="#{doc.identificacion}" />
+								</p:column>
+
+								<p:column id="nom" headerText="Nombre" width="200"
+									filterBy="#{doc.apellidoPaterno}" filterMatchMode="contains">
+									<h:outputText
+										value="#{doc.apellidoPaterno} #{doc.apellidoMaterno} #{doc.nombres}" />
+								</p:column>
+
+								<p:column headerText="Seleccionar" width="100">
+									<center>
+										<p:commandButton title="seleccionar"
+											update=":formDocentes:outpanelDatosPersona"
+											icon="ui-icon-circle-arrow-e" style="width:16px;height:16px;">
+											<f:setPropertyActionListener
+												target="#{estudianteController.docentePractica}"
+												value="#{doc}" />
+										</p:commandButton>
+									</center>
+								</p:column>
+
+							</p:dataTable>
+						</p:panel>
+						<p:outputPanel id="outpanelDatosPersona">
+							<h:panelGrid id="datosPersona" columns="2" cellspacing="10"
+								cellpadding="5">
+
+								<h:outputLabel value="Cédula :" />
+								<h:outputText
+									value="#{estudianteController.docentePractica.identificacion}" />
+
+								<h:outputText value="Nombre:" />
+								<h:outputLabel
+									value="#{estudianteController.docentePractica.apellidoPaterno}  #{estudianteController.docentePractica.apellidoMaterno} #{estudianteController.docentePractica.nombres}" />
+
+							</h:panelGrid>
+						</p:outputPanel>
+					</h:panelGrid>
+
+					<p:spacer width="10" />
+
+					<p:commandButton value="Aceptar" oncomplete="dlgDocentes.hide();" />
+				</center>
+			</h:form>
+		</p:dialog>
+		<p:dialog widgetVar="dlgAsignaturasPeriodo"
+			id="pdlgAsignaturasPeriodo" header="Detalle de asignaturas"
+			modal="true">
+			<h:form id="formAsignaturasPeriodo" acceptcharset="iso-8859-1">
+				<p:outputPanel id="outpanelAsignaturas"
+					rendered="#{estudianteController.carreraEstudianteDTO.id!=null}">
+					<p:fieldset legend="ASIGNATURAS" id="fldAsignaturas">
+						<div align="right">
+							<p:commandButton value="Nuevo" immediate="true"
+								action="#{estudianteController.limpiarValoresAsignatura}"
+								oncomplete="dlgNuevoCarreraEstAsig.show()" update=":nuevaAsig" />
+						</div>
+						<h:panelGrid columns="2" cellspacing="5">
+							<h:outputText value="Periodo Académico: " />
+							<h:selectOneMenu id="cmbPeriodoListaAsignatura"
+								valueChangeListener="#{estudianteController.seleccionarPeriodo}"
+								value="#{estudianteController.periodoSeleccionado.id}">
+								<f:selectItem itemLabel="Todos" />
+								<f:selectItems
+									value="#{estudianteController.listaCarreraEstudiantePeriodos}"
+									var="periodo" itemValue="#{periodo.id}"
+									itemLabel="#{periodo.periodoAcademicoDTO}" />
+								<p:ajax event="change" update="@form"></p:ajax>
+							</h:selectOneMenu>
+						</h:panelGrid>
+
+						<p:dataTable id="panelAsignaturasEstudiante"
+							rendered="#{estudianteController.carreraEstudianteDTO.id !=null}"
+							value="#{estudianteController.listaCarreraEstudianteMalla}"
+							var="materia" paginator="true"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+							rowsPerPageTemplate="10,20,50" rows="10">
+							<p:column headerText="CODIGO" style="text-align:center;">
+								<p:outputLabel value="#{materia.asignaturaDTO.codigo}" />
+							</p:column>
+							<p:column headerText="Materia" style="text-align:center;">
+								<p:outputLabel value="#{materia.asignaturaDTO.nombre}"
+									readonly="true" autoResize="true" />
+							</p:column>
+							<p:column headerText="Periodo" style="text-align:center;">
+								<h:outputText
+									value="#{materia.carreraEstudiantePeriodoDTO.periodoAcademicoDTO}">
+								</h:outputText>
+							</p:column>
+							<p:column headerText="Aprobado" style="text-align:center;">
+								<h:outputText value="#{materia.aprobada? 'SI': 'NO'}" />
+							</p:column>
+							<p:column headerText="Acciones" style="text-align:center;">
+								<p:commandButton oncomplete="dlgNuevoCarreraEstAsig.show()"
+									icon="ui-icon-pencil" style="width:24px;height:24px;"
+									update=":nuevaAsig"
+									action="#{estudianteController.editarAsignatura}">
+									<f:setPropertyActionListener value="#{materia}"
+										target="#{estudianteController.seleccion}" />
+
+								</p:commandButton>
+								<p:commandButton oncomplete="confirmacionAsignatura.show()"
+									process="@this" icon="ui-icon-close" title="eliminar"
+									style="width:24px;height:24px;">
+									<f:setPropertyActionListener value="#{materia}"
+										target="#{estudianteController.seleccion}" />
+								</p:commandButton>
+							</p:column>
+						</p:dataTable>
+					</p:fieldset>
+					<p:confirmDialog widgetVar="confirmacionAsignatura"
+						header="Confirmación"
+						message="¿Está seguro de que desea eliminar la asignatura?">
+						<p:commandButton value="Sí" icon="ui-icon-check"
+							action="#{estudianteController.eliminarCarreraEstudianteAsignatura}"
+							oncomplete="confirmacionAsignatura.hide()"
+							update=":tabGeneral:formCarreras">
+						</p:commandButton>
+						<p:commandButton icon="ui-icon-close" value="No"
+							oncomplete="confirmacionAsignatura.hide()" />
+					</p:confirmDialog>
+				</p:outputPanel>
+			</h:form>
+		</p:dialog>
+
+	</ui:define>
+</ui:composition>
+</html>

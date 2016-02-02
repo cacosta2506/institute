@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<f:metadata>
+	<f:event listener="#{listaIesController.retornarListaIes}"
+		type="preRenderView"></f:event>
+</f:metadata>
+
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+			<p:growl id="growl" sticky="true"></p:growl>
+			<p:panel id="panelResultadoCuantitativas"
+				header="VARIABLES CUANTITATIVAS">
+
+				<p:dataTable id="tblResultadoCuantitativas"
+					value="#{resultadoController.listaVariablesCuantitativas}"
+					var="resultado" scrollable="true" scrollRows="10"
+					scrollHeight="400">
+					<p:columnGroup type="header">
+						<p:row>
+							<p:column rowspan="2" headerText="Variable" />
+							<p:column colspan="3" headerText="Historico" />
+							<p:column colspan="3" headerText="Actual" />
+						</p:row>
+
+						<p:row>
+							<p:column headerText="Total Universo" />
+							<p:column headerText="Total Muestra" />
+							<p:column headerText="Valor" />
+							<p:column headerText="Total Universo" />
+							<p:column headerText="Total Muestra" />
+							<p:column headerText="Valor" />
+						</p:row>
+					</p:columnGroup>
+					<p:column headerText="Nombre">
+						<h:inputTextarea readonly="true" cols="15"
+							value="#{resultado.valorVariableDTO.variableDTO.etiqueta}" />
+					</p:column>
+					<p:column headerText="Total Universo">
+						<h:outputText
+							value="#{resultado.variableHistoricoDTO.totalUniverso}" />
+					</p:column>
+					<p:column headerText="Total Muestra">
+						<h:outputText
+							value="#{resultado.variableHistoricoDTO.totalMuestra}" />
+					</p:column>
+					<p:column headerText="Valor">
+						<h:outputText value="#{resultado.variableHistoricoDTO.valor}" />
+					</p:column>
+					<p:column headerText="Total Universo">
+						<h:outputText value="#{resultado.valorVariableDTO.totalUniverso}" />
+					</p:column>
+					<p:column headerText="Total Muestra">
+						<h:outputText value="#{resultado.valorVariableDTO.totalMuestra}" />
+					</p:column>
+					<p:column headerText="Valor">
+						<h:outputText value="#{resultado.valorVariableDTO.valorInicial}" />
+					</p:column>
+					<p:column headerText="Aceptados">
+						<h:outputText value="#{resultado.aceptados}" />
+					</p:column>
+				</p:dataTable>
+			</p:panel>
+
+			<p:panel id="panelResultadoCualitativas"
+				header="VARIABLES CUALITATIVAS">
+				<p:dataTable id="tblResultadoVariablesCualitativas"
+					value="#{resultadoController.listaVariablesCualitativas}"
+					var="resultado" scrollable="true" scrollRows="10"
+					scrollHeight="400">
+					<p:columnGroup type="header">
+						<p:row>
+							<p:column rowspan="2" headerText="Variable" />
+							<p:column colspan="2" headerText="Valor" />
+						</p:row>
+						<p:row>
+							<p:column headerText="Histórico" />
+							<p:column headerText="Actual" />
+						</p:row>
+					</p:columnGroup>
+					<p:column headerText="Nombre">
+						<h:inputTextarea readonly="true" cols="15"
+							value="#{resultado.valorVariableDTO.variableDTO.etiqueta}" />
+					</p:column>
+					<p:column headerText="Valor Historico">
+						<h:outputText value="#{resultado.variableHistoricoDTO.valor}" />
+					</p:column>
+					<p:column headerText="Valor Actual">
+						<h:outputText value="#{resultado.valorVariableDTO.valor}" />
+					</p:column>
+				</p:dataTable>
+			</p:panel>
+			<p:commandButton value="Aceptar" onclick="wdlgCambiarFase.show()"></p:commandButton>
+			<p:confirmDialog id="dlgCambiarFase" widgetVar="wdlgCambiarFase"
+				message="Si está de acuerdo con los datos ingresados y desea que estos
+					sean procesados presione el botón Aceptar"
+				header="Confirmación" severity="alert">
+				<p:commandButton id="confirm" value="Aceptar"
+					oncomplete="wdlgCambiarFase.hide()"
+					action="#{resultadoController.cambiarFase}" />
+				<p:commandButton id="decline" value="Cancelar"
+					onclick="wdlgCambiarFase.hide()" type="button" />
+			</p:confirmDialog>
+		</h:form>
+
+	</ui:define>
+</ui:composition>
+</html>

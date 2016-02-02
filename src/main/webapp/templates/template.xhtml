@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:sec="http://www.springframework.org/security/tags"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title><ui:insert name="tituloPagina">Nombre de la Pagina</ui:insert></title>
+	<meta charset="UTF-8"></meta>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"></meta>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+	<meta name="description"
+		content="Sistema de gestión de la información para las instituciones de educacación superior - IES "></meta>
+	<meta name="keywords" content="IES, GIIES, CEAACES"></meta>
+	<meta name="author" content="Vinicio Ochoa - CEAACES"></meta>
+	<h:outputStylesheet library="css" name="default.css"></h:outputStylesheet>
+	<h:outputStylesheet library="css" name="component.css"></h:outputStylesheet>
+	<h:outputStylesheet library="css" name="sidetogglemenu.css"></h:outputStylesheet>
+	<h:outputStylesheet library="css" name="normalize.css"></h:outputStylesheet>
+	<h:outputStylesheet library="css" name="font-awesome.min.css"></h:outputStylesheet>
+
+	<link rel="shortcut icon" type="image/x-icon"
+		href="#{request.contextPath}/images/favicon.ico" />
+
+
+	<h:outputScript library="js" name="sidetogglemenu.js"></h:outputScript>
+	<h:outputScript library="js" name="modernizr.custom.js"></h:outputScript>
+
+	<h:outputScript library="js" name="cbpAnimatedHeader.min.js"></h:outputScript>
+	<f:view locale="#{statusUtil.locale}" />
+</h:head>
+
+<h:body>
+
+	<div class="container">
+
+		<div class="cbp-af-header">
+
+			<div class="cbp-af-inner">
+				<h1>
+					<a href="/seguridades/bienvenida.jsf" class="neon"><p:graphicImage
+							id="logo" library="img" name="logo_ceaaces.png" /></a>
+				</h1>
+
+				<nav class="sub-menu">
+					<a href="/seguridades/bienvenida.jsf" class="logo_institucion">
+						<p:graphicImage library="img" name="giies_logo.png"></p:graphicImage>
+					</a> <a id="mesa"
+						href="http://giies.ceaaces.gob.ec:8080/otrs/customer.pl"
+						target="_blank"><i class="fa fa-flag-o"></i> Mesa de ayuda</a>
+					<div class="datos-user">
+						<ui:insert name="perfilAplicacion">
+							<div class="perfil">
+								<i class="fa fa-check" style="color: #5ABE5B;"></i> Perfil:
+								<h:outputText
+									value="#{ingresoController.perfil.etiqueta != null ? ingresoController.perfil.etiqueta.toLowerCase() : ''}" />
+							</div>
+						</ui:insert>
+						<ui:insert name="fecha">
+							<h:outputText value="#{logoutController.fechaSistema}"
+								styleClass="fecha-ingreso" />
+						</ui:insert>
+					</div>
+					<ul id="drop-menu">
+						<li>
+							<!-- user profile --> <!-- <div class="profile"> --> <a href="#"
+							class="name"><i class="fa fa-user"></i> <ui:insert
+									name="credencialesUI">
+									<h:outputText value=" #{request.userPrincipal.name}" />
+									<i class="fa fa-angle-double-down"></i>
+								</ui:insert></a> <!-- more menu -->
+							<ul>
+
+								<li><a href="/seguridades/cambioClave.jsf"><i
+										class="fa fa-pencil"></i> Cambiar contraseña</a></li>
+								<li class="salir"><ui:insert name="logArea">
+										<h:form>
+											<h:commandLink ajax="false" value=" Salir"
+												styleClass="fa fa-sign-out"
+												action="#{logoutController.logout}" />
+										</h:form>
+									</ui:insert></li>
+							</ul> <!-- </div> -->
+						</li>
+					</ul>
+				</nav>
+			</div>
+
+			<div>
+
+				<ui:insert name="menuPrincipal">
+
+					<nav id="menu-wrap"
+						style="visibility: #{menuController.visibilidadMenu}">
+
+						<div id="menu-trigger">Menu</div>
+
+						<ul id="menu">
+							<h:form>
+								<c:forEach items="#{menuController.menus}" var="menu">
+									<li><h:commandLink value="#{menu.nombre}"
+											action="#{listaIesController.redireccionarPagina}">
+											<f:param name="url" value="#{menu.destino}"></f:param>
+										</h:commandLink> <c:if test="#{not empty menu.hijos}">
+											<ul>
+												<c:forEach items="#{menu.hijos}" var="hijo">
+													<li><h:commandLink value="#{hijo.nombre}"
+															action="#{listaIesController.redireccionarPagina}">
+															<f:param name="url" value="#{hijo.destino}"></f:param>
+														</h:commandLink></li>
+												</c:forEach>
+											</ul>
+										</c:if></li>
+								</c:forEach>
+							</h:form>
+						</ul>
+
+					</nav>
+
+				</ui:insert>
+			</div>
+		</div>
+
+
+
+
+
+		<!-- Contenido de la pagina -->
+		<div id="pagina" class="main">
+			<div id="togglemenu1" class="sidetogglemenu">
+				<ul>
+					<ui:insert name="menuAplicaciones">
+						<h:form>
+							<c:forEach items="#{valoresUsuarioController.grupoApps}"
+								var="app">
+								<li><a href="#{app.index}">#{app.nombre}</a></li>
+							</c:forEach>
+
+						</h:form>
+
+					</ui:insert>
+				</ul>
+				<button id="btn-open" onClick="menu2.toggle()"
+					class="sideviewtoggle">
+					<i class="fa fa-angle-double-right"></i>
+				</button>
+			</div>
+			<div id="contenido" class="section s1">
+
+				<div class="inner">
+					<div class="preffix"></div>
+
+					<ui:insert name="etiquetaIES">
+
+						<div class="etiqueta" align="center">
+							<h:outputText value="#{statusUtil.carga()}"
+								styleClass="msg_status_app1" />
+							<h:form>
+								<h2>
+
+									#{listaIesController.ies.nombre}
+									<h:commandLink styleClass="ies" value="[cambiar IES]"
+										action="#{listaIesController.redireccionarPagina}">
+										<f:param name="url" value="/institutos/listaIes.jsf"></f:param>
+									</h:commandLink>
+								</h2>
+								<h2 class="carrera">
+									#{listaIesController.carrera.nombre}
+									<c:if test="#{not empty listaIesController.carrera.nombre}">
+										<h:commandLink
+											style="font-size: 10px; font-style: italic; text-decoration: none; color: #A4A4A4;"
+											value="[cambiar Carrera]"
+											action="#{listaIesController.redireccionarPagina}">
+											<f:param name="url" value="/institutos/listaCarreras.jsf"></f:param>
+										</h:commandLink>
+									</c:if>
+								</h2>
+
+							</h:form>
+							<h:outputText value="#{statusUtil.carga()}"
+								styleClass="msg_status_app2" />
+						</div>
+
+					</ui:insert>
+					<ui:insert name="etiquetaCarrera">
+						<h:form>
+
+							<div class="etiquetaCarrera"></div>
+						</h:form>
+					</ui:insert>
+					
+					<ui:insert name="contenido">Contenido de la pagina</ui:insert>
+
+					<div class="suffix"></div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<div class="footer">
+		<hr />
+		<p>
+			Todos los derechos reservados &#169; <a
+				href="http://www.ceaaces.gob.ec"><span id="copy">CEAACES</span></a>
+			2014
+		</p>
+	</div>
+	<h:form>
+		<ui:insert name="logArea">
+
+
+			<p:idleMonitor timeout="#{logoutController.timeout}"
+				onidle="idleDialog.show()" />
+
+			<p:dialog resizable="false" closable="false" widgetVar="idleDialog"
+				modal="true">
+				<p:panel>
+					<center>
+						<h:outputText value="La sesión ha expirado a causa de inactividad" />
+						<br /> <br /> <br /> <input id="confirmBackToLogin"
+							type="button" value="Volver a ingresar al sistema"
+							onclick="window.location='#{logoutController.casLocation}/#{logoutController.casName}/logout'" />
+					</center>
+				</p:panel>
+			</p:dialog>
+
+			<p:dialog id="dlgViewExpired" widgetVar="myDialogVar"
+				closable="false" header="Lo sentimos">
+
+				<p>
+					<i class="fa fa-minus-circle fa-2x" style="color: orange;" /> La
+					sessión ha expirado, por favor recargue la página.
+				</p>
+				<br />
+				<hr style="color: silver;" />
+				<center>
+					<h:commandButton value="Recargar" />
+				</center>
+
+			</p:dialog>
+
+		</ui:insert>
+	</h:form>
+	<script type="text/javascript"> 
+var $buoop = {}; 
+$buoop.ol = window.onload; 
+window.onload=function(){ 
+ try {if ($buoop.ol) $buoop.ol();}catch (e) {} 
+ var e = document.createElement("script"); 
+ e.setAttribute("type", "text/javascript"); 
+ e.setAttribute("src", "//browser-update.org/update.js"); 
+ document.body.appendChild(e); 
+} 
+var $buoop = {
+	    vs: {i:6,f:20,o:9.63,s:2,c:10},  // versiones de navegadores a notificar
+	    reminder: 24,                   // cuántas horas deben pasar para que el mensaje vuelva a aparecer
+	                                    // 0 = mostrar siempre
+	    onshow: function(infos){},      // función de callback luego de que la barra ha aparecido
+	    onclick: function(infos){},      // callback function if bar was clicked
+
+	    l: false,                       // establecer un idioma para el mensaje, p.ej. "en"
+	                                    // invalída la detección por default 
+	    test: false,                    // true = siempre se muestra la barra (para realizar pruebas)
+	    text: "",                       // personaliza el texto html de la notificación
+	    text_xx: "",                    // custom notification text for language "xx"
+	                                    // e.g. text_de for german and text_it for italian
+	    newwindow: true                 // abre el enlace en una nueva ventana/pestaña
+	};
+</script>
+	<script>
+
+jQuery(function(){ // on DOM load
+	menu2 = new sidetogglemenu({  // initialize first menu example
+		id: 'togglemenu1',
+		marginoffset: 10
+	})
+	menu1 = new sidetogglemenu({  // initialize second menu example
+		id: 'togglemenu2',
+		position: 'right',
+		
+		revealamt: -5
+	})
+
+	
+})
+
+</script>
+</h:body>
+</html>

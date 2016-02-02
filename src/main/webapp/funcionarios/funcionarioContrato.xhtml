@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition>
+<h:inputHidden value="#{ingresoController.soloLectura}" />
+	<p:messages id="msgContratacion" autoUpdate="false" showDetail="false"
+		closable="true" />
+	<center>
+		<p:fieldset legend="Información General">
+			<h:panelGrid columns="4" cellpadding="10" cellspacing="10">
+
+				<h:outputText style="float:right;" value="Número Contrato:" />
+				<h:inputTextarea style="resize:none;width:250px;"
+					value="#{funcionarioController.contratoFuncionario.numeroContrato}"
+					cols="20" rows="1" />
+
+				<h:outputText value="" />
+				<h:outputText value="" />
+
+				<h:outputText style="float:right;" value="Relacion IES:" />
+				<p:selectOneMenu style="width:250px;"
+					value="#{funcionarioController.contratoFuncionario.relacionIes}">
+					<f:selectItem itemLabel="--Seleccionar--" />
+					<f:selectItems value="#{funcionarioController.relacionesIes}"
+						var="rel" itemValue="#{rel}" itemLabel="#{rel}" />
+					<p:ajax event="change" process="@this" global="false" />
+				</p:selectOneMenu>
+
+				<h:outputText style="float:right;" value="Fecha Inicio:" />
+				<p:calendar
+					value="#{funcionarioController.contratoFuncionario.fechaInicio}"
+					navigator="true" effect="slide" pattern="dd-MM-yyyy" size="37"
+					yearRange="c-20:c+20" mindate="#{funcionarioController.fechaMin}"
+					maxdate="#{funcionarioController.fechaActual}">
+					<p:ajax event="dateSelect" update="@this" global="false" />
+				</p:calendar>
+
+				<h:outputText style="float:right;" value="Fecha Fin:" />
+				<p:calendar
+					value="#{funcionarioController.contratoFuncionario.fechaFin}"
+					navigator="true" effect="slide" pattern="dd-MM-yyyy"
+					yearRange="c-20:c+20" mindate="#{funcionarioController.fechaMin}"
+					size="37">
+					<p:ajax event="dateSelect" update="@this" global="false" />
+				</p:calendar>
+
+				<h:outputText style="float:right;" value="Concurso:" />
+				<p:selectBooleanCheckbox
+					value="#{funcionarioController.contratoFuncionario.ingresoPorConcurso}">
+					<p:ajax event="change" update="@this" global="false" />
+				</p:selectBooleanCheckbox>
+
+				<h:outputText style="float:right;" value="Remuneración Contrato:" />
+				<h:inputTextarea style="resize:none;width:250px;"
+					value="#{funcionarioController.contratoFuncionario.remuneracionContrato}"
+					cols="20" rows="1" />
+
+			</h:panelGrid>
+		</p:fieldset>
+		<p:fieldset legend="Evaluación"
+			rendered="#{funcionarioController.alertaEvaluador}">
+			<h:panelGrid columns="2" cellspacing="5">
+				<h:outputText value="Aceptado Evaluador:" />
+				<p:selectBooleanCheckbox id="bc_aceptadoE" tabindex="6"
+					value="#{funcionarioController.contratoFuncionario.aceptadoEvaluador}" />
+
+				<h:outputText value="Observación Evaluador:" />
+				<h:inputTextarea id="txtObservacion" tabindex="7"
+					style="resize:none; width:250px;" cols="30"
+					value="#{funcionarioController.contratoFuncionario.observacionEvaluador}" />
+			</h:panelGrid>
+		</p:fieldset>
+		<div align="right" style="float: right;">
+			<h:panelGrid columns="2" cellpadding="10" cellspacing="10">
+				<p:commandButton value="Guardar"
+					rendered="#{funcionarioController.funcionarioSeleccionado.id!=null}"
+					action="#{funcionarioController.guardarContrato}"
+					update=":tabViewFormularios:formContratacion" />
+				<p:commandButton value="Guardar"
+					rendered="#{funcionarioController.funcionarioSeleccionado.id==null}"
+					action="#{funcionarioController.guardarContrato}"
+					update=":tabViewFormularios" />
+				<p:commandButton value="Cerrar"
+					update=":tabViewFormularios:formContratacion" global="false"
+					action="#{funcionarioController.cancelarContrato}" />
+			</h:panelGrid>
+		</div>
+
+	</center>
+</ui:composition>
+</html>

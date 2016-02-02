@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+	
+	<script type="text/javascript"
+			src="${facesContext.externalContext.request.contextPath}/resources/js/validacionesUtil.js"></script>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formCabecera" acceptcharset="iso-8859-1">
+			<p:growl id="mensajesPrincipal" autoUpdate="false"
+				showDetail="false" closable="true" globalOnly="true" />
+		</h:form>
+		<h:form id="formLibros" acceptcharset="iso-8859-1">
+			<f:facet name="header"></f:facet>
+			<p:confirmDialog id="deleteConfirmDialog"
+				message="Está seguro de eliminar el libro?"
+				header="Iniciando proceso de eliminación" severity="alert"
+				widgetVar="deleteConfirmation">
+				<div align="center">
+					<p:commandButton id="confirm" value="Si"
+						update=":formLibros :formCabecera"
+						oncomplete="deleteConfirmation.hide()"
+						action="#{librosController.eliminarLibro}" />
+					<p:commandButton id="decline" value="No"
+						onclick="deleteConfirmation.hide()" type="button" />
+				</div>
+			</p:confirmDialog>
+
+			<center>
+				<p:panel header="ADMINISTRACIÓN DE LIBROS">
+					<p:commandButton style="float:right;" value="Nuevo"
+						action="#{librosController.nuevoLibro}" update=":formAdmLb">
+					</p:commandButton>
+					<br />
+					<br />
+					<br />
+					<h:outputText
+						style="font-size:12px;float:left;color:#0078D0;font-weight:bold;"
+						value="Nro libros registrados: #{librosController.totalLibros}" />
+					<br />
+					<p:dataTable id="tablaLibros"
+						value="#{librosController.listaLibros}" var="lb"
+						emptyMessage="No se encontraron registros" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15"
+						style="width:auto;height:auto"
+						paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+
+						<p:column headerText="Nombre" filterBy="#{lb.titulo}">
+							<h:inputTextarea value="#{lb.titulo}" readonly="true" cols="50"
+								style="resize:none;" />
+						</p:column>
+						<p:column headerText="Tipo" filterBy="#{lb.tipo}">
+							<h:outputText value="#{lb.tipo.value}" />
+						</p:column>
+						<p:column headerText="# Ejemplares">
+							<h:outputText value="#{lb.numEjemplares}" />
+						</p:column>
+						<p:column headerText="Medio Soporte">
+							<h:inputText value="#{lb.tipoMedioSoporte.value}" />
+						</p:column>
+						<p:column headerText="Biblioteca">
+							<h:inputTextarea value="#{lb.nombreBibloteca}" readonly="true"
+								cols="40" style="resize:none;" />
+						</p:column>
+						<p:column headerText="Ubicación Física">
+							<h:inputTextarea value="#{lb.sedeDistribucionFisicaDTO.nombre}"
+								readonly="true" cols="40" style="resize:none;" />
+						</p:column>
+
+						<!-- editar -->
+						<p:column headerText="Acciones">
+							<p:commandButton 
+								icon="ui-icon-pencil" update=":formAdmLb"
+								style="width:24px;height:24px;"
+								action="#{librosController.cargarEdicion}">
+								<f:setPropertyActionListener
+									target="#{librosController.libroSeleccionado}" value="#{lb}" />
+							</p:commandButton>
+							<p:commandButton oncomplete="deleteConfirmation.show()"
+								title="eliminar" icon="ui-icon-close"
+								style="width:24px;height:24px;">
+								<f:setPropertyActionListener
+									target="#{librosController.libroSeleccionado}" value="#{lb}" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</center>
+		</h:form>
+
+		<p:dialog widgetVar="dialogLibros" header="Nuevo/Editar Libro"
+			resizable="true">
+			<center>
+				<h:form id="formAdmLb" acceptcharset="iso-8859-1">
+					<p:growl id="mensajesDialogLibros" autoUpdate="false"
+						showDetail="false" closable="true" />
+					<p:panel>
+						<h:panelGrid columns="2" cellspacing="5">
+
+							<h:outputText style="float:left;" value="Tipo:" />
+							<p:selectOneMenu value="#{librosController.tipoLibro}"
+								style="width:210px;">
+								<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+								<f:selectItems value="#{librosController.listaTipo}" var="tle"
+									itemValue="#{tle}" itemLabel="#{tle}" />
+								<p:ajax event="change" update="@this" global="false" />
+							</p:selectOneMenu>
+							<h:outputText value="Código:" />
+							<h:inputText id="txtCodigo" style="width:250px"
+								value="#{librosController.libroSeleccionado.codigo}" />
+							<h:outputText value="Nombre:" />
+							<h:inputTextarea id="txt_nombre"
+								value="#{librosController.libroSeleccionado.titulo}" cols="30"
+								style="width:250px; resize:none;" />
+
+							<h:outputText value="# Ejemplares:" />
+							<p:spinner id="num_ejemplares"
+								value="#{librosController.libroSeleccionado.numEjemplares}"
+								min="0" onkeypress="return validarIngresoSoloNumeros(event)"/>
+
+							<h:outputText value="Medio Soporte:" />
+							<p:selectOneMenu id="medioSoporte" style="width:250px"
+								value="#{librosController.medioSoporte}">
+								<p:ajax event="change" update="@this" global="false" />
+								<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+								<f:selectItems value="#{librosController.tipoMedioSoporteEnum}" />
+							</p:selectOneMenu>
+
+							<h:outputText value="Biblioteca:" />
+							<h:inputTextarea id="txt_biblioteca"
+								value="#{librosController.libroSeleccionado.nombreBibloteca}"
+								cols="30" style="width:250px; resize:none;" />
+
+							<h:outputText value="Matriz/Extensión:" />
+							<p:selectOneMenu id="sedei" style="width:250px"
+								value="#{librosController.idSedeSeleccionada}">
+								<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+								<f:selectItems value="#{librosController.listaSedeIesDto}"
+									var="lis" itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+								<p:ajax update=":formAdmLb:sedeD"
+									listener="#{librosController.cargarListaSedeDistribucion}" />
+							</p:selectOneMenu>
+
+							<h:outputText value="Ubicación Física:" />
+							<p:selectOneMenu id="sedeD" style="width:250px"
+								value="#{librosController.idSedeDistribucionSeleccionada}">
+								<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+								<f:selectItems value="#{librosController.listaSedeDistribucion}"
+									var="lis" itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+							</p:selectOneMenu>
+
+						</h:panelGrid>
+						<br />
+						<br />
+						<h:panelGrid columns="2">
+							<p:commandButton value="Guardar"
+								action="#{librosController.guardarLibro}"
+								update=":formLibros :formAdmLb " />
+							<p:commandButton value="Cancelar"
+								action="#{librosController.cancelarLibro}" />
+						</h:panelGrid>
+					</p:panel>
+				</h:form>
+			</center>
+		</p:dialog>
+
+
+	</ui:define>
+</ui:composition>
+</html>

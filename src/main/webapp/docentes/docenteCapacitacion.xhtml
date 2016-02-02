@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition>
+
+	<p:dialog id="editarCapacitacionDlgId" header="Capacitación"
+		widgetVar="editarCapacitacionDlg" modal="true">
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<h:form id="capacitacionFormId" acceptcharset="iso-8859-1">
+			<center>
+				<p:fieldset legend="Información General">
+					<h:panelGrid columns="4" cellpadding="10" cellspacing="10">
+
+						<h:outputText style="float:right;" value="Tipo: " />
+						<p:selectOneMenu value="#{docenteController.tipoProg}"
+							style="width:250px;"
+							valueChangeListener="#{docenteController.tomarTipoProg}">
+							<f:selectItems value="#{docenteController.tipoPrograma}"
+								var="tipoP" itemValue="#{tipoP}" itemLabel="#{tipoP}" />
+						</p:selectOneMenu>
+
+						<h:outputText style="float:right;" value="Nombre: " />
+						<h:inputTextarea style="resize:none; width:250px;"
+							id="txtNumeroCapacitacion" tabindex="1"
+							value="#{docenteController.cursoCapacitacion.nombre}" cols="20"
+							rows="1" />
+
+						<h:outputText style="float:right;" value="Institución: " />
+						<h:inputTextarea style="resize:none; width:250px;"
+							id="txt_Institucion" tabindex="2"
+							value="#{docenteController.cursoCapacitacion.institutoCapacitacion}"
+							cols="20" rows="1" />
+
+						<h:outputText value="Apoyo por la Institución:" />
+						<p:selectBooleanCheckbox
+							value="#{docenteController.cursoCapacitacion.financiadoPorInsitucion}">
+							<p:ajax event="change" update="@this" global="false" />
+						</p:selectBooleanCheckbox>
+
+						<h:outputText style="float:right;" value="Fecha Inicio:" />
+						<p:calendar size="37" yearRange="c-25:c+25"
+							mindate="#{docenteController.fechaMin}"
+							maxdate="#{docenteController.fechaActual}"
+							value="#{docenteController.cursoCapacitacion.fechaInicio}"
+							navigator="true" effect="slide" pattern="dd-MM-yyyy">
+							<p:ajax event="dateSelect" update="@this" global="false" />
+						</p:calendar>
+
+						<h:outputText style="float:right;" value="Fecha Fin:" />
+						<p:calendar size="37" yearRange="c-25:c+25"
+							mindate="#{docenteController.fechaMin}"
+							maxdate="#{docenteController.fechaActual}"
+							value="#{docenteController.cursoCapacitacion.fechaFin}"
+							navigator="true" effect="slide" pattern="dd-MM-yyyy">
+							<p:ajax event="dateSelect" update="@this" global="false" />
+						</p:calendar>
+
+						<h:outputText style="float:right;" value="Horas:" />
+						<h:inputText style="width:250px;"
+							value="#{docenteController.cursoCapacitacion.numeroHoras}" />
+					</h:panelGrid>
+				</p:fieldset>
+				<p:fieldset legend="Evaluación"
+				rendered="#{docenteController.alertaEvaluador}">
+					<h:panelGrid columns="2" cellspacing="5">
+						<h:outputText value="Aceptado Evaluador:" />
+						<p:selectOneMenu
+							value="#{docenteController.cursoCapacitacion.aceptadoEvaluador}"
+							style="width:210px;" tabindex="6">
+							<f:selectItem itemLabel="Sí" itemValue="TRUE" />
+							<f:selectItem itemLabel="No" itemValue="FALSE" />
+
+							<p:ajax event="change" update="@this" global="false" />
+						</p:selectOneMenu>
+						
+
+						<h:outputText value="Observación Evaluador:" />
+						<h:inputTextarea id="txtObservacionC" tabindex="7"
+							style="resize:none; width:250px;" cols="30"
+							value="#{docenteController.cursoCapacitacion.observacionEvaluador}" required="true" requiredMessage="Debe ingresar una observación"/>
+					</h:panelGrid>
+				</p:fieldset>
+				<br />
+				<h:panelGrid columns="2" cellpadding="10" cellspacing="10">
+					<p:commandButton value="Guardar"
+						action="#{docenteController.guardarCapacitacion}"
+						oncomplete="verificarErroresCapacitacion(xhr, status, args)"
+						update="@form :tabViewFormularios:formCurso" />
+					<p:commandButton value="Cerrar" async="true" process="@this"
+						oncomplete="editarCapacitacionDlg.hide()"
+						update="@form :tabViewFormularios:formCurso"
+						action="#{docenteController.cancelarCurso}" global="false">
+						<p:resetInput target=":editarCapacitacionDlgId" />
+					</p:commandButton>
+				</h:panelGrid>
+			</center>
+		</h:form>
+	</p:dialog>
+</ui:composition>
+</html>

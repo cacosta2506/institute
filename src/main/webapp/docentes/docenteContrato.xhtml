@@ -1,0 +1,615 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition>
+
+	<center>
+		<p:fieldset legend="Información General">
+			<h:panelGrid id="panelContratoId" columns="4" cellpadding="10"
+				cellspacing="10">
+
+				<h:outputText style="float:right;" value="Número Contrato:" />
+				<h:inputTextarea style="resize:none; width:250px;"
+					id="txtNumeroContrato" tabindex="1"
+					value="#{docenteController.contratoDocente.numeroContrato}"
+					cols="20" rows="1" />
+
+				<h:outputText style="float:right;" value="Relación IES:" />
+				<p:selectOneMenu style="width:250px" tabindex="2"
+					value="#{docenteController.contratoDocente.relacionIes}"
+					valueChangeListener="#{docenteController.cargarCategorias}">
+					<f:selectItem itemLabel="--Seleccionar--" />
+					<f:selectItems value="#{docenteController.relacionesIes}" var="rel"
+						itemValue="#{rel}" itemLabel="#{rel.value}" />
+					<p:ajax event="change" process="@this txtNumeroContrato"
+						global="false" update=":tabViewFormularios:formContratacion" />
+				</p:selectOneMenu>
+
+				<h:outputText style="float:right;" value="Tiempo Dedicación:" />
+				<p:selectOneMenu style="width:250px" tabindex="3"
+					value="#{docenteController.contratoDocente.tiempoDedicacion}">
+					<f:selectItem itemLabel="--Seleccionar--" />
+					<f:selectItems value="#{docenteController.tiemposDedicacion}"
+						var="tid" itemValue="#{tid}" itemLabel="#{tid.value}" />
+					<p:ajax event="change" process="@this txtNumeroContrato"
+						global="false" update=":tabViewFormularios:formContratacion" />
+				</p:selectOneMenu>
+
+				<h:outputText style="float:right;" value="Categoría:" />
+				<p:selectOneMenu style="width:250px" tabindex="4"
+					valueChangeListener="#{docenteController.seleccionarCategoria}"
+					value="#{docenteController.contratoDocente.categoria}"
+					id="cmbCategorias">
+					<f:selectItem itemLabel="--Seleccionar--" />
+					<f:selectItems value="#{docenteController.categorias}" var="cat"
+						itemValue="#{cat}" itemLabel="#{cat.value}" />
+					<p:ajax event="change" process="@this" global="false"
+						update=":tabViewFormularios:formContratacion" />
+				</p:selectOneMenu>
+
+				<h:outputText style="float:right;" value="Remuneración Mensual: $"
+					rendered="#{docenteController.contratoDocente.tiempoDedicacion.value!='TIEMPO PARCIAL'}" />
+				<h:inputTextarea style="resize:none;width:250px;"
+					id="txtRemuContrato" tabindex="5"
+					rendered="#{docenteController.contratoDocente.tiempoDedicacion.value!='TIEMPO PARCIAL'}"
+					value="#{docenteController.contratoDocente.remuneracionContrato}"
+					cols="20" rows="1" />
+
+				<h:outputText style="float:right;" value="Remuneración por hora: $"
+					rendered="#{docenteController.contratoDocente.tiempoDedicacion.value=='TIEMPO PARCIAL'}" />
+				<h:inputTextarea id="txtRemuHora" style="resize:none; width:250px;"
+					rendered="#{docenteController.contratoDocente.tiempoDedicacion.value=='TIEMPO PARCIAL'}"
+					value="#{docenteController.contratoDocente.remuneracionPorHora}"
+					cols="20" rows="1" tabindex="6" />
+
+				<h:outputText style="float:right;" value="Fecha inicio de contrato:" />
+				<p:calendar value="#{docenteController.contratoDocente.fechaInicio}"
+					requiredMessage="Ingrese la fecha de inicio del contrato"
+					navigator="true" effect="slide" pattern="dd-MM-yyyy"
+					required="true" yearRange="c-20:c+20"
+					mindate="#{docenteController.fechaMin}" tabindex="7"
+					maxdate="#{docenteController.fechaActual}" size="37">
+					<p:ajax event="dateSelect" update="@this" global="false"
+						process="@this txtNumeroContrato txtRemuContrato txtRemuHora" />
+				</p:calendar>
+
+				<h:outputText style="float:right;"
+					value="Fecha fin de contrato (opcional):" />
+				<p:calendar value="#{docenteController.contratoDocente.fechaFin}"
+					id="calFechaFin" navigator="true" effect="slide"
+					pattern="dd-MM-yyyy" yearRange="c-20:c+20"
+					mindate="#{docenteController.fechaMin}" size="37" tabindex="8">
+					<p:ajax event="dateSelect" update="@this" global="false"
+						process="@this txtNumeroContrato txtRemuContrato txtRemuHora" />
+				</p:calendar>
+
+				<h:outputText value="Ingreso por Concurso:"
+					rendered="#{docenteController.contratoDocente.categoria.value=='TITULAR'}" />
+				<p:selectBooleanCheckbox
+					rendered="#{docenteController.contratoDocente.categoria.value=='TITULAR'}"
+					value="#{docenteController.contratoDocente.ingresoPorConcurso}"
+					tabindex="9">
+					<p:ajax event="change" update="@this" global="false" />
+				</p:selectBooleanCheckbox>
+
+				<h:outputText value="Ingreso por Proceso Selección:" />
+				<p:selectBooleanCheckbox tabindex="10"
+					value="#{docenteController.contratoDocente.ingresoPorProcesoSeleccion}">
+					<p:ajax event="change" update="@this" global="false" />
+				</p:selectBooleanCheckbox>
+			</h:panelGrid>
+		</p:fieldset>
+
+		<p:panel style="clear:both;" id="panelHorasAcademicas">
+			<f:facet name="header">
+				<h:outputText value="Horas académicas por periodo"
+					style="font-weight: bold; font-size:1.2em;" />
+			</f:facet>
+			<p:panel>
+				<p:commandButton id="nuevoContratacionPeriodoId" value="Nuevo"
+					action="#{docenteController.nuevoContratacionPeriodo}"
+					update=":formContratacionPeriodoAcademico"
+					oncomplete="dlgContratacionPeriodo.show()" async="true"
+					process="@this" style="float:right"
+					rendered="#{!docenteController.alertaEvaluador}">
+				</p:commandButton>
+				<br></br>
+				<br></br>
+				<br></br>
+
+				<p:dataTable id="tablaContratacionPeriodo"
+					value="#{docenteController.contratacionesPeriodoAcademico}"
+					var="detalle" emptyMessage="No hay datos de las horas">
+
+					<p:column headerText="Periodo">
+						<h:outputText style="font-size:10px;"
+							value="#{detalle.periodoAcademicoDTO}" />
+					</p:column>
+
+					<p:column headerText="Horas clase &lt;br/&gt;- periodo">
+						<h:outputText style="font-size:10px;"
+							value="#{detalle.horasClase60min}" />
+					</p:column>
+
+					<p:column headerText="Horas clase &lt;br/&gt;- semanal">
+						<h:outputText style="font-size:10px;"
+							value="#{detalle.horasClaseSemanal}" />
+					</p:column>
+
+					<p:column headerText="Acciones">
+						<p:commandButton oncomplete="dlgContratacionPeriodo.show()"
+							title="Modificar"
+							action="#{docenteController.modificarContratacionPeriodo}"
+							update=":formContratacionPeriodoAcademico" immediate="true"
+							icon="ui-icon-pencil" style="width:24px;height:24px;">
+							<f:setPropertyActionListener
+								target="#{docenteController.contratacionPeriodoAcademicoDTO}"
+								value="#{detalle}">
+							</f:setPropertyActionListener>
+						</p:commandButton>
+						<p:commandButton title="eliminar"
+							oncomplete="confirmacionEliminarContratacionPeriodo.show()"
+							update=":formContratacionPeriodoAcademico" immediate="true"
+							icon="ui-icon-close" style="width:24px;height:24px;"
+							rendered="#{!docenteController.alertaEvaluador}">
+							<f:setPropertyActionListener
+								target="#{docenteController.contratacionPeriodoAcademicoDTO}"
+								value="#{detalle}">
+							</f:setPropertyActionListener>
+						</p:commandButton>
+
+						<p:commandButton icon="ui-icon-folder-open"
+							title="Mostrar Asignaturas" rendered="#{detalle.id != null}"
+							action="#{docenteController.mostrarAsignacionHoras}"
+							update=":tabViewFormularios:formContratacion"
+							style="width:24px;height:24px;">
+							<f:setPropertyActionListener
+								target="#{docenteController.contratacionPeriodoAcademicoDTO}"
+								value="#{detalle}">
+							</f:setPropertyActionListener>
+						</p:commandButton>
+					</p:column>
+
+				</p:dataTable>
+
+			</p:panel>
+
+			<p:panel id="idpnlha"
+				rendered="#{docenteController.mostrarAsignacion}">
+
+				<h:panelGrid style="float:center" columns="2">
+					<h:outputText style="font-weight:bold" value="Periodo :" />
+					<p:outputLabel style="font-weight:bold"
+						value="#{docenteController.contratacionPeriodoAcademicoDTO.periodoAcademicoDTO}" />
+				</h:panelGrid>
+
+				<p:dataTable id="tablaAsig" emptyMessage="No existen Asignaturas"
+					styleClass="tblAsigEstilo" var="asig"
+					value="#{docenteController.listaAsignaturasxDocente}">
+
+					<p:column headerText="Carrera">
+						<h:outputText style="font-size:10px;"
+							value="#{asig.asignaturaDTO.mallaCurricularDTO.informacionCarreraDTO.carreraIesDTO.nombre}" />
+					</p:column>
+
+					<p:column headerText="Código">
+						<h:outputText style="font-size:10px;"
+							value="#{asig.asignaturaDTO.codigo}" />
+					</p:column>
+					<p:column headerText="Asignatura">
+						<h:outputText style="font-size:10px;"
+							value="#{asig.asignaturaDTO.nombre}" />
+					</p:column>
+
+
+					<p:column headerText="Asignaturas Compartidas" style="width:25%">
+						<p:dataList var="indI" type="definition"
+							value="#{asig.docenteAsignaturasDTO}">
+							<h:outputText value="#{indI.asignaturaDTO.nombre}"
+								style="font-size:10px" />
+						</p:dataList>
+					</p:column>
+
+
+				</p:dataTable>
+				<br />
+				<p:commandButton value="Asignación horas clase"
+					update=":tabViewFormularios:formContratacion:modalHorasDocente"
+					action="#{docenteController.cargarAsignaturasEditables}"
+					oncomplete="dlgHoraDocente.show();" />
+			</p:panel>
+
+			<p:dialog id="modalHorasDocente" width="1300px" height="700px"
+				header="Distributivo de Horas Docente" widgetVar="dlgHoraDocente"
+				modal="true">
+				<p:messages id="messages" showDetail="false" autoUpdate="true"
+					showSummary="true" closable="true" globalOnly="true" />
+				<p:panel>
+					<h:panelGrid columns="6">
+						<h:outputText value="Matriz/Extensión" style="font-size:10px;" />
+						<p:selectOneMenu id="idis" style="width:250px; font-size:10px;"
+							value="#{docenteController.idSedeIesSeleccionada}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems
+								value="#{docenteController.listaSedeIesAsignaturaDto}" var="lis"
+								itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+							<p:ajax update="idCarrer"
+								listener="#{docenteController.cargarCarreras}" />
+						</p:selectOneMenu>
+
+						<h:outputText value="Carrera:" style="font-size:10px;" />
+						<p:selectOneMenu id="idCarrer"
+							style="width:250px; font-size:10px;"
+							value="#{docenteController.idInformacionCarreraSeleccionada}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems
+								value="#{docenteController.listaInformacionCarreraDto}"
+								var="lis"
+								itemLabel="#{lis.carreraIesDTO.nombre} [ #{lis.carreraIesDTO.codigo} ]"
+								itemValue="#{lis.id}" />
+							<p:ajax update="mallA"
+								listener="#{docenteController.cargarMalla}" />
+						</p:selectOneMenu>
+
+						<h:outputText value="Malla Curricular:" style="font-size:10px;" />
+						<p:selectOneMenu id="mallA" style="width:250px; font-size:10px;"
+							value="#{docenteController.idMallaSeleccionada}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems value="#{docenteController.listaMallaDto}"
+								var="lis" itemLabel="#{lis.codigoUnico}" itemValue="#{lis.id}" />
+							<p:ajax update="tblAsigntura"
+								listener="#{docenteController.cargarAsignaturas}" />
+						</p:selectOneMenu>
+
+					</h:panelGrid>
+				</p:panel>
+				<br />
+				<p:dataTable styleClass="tblAsigEstilo" id="tblAsigntura"
+					emptyMessage="No existe Asignaturas" paginator="true"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15" rows="5"
+					value="#{docenteController.listaAsignatura}" var="asig">
+					<p:column style="font-size:10px;" headerText="Código">
+						<h:outputText style="font-size:10px;" value="#{asig.codigo}" />
+					</p:column>
+					<p:column style="font-size:10px;" headerText="Asignatura">
+						<h:inputTextarea style="font-size:10px;" value="#{asig.nombre}"
+							cols="50" rows="2" />
+					</p:column>
+					<p:column headerText="Acción" style="font-size:10px;">
+						<p:commandButton icon="ui-icon-circle-plus"
+							rendered="#{!docenteController.alertaEvaluador}"
+							update=":tabViewFormularios:formContratacion:idtaedit"
+							action="#{docenteController.cargarAsignaturaEditable(asig)}"
+							style="width:15px;height:15px;" />
+					</p:column>
+				</p:dataTable>
+				<br />
+				<h:panelGrid style="float:left" columns="2">
+					<h:outputText style="font-weight:bold" value="Periodo :" />
+					<p:outputLabel style="font-weight:bold"
+						value="#{docenteController.contratacionPeriodoAcademicoDTO.periodoAcademicoDTO}" />
+				</h:panelGrid>
+				<br />
+				<br />
+				<p:dataTable id="idtaedit" var="asgEdit" editable="true"
+					 paginator="true" paginatorPosition="top"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15" rows="5"
+					value="#{docenteController.listaDocenteAsignaturaEditable}">
+					<p:ajax partialSubmit="true" event="rowEdit" process="@this"
+						global="false"
+						update=":tabViewFormularios:formContratacion:idtaedit"
+						listener="#{docenteController.tomarAsignaturaAccion(asgEdit)}" />					
+
+					<p:column headerText="Carrera" style="font-size:10px;" >
+						<h:outputText style="font-size:10px;"
+							value="#{asgEdit.asignaturaDTO.mallaCurricularDTO.informacionCarreraDTO.carreraIesDTO.nombre}" />
+					</p:column>
+
+					<p:column headerText="Asignatura" style="font-size:10px;">
+						<h:inputTextarea style="font-size:10px;" cols="40" rows="2"
+							value="#{asgEdit.asignaturaDTO.nombre}" readonly="true"/>
+					</p:column>
+
+					<p:column style="font-size:10px;"
+						headerText="Asignaturas Compartidas">
+						<p:dataList var="indI" type="definition"
+							value="#{asgEdit.docenteAsignaturasDTO}">
+							<h:outputText value="#{indI.asignaturaDTO.nombre}"
+								style="font-size:10px" />
+						</p:dataList>
+					</p:column>
+
+			<!-- 		<p:column headerText="Fecha Inicio" style="font-size:10px;">
+						<p:cellEditor>
+							<f:facet name="output">
+								<h:outputText style="font-size:10px;"
+									value="#{asgEdit.fechaInicio}" />
+							</f:facet>
+							<f:facet name="input">
+								<p:calendar id="idFechaCreacion" effect="slideDown"
+									mindate="#{docenteController.contratacionPeriodoAcademicoDTO.periodoAcademicoDTO.fechaInicioPeriodo}"
+									maxdate="#{docenteController.contratacionPeriodoAcademicoDTO.periodoAcademicoDTO.fechaFinPeriodo}"
+									value="#{asgEdit.fechaInicio}" style="font-size:10px;"
+									navigator="true" pattern="dd-MM-yyyy">
+									<p:ajax event="dateSelect" update="@this" global="false" />
+								</p:calendar>
+							</f:facet>
+						</p:cellEditor>
+					</p:column>
+
+					<p:column headerText="Fecha Fin" style="font-size:10px;">
+						<p:cellEditor>
+							<f:facet name="output">
+								<h:outputText style="font-size:10px;"
+									value="#{asgEdit.fechaFin}" />
+							</f:facet>
+							<f:facet name="input">
+								<p:calendar id="idFechaFin" effect="slideDown"
+									value="#{asgEdit.fechaFin}" style="font-size:10px;"
+									mindate="#{docenteController.contratacionPeriodoAcademicoDTO.periodoAcademicoDTO.fechaInicioPeriodo}"
+									maxdate="#{docenteController.contratacionPeriodoAcademicoDTO.periodoAcademicoDTO.fechaFinPeriodo}"
+									navigator="true" pattern="dd-MM-yyyy">
+									<p:ajax event="dateSelect" update="@this" global="false" />
+								</p:calendar>
+							</f:facet>
+						</p:cellEditor>
+					</p:column>
+
+					<p:column headerText="Horas Clase Semanal" style="font-size:10px;">
+						<p:cellEditor>
+							<f:facet name="output">
+								<h:outputText style="font-size:10px;"
+									value="#{asgEdit.numHoras}" />
+							</f:facet>
+							<f:facet name="input">
+								<h:inputText style="font-size:10px;" value="#{asgEdit.numHoras}" />
+							</f:facet>
+						</p:cellEditor>
+					</p:column>
+
+					<p:column headerText="Duración hora clase (min)"
+						style="font-size:10px;">
+						<p:cellEditor>
+							<f:facet name="output">
+								<h:outputText style="font-size:10px;"
+									value="#{asgEdit.duracionHoraClase}" />
+							</f:facet>
+							<f:facet name="input">
+								<h:inputText style="font-size:10px;"
+									value="#{asgEdit.duracionHoraClase}" />
+							</f:facet>
+						</p:cellEditor>
+					</p:column>
+
+					<p:column headerText="# Paralelos" style="font-size:10px;">
+						<p:cellEditor>
+							<f:facet name="output">
+								<h:outputText style="font-size:10px;"
+									value="#{asgEdit.numParalelos}" />
+							</f:facet>
+							<f:facet name="input">
+								<h:inputText style="font-size:10px;"
+									value="#{asgEdit.numParalelos}" />
+							</f:facet>
+						</p:cellEditor>
+					</p:column>
+					
+					<p:column headerText="Verificar">
+						<p:rowEditor />
+					</p:column>
+ -->
+					<p:column headerText="Acciones" style="font-size:10px;">
+						<p:panel rendered="#{!docenteController.alertaEvaluador}">
+
+							<p:commandButton icon="ui-icon-plus"
+								title="Agregar Asignaturas Compartidas"
+								rendered="#{asgEdit.id != null}"
+								update=":tabViewFormularios:formContratacion:mdlAsigCompartidas"
+								action="#{docenteController.limpiarAsignaturas2}"
+								oncomplete="dlgAsignaturaCompartida.show()"
+								style="width:20px;height:20px;">
+								<f:setPropertyActionListener
+									target="#{docenteController.docenteAsigEditable}"
+									value="#{asgEdit}">
+								</f:setPropertyActionListener>
+							</p:commandButton>
+
+							<p:commandButton icon="ui-icon-pencil"
+								title="Eliminar Asignaturas Compartidas"
+								rendered="#{asgEdit.id != null}" style="width:20px;height:20px;"
+								update=":tabViewFormularios:formContratacion:mldAsignaturasCompartidasEliminar"
+								action="#{docenteController.limpiarAsignaturaCompartidaEliminar}"
+								oncomplete="dlgAsignaturaCompartidaEliminar.show()">
+								<f:setPropertyActionListener
+									target="#{docenteController.docenteAsigEditable}"
+									value="#{asgEdit}">
+								</f:setPropertyActionListener>
+							</p:commandButton>
+
+							<p:commandButton icon="ui-icon-close" title="Quitar Asignatura"
+								rendered="#{asgEdit.id == null}"
+								update=":tabViewFormularios:formContratacion:idtaedit"
+								action="#{docenteController.quitarAsignaturaEditable(asgEdit)}"
+								style="width:20px;height:20px;" />
+
+							<p:commandButton icon="ui-icon-close"
+								title="Eliminar Asignatura Padre"
+								rendered="#{asgEdit.id != null}"
+								onclick="dlgAsignaturaDocenteEliminar.show()"
+								style="width:20px;height:20px;">
+								<f:setPropertyActionListener
+									target="#{docenteController.docenteAsigEditable}"
+									value="#{asgEdit}">
+								</f:setPropertyActionListener>
+							</p:commandButton>
+
+						</p:panel>
+					</p:column>
+
+				</p:dataTable>
+				<br />
+				<h:panelGrid columns="2">
+					<p:commandButton value="Guardar"
+						update=":tabViewFormularios:formContratacion:idtaedit"
+						action="#{docenteController.guardarDocenteAsignatura}" />
+					<p:commandButton value="Cancelar"
+						update=":tabViewFormularios:formContratacion"
+						oncomplete="dlgHoraDocente.hide()" />
+				</h:panelGrid>
+			</p:dialog>
+
+			<p:dialog id="mdlAsigCompartidas" header="Asignaturas Compartidas"
+				widgetVar="dlgAsignaturaCompartida" modal="true">
+				<p:panel>
+					<h:panelGrid style="float:left" columns="2">
+						<p:outputLabel style="font-weight:bold" value="Materia : " />
+						<p:outputLabel style="font-weight:bold" id="nom"
+							value="#{docenteController.docenteAsigEditable.asignaturaDTO.nombre}" />
+					</h:panelGrid>
+					<h:panelGrid columns="6">
+						<h:outputText value="Matriz/Extensión" style="font-size:10px;" />
+						<p:selectOneMenu id="idis2" style="width:250px; font-size:10px;"
+							value="#{docenteController.idSedeIesSeleccionada2}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems
+								value="#{docenteController.listaSedeIesAsignaturaDto2}"
+								var="lis" itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+							<p:ajax update="idCarrer2"
+								listener="#{docenteController.cargarCarreras2}" />
+						</p:selectOneMenu>
+
+						<h:outputText value="Carrera:" style="font-size:10px;" />
+						<p:selectOneMenu id="idCarrer2"
+							style="width:250px;font-size:10px;"
+							value="#{docenteController.idInformacionCarreraSeleccionada2}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems
+								value="#{docenteController.listaInformacionCarreraDto2}"
+								var="lis"
+								itemLabel="#{lis.carreraIesDTO.nombre} [ #{lis.carreraIesDTO.codigo} ]"
+								itemValue="#{lis.id}" />
+							<p:ajax update="mallA2"
+								listener="#{docenteController.cargarMalla2}" />
+						</p:selectOneMenu>
+
+						<h:outputText value="Malla Curricular:" style="font-size:10px;" />
+						<p:selectOneMenu id="mallA2" style="width:250px;font-size:10px;"
+							value="#{docenteController.idMallaSeleccionada2}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems value="#{docenteController.listaMallaDto2}"
+								var="lis" itemLabel="#{lis.codigoUnico}" itemValue="#{lis.id}" />
+							<p:ajax update="pickLists"
+								listener="#{docenteController.cargarAsignaturas2}" />
+						</p:selectOneMenu>
+					</h:panelGrid>
+					<h:panelGrid columns="1">
+						<p:pickList id="pickLists" effect="puff" style="font-size:10px;"
+							value="#{docenteController.listaAsignaturasDTO}" var="lista"
+							itemValue="#{lista}" itemLabel="#{lista.nombre}"
+							showCheckbox="true" filterMatchMode="contains"
+							converter="laboratorioAsignaturaConverter">
+							<p:ajax event="transfer" update="pickLists" />
+						</p:pickList>
+					</h:panelGrid>
+
+					<h:panelGrid columns="2">
+						<p:commandButton value="Guardar"
+							action="#{docenteController.guardarDocenteAsignaturaHijos}"
+							oncomplete="dlgAsignaturaCompartida.hide()"
+							update=":tabViewFormularios:formContratacion:idtaedit messages" />
+
+						<p:commandButton value="Cancelar"
+							oncomplete="dlgAsignaturaCompartida.hide()" />
+					</h:panelGrid>
+
+				</p:panel>
+				<br />
+			</p:dialog>
+
+			<p:dialog id="mldAsignaturasCompartidasEliminar"
+				header="Eliminar Asignaturas Compartidas"
+				widgetVar="dlgAsignaturaCompartidaEliminar" modal="true">
+				<p:panel>
+					<h:panelGrid style="float:left" columns="2">
+						<p:outputLabel style="font-weight:bold" value="Materia : " />
+						<p:outputLabel style="font-weight:bold"
+							value="#{docenteController.docenteAsigEditable.asignaturaDTO.nombre}" />
+					</h:panelGrid>
+					<br />
+					<br />
+					<p:dataTable id="tblEliminarDocAsig" var="asigEliminar"
+						value="#{docenteController.listaDocenteAsignaturaCompartidaEliminarOriginal}">
+						<p:column headerText="Carrera" style="font-size:10px;">
+							<h:outputText style="font-size:10px;" value="#{asigEliminar.id}" />
+						</p:column>
+
+						<p:column headerText="Código" style="font-size:10px;">
+							<h:outputText style="font-size:10px;"
+								value="#{asigEliminar.asignaturaDTO.codigo}" />
+						</p:column>
+
+						<p:column headerText="Asignatura" style="font-size:10px;">
+							<h:outputText style="font-size:10px;"
+								value="#{asigEliminar.asignaturaDTO.nombre}" />
+						</p:column>
+
+						<p:column headerText="Eliminar" style="font-size:10px;">
+							<p:commandButton icon="ui-icon-close" title="Quitar Asignatura"
+								update=":tabViewFormularios:formContratacion:tblEliminarDocAsig"
+								action="#{docenteController.eliminarAsignaturaCompartida(asigEliminar)}"
+								style="width:20px;height:20px;" />
+						</p:column>
+					</p:dataTable>
+					<br />
+					<h:panelGrid columns="2">
+						<p:commandButton value="Guardar"
+							action="#{docenteController.actualizarAsignaturaCompartida}"
+							update=":tabViewFormularios:formContratacion:idtaedit"
+							oncomplete="dlgAsignaturaCompartidaEliminar.hide()">
+						</p:commandButton>
+						<p:commandButton value="Cancelar"
+							onclick="dlgAsignaturaCompartidaEliminar.hide()">
+						</p:commandButton>
+
+					</h:panelGrid>
+
+				</p:panel>
+			</p:dialog>
+
+			<p:confirmDialog id="delAsignaturaDocente"
+				message="Está seguro de eliminar Asignatura?" header="Confirmación"
+				severity="alert" widgetVar="dlgAsignaturaDocenteEliminar">
+				<p:commandButton id="idsi" value="Si"
+					update=":tabViewFormularios:formContratacion:idtaedit :tabViewFormularios:formContratacion:tblAsigntura"
+					oncomplete="dlgAsignaturaDocenteEliminar.hide()"
+					actionListener="#{docenteController.eliminarDocenteAsignaturaPadre}" />
+				<p:commandButton id="idno" value="No" async="true" process="@this"
+					onclick="dlgAsignaturaDocenteEliminar.hide()" />
+			</p:confirmDialog>
+
+		</p:panel>
+		<div align="right" style="float: right;">
+			<h:panelGrid columns="2" cellpadding="10" cellspacing="10"
+				style="float:right;">
+				<p:commandButton value="Guardar"
+					rendered="#{docenteController.docenteSeleccionado.id!=null}"
+					action="#{docenteController.guardarContrato}"
+					update=":tabViewFormularios" />
+				<p:commandButton value="Guardar"
+					rendered="#{docenteController.docenteSeleccionado.id==null}"
+					action="#{docenteController.guardarContrato}"
+					update=":tabViewFormularios" />
+				<p:commandButton value="Cerrar"
+					update=":tabViewFormularios:formContratacion" async="true"
+					process="@this" action="#{docenteController.cancelarContrato}" />
+			</h:panelGrid>
+		</div>
+		<div style="clear: both;"></div>
+	</center>
+</ui:composition>
+</html>

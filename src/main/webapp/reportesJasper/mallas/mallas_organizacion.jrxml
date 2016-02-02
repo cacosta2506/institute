@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="mallas_asignatura_requisitos" pageWidth="595" pageHeight="802" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="475c69a9-0fdb-4c7a-b7d3-b45b3e0a54f3">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String">
+		<defaultValueExpression><![CDATA["/home/eteran/desarrollo/reportes/compuestas/"]]></defaultValueExpression>
+	</parameter>
+	<field name="areaFormacion" class="ec.gob.ceaaces.institutos.enumeraciones.AreaFormacionOrganizacionEnum"/>
+	<field name="ejeTransversal" class="java.lang.String"/>
+	<field name="organizacionDelAprendizaje" class="java.lang.String"/>
+	<field name="asignaturasDTO" class="java.util.List"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="55" splitType="Prevent">
+			<textField isStretchWithOverflow="true" evaluationTime="Band">
+				<reportElement stretchType="RelativeToTallestObject" x="147" y="19" width="438" height="30" uuid="94e65572-553b-4798-8bbb-d83c4ff3d15b"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="2.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="2.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{areaFormacion}.getValor()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="19" width="147" height="30" uuid="297d1702-3f8c-490c-b611-0c5241101c3c"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="2.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="2.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Información general]]></text>
+			</staticText>
+		</band>
+		<band height="64" splitType="Prevent">
+			<subreport>
+				<reportElement x="40" y="30" width="545" height="34" isPrintWhenDetailOverflows="true" uuid="97c7ff22-3c24-47f4-9956-2da93c8768ec"/>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{asignaturasDTO})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "mallas_asignatura.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement x="40" y="9" width="147" height="21" uuid="08cce4cc-1092-4e9a-bedd-cf069495ca2d">
+					<printWhenExpression><![CDATA[$F{asignaturasDTO} != null && !$F{asignaturasDTO}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[ASIGNATURAS:]]></text>
+			</staticText>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

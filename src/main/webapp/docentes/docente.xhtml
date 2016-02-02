@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+
+	<ui:define name="contenido">
+		<script type="text/javascript"
+			src="${facesContext.externalContext.request.contextPath}/resources/js/validacionesUtil.js"></script>
+		<script language="javascript">
+      <!--
+              function validarNumero(evt){
+                 var charCode = (evt.which) ? evt.which : event.keyCode
+                 if (charCode > 31 && (charCode < 48 || charCode > 57)){
+                    return false;
+                 }
+                 return true;
+              }
+
+              function verificarErroresPeriodos(xhr, status, args) {  
+                  if(!(args.validationFailed || !args.cerrarVentana)) {    
+                      dlgPeriodoAcademico.hide();  
+                  }  
+              }
+              
+              function verificarErroresContratacionPeriodo(xhr, status, args) {  
+                  if(!(args.validationFailed || !args.cerrarVentana)) {    
+                          dlgContratacionPeriodo.hide();  
+                  }  
+              } 
+              
+              function verificarErroresFormacion(xhr, status, args) {  
+                  if(!(args.validationFailed || !args.cerrarVentana)) {    
+                          editarFormacionDlg.hide();
+                  }
+          }
+              function verificarErroresCapacitacion(xhr, status, args) {  
+              if(!(args.validationFailed || !args.cerrarVentana)) {    
+                          editarCapacitacionDlg.hide();
+              }  
+          } 
+          function verificarErroresDirectivo(xhr, status, args) {  
+              if(!(args.validationFailed || !args.cerrarVentana)) {    
+                      editarDirectivoDlg.hide();
+              }  
+          } 
+          function verificarErroresExpeProf(xhr, status, args) {  
+              if(!(args.validationFailed || !args.cerrarVentana)) {    
+            	  editarExperienciaProfDlg.hide();
+              }  
+          } 
+      //-->
+   </script>
+
+
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false"
+			header="Espere por favor, esto puede tomar algunos segundos">
+			<center>
+				<p:graphicImage value="../images/saving.gif" alt="..." />
+			</center>
+		</p:dialog>
+
+		<h:form>
+			<p:commandButton style="float:right;margin-right:10px;"
+				value="Regresar" action="#{docenteController.regresar}" />
+		</h:form>
+		<br />
+		<br />
+
+		<p:fieldset
+			legend="DOCENTE: #{docenteController.docenteSeleccionado.apellidoPaterno} #{docenteController.docenteSeleccionado.apellidoMaterno} #{docenteController.docenteSeleccionado.nombres}">
+			<h:inputHidden value="#{ingresoController.soloLectura}" />
+			<p:tabView id="tabViewFormularios"
+				activeIndex="#{docenteController.indiceTab}">
+
+				<p:ajax event="tabChange" listener="#{docenteController.tomarTab}"
+					update=":tabViewFormularios:formContratacion:msgTabContratacion :tabViewFormularios:formFormacion:msgTabFormacion :tabViewFormularios:formCargosDirectivos:msgTabCargosDirectivos :tabViewFormularios:formExpProfesional:msgTabExperienciaProf :tabViewFormularios:formContratacion :tabViewFormularios:formFormacion :tabViewFormularios:formCargosDirectivos :tabViewFormularios:formExpProfesional :tabViewFormularios:formCurso"
+					global="false" />
+
+				<p:tab title="Datos Personales"
+					disabled="#{docenteController.verTabDatosPersonales}">
+
+					<h:form id="formDatosPersonales" acceptcharset="iso-8859-1">
+						<p:growl id="msgDatosPersonales" showDetail="false" life="3000" />
+
+						<center>
+							<p:panel>
+								<h:panelGrid columns="4" cellspacing="5" cellpadding="5">
+
+									<h:outputText style="float:right;" value="Documento: " />
+									<p:selectOneMenu style="width:210px;"
+										value="#{docenteController.docenteSeleccionado.tipoIdentificacion}">
+										<p:ajax event="change" update="@this" global="false"
+											process="@this" />
+										<f:selectItem itemValue="CEDULA" itemLabel="CÉDULA" />
+										<f:selectItem itemValue="PASAPORTE" itemLabel="PASAPORTE" />
+									</p:selectOneMenu>
+
+									<h:outputText style="float:right;" value="Identificación:" />
+									<p:inputText style="width:210px;"
+										value="#{docenteController.docenteSeleccionado.identificacion}">
+										<p:ajax event="blur" update="@this" process="@this" />
+									</p:inputText>
+
+									<h:outputText style="float:right;" value="Primer Apellido:" />
+									<p:inputText style="width:210px;"
+										onkeyup="this.value = this.value.toUpperCase()"
+										value="#{docenteController.docenteSeleccionado.apellidoPaterno}">
+										<p:ajax event="blur" update="@this" process="@this" />
+									</p:inputText>
+
+									<h:outputText style="float:right;" value="Segundo Apellido:" />
+									<p:inputText style="width:210px;"
+										onkeyup="this.value = this.value.toUpperCase()"
+										value="#{docenteController.docenteSeleccionado.apellidoMaterno}">
+										<p:ajax event="blur" update="@this" process="@this" />
+									</p:inputText>
+
+									<h:outputText style="float:right;" value="Nombres:" />
+									<p:inputText style="width:210px;"
+										onkeyup="this.value = this.value.toUpperCase()"
+										value="#{docenteController.docenteSeleccionado.nombres}">
+										<p:ajax event="blur" update="@this" process="@this" />
+									</p:inputText>
+
+									<h:outputText style="float:right;" value="Sexo:" />
+									<p:selectOneMenu value="#{docenteController.genero}"
+										style="width:210px;"
+										valueChangeListener="#{docenteController.tomarGenero}">
+										<p:ajax event="change" update="@this" global="false"
+											process="@this" />
+										<f:selectItems value="#{docenteController.generos}" var="gen"
+											itemValue="#{gen}" itemLabel="#{gen}" />
+									</p:selectOneMenu>
+
+									<h:outputText style="float:right;" value="Discapacidad:" />
+									<p:selectOneMenu id="selectDis" style="width:210px;"
+										valueChangeListener="#{docenteController.tomarDiscapacidad}"
+										value="#{docenteController.discapacidad}">
+										<p:ajax event="change" process="@this"
+											update=":tabViewFormularios:formDatosPersonales"
+											global="false" />
+										<f:selectItems value="#{docenteController.discapacidades}"
+											var="dis" itemValue="#{dis}" itemLabel="#{dis}" />
+									</p:selectOneMenu>
+
+									<h:outputText id="t1" style="float:right;"
+										rendered="#{docenteController.discapacidad != 'NINGUNA'}"
+										value="Número Conadis:" />
+									<p:inputText id="t2" style="width:210px;"
+										rendered="#{docenteController.discapacidad != 'NINGUNA'}"
+										value="#{docenteController.docenteSeleccionado.numeroConadis}" />
+
+									<h:outputText id="t3" style="float:right;" value=""
+										rendered="#{docenteController.discapacidad == 'NINGUNA'}" />
+									<h:outputText id="t4" style="float:right;" value=""
+										rendered="#{docenteController.discapacidad == 'NINGUNA'}" />
+
+									<h:outputText style="float:right;"
+										value="Fecha ingreso al Instituto:" />
+									<p:calendar navigator="true" yearRange="c-20:c+20"
+										mindate="#{docenteController.fechaMin}"
+										maxdate="#{docenteController.fechaActual}"
+										value="#{docenteController.docenteSeleccionado.fechaIngresoIes}"
+										pattern="dd-MM-yyyy" effect="slide">
+										<p:ajax event="dateSelect" update="@this" global="false" />
+									</p:calendar>
+
+									<h:outputText value="Auto-identificación Étnica:" />
+									<p:selectOneMenu id="cmbidentificacionEtnica"
+										value="#{docenteController.docenteSeleccionado.etnia}"
+										label="Auto-identificación Étnica" style="width:250px"
+										tabindex="8">
+										<p:ajax event="change" update="@this" global="false"
+											process="@this" />
+										<f:selectItem itemLabel="--Seleccionar--" />
+										<f:selectItems value="#{docenteController.etnias}"
+											itemValue="#{etniaTipo}" itemLabel="#{etniaTipo}"
+											var="etniaTipo" />
+									</p:selectOneMenu>
+									<p:commandButton value="#{docenteController.accion}"
+										style="width:145px;" action="#{docenteController.guardar}"
+										update=":tabViewFormularios" />
+								</h:panelGrid>
+							</p:panel>
+						</center>
+					</h:form>
+				</p:tab>
+
+				<p:tab title="Relación Laboral"
+					disabled="#{docenteController.verTabContratacion}">
+
+					<h:form id="formContratacion" acceptcharset="iso-8859-1">
+						<p:growl id="msgTabContratacion" showDetail="false" life="3000" />
+						<p:panel rendered="#{not docenteController.editarContrato}">
+							<p:confirmDialog id="cdContrataciones" header="Confirmación"
+								widgetVar="cfContrataciones" severity="alert"
+								message="¿Desea eliminar el contrato #{docenteController.contratoDocente.numeroContrato}?"
+								showEffect="fade">
+								<center>
+									<p:commandButton value="Si"
+										update=":tabViewFormularios:formContratacion"
+										oncomplete="cfContrataciones.hide()"
+										action="#{docenteController.eliminarContratacion}" />
+									<p:commandButton value="No" onclick="cfContrataciones.hide()" />
+								</center>
+							</p:confirmDialog>
+
+							<center>
+
+								<p:commandButton id="btnNuevoContrato" value="Nuevo"
+									update="@form"
+									actionListener="#{docenteController.nuevoContrato}"
+									style="float:right;width: 100px;" />
+								<br /> <br /> <br />
+
+								<p:dataTable id="tablaContratacion" scrollable="true"
+									value="#{docenteController.contrataciones}" var="cont"
+									emptyMessage="No hay datos de Contratación"
+									style="text-align:center;">
+
+									<p:column headerText="Número Contrato">
+										<h:outputText style="font-size:10px;"
+											value="#{cont.numeroContrato}" />
+									</p:column>
+									<p:column headerText="Relación IES" style="white-space: normal">
+										<h:outputText style="font-size:10px;"
+											value="#{cont.relacionIes.value}" />
+									</p:column>
+									<p:column headerText="Tiempo Dedicación"
+										style="white-space: normal">
+										<h:outputText style="font-size:10px;"
+											value="#{cont.tiempoDedicacion.value}" />
+									</p:column>
+									<p:column headerText="Categoría" style="white-space: normal">
+										<h:outputText style="font-size:10px;"
+											value="#{cont.categoria.value}" />
+									</p:column>
+									<p:column headerText="Fecha Inicio" style="width:80px">
+										<h:outputText style="font-size:10px;"
+											value="#{cont.fechaInicio}">
+											<f:convertDateTime pattern="dd-MM-yyyy" />
+										</h:outputText>
+									</p:column>
+									<p:column headerText="Fecha Fin" style="width:80px">
+										<h:outputText style="font-size:10px;" value="#{cont.fechaFin}">
+											<f:convertDateTime pattern="dd-MM-yyyy" />
+										</h:outputText>
+									</p:column>
+
+									<p:column headerText="Acciones" style="width:80px">
+										<center>
+											<p:commandButton title="seleccionar" icon="ui-icon-pencil"
+												action="#{docenteController.modificarContrato}"
+												update=":tabViewFormularios:formContratacion"
+												style="width:16px;height:16px;">
+												<f:setPropertyActionListener value="#{cont}"
+													target="#{docenteController.contratoDocente}" />
+												<f:setPropertyActionListener value="#{cont.categoria.value}"
+													target="#{docenteController.categoria}" />
+											</p:commandButton>
+
+											<p:commandButton title="eliminar" icon="ui-icon-close"
+												oncomplete="cfContrataciones.show()"
+												update=":tabViewFormularios:formContratacion"
+												style="width:16px;height:16px;">
+												<f:setPropertyActionListener value="#{cont}"
+													target="#{docenteController.contratoDocente}" />
+											</p:commandButton>
+
+											<p:commandButton title="Mostrar Evidencias"
+												icon="ui-icon-circle-triangle-s" ajax="false"
+												action="#{docenteController.cargarEConcepto}"
+												rendered="#{docenteController.alertaEvaluador}"
+												style="width:16px;height:16px;">
+												<f:setPropertyActionListener
+													target="#{docenteController.contratoDocente}"
+													value="#{cont}" />
+											</p:commandButton>
+										</center>
+									</p:column>
+
+								</p:dataTable>
+								<p:outputPanel rendered="#{docenteController.evidenciaConcepto}">
+									<p:fieldset legend="Evidencias"
+										style="margin:  20px 0px 0px 0px;">
+										<p:outputLabel style="font-weight: bold;float: left;"
+											value="#{docenteController.contratoDocente.numeroContrato}" />
+										<br />
+										<p:dataTable id="tablaEConcepto" var="evidenciaconcepto"
+											value="#{docenteController.listaEvidenciaConcepto}"
+											emptyMessage="No hay Conceptos">
+
+											<p:column headerText="Evidencias" style="white-space: normal">
+												<h:outputText value="#{evidenciaconcepto.nombre}" />
+											</p:column>
+											<p:column headerText="Lista Archivos">
+												<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+													var="evidencia" emptyMessage="No hay Evidencias">
+
+													<p:column>
+														<h:outputText value="#{evidencia.nombreArchivo}" />
+
+													</p:column>
+													<p:column>
+
+														<p:commandButton title="descargar" icon="ui-icon-document"
+															oncomplete="dlgDescarga.show()"
+															update=":tabViewFormularios:formContratacion"
+															process="@this"
+															actionListener="#{docenteController.enviarEvidencia(evidencia)}">
+
+														</p:commandButton>
+
+
+													</p:column>
+
+												</p:dataTable>
+											</p:column>
+
+
+										</p:dataTable>
+
+									</p:fieldset>
+								</p:outputPanel>
+							</center>
+						</p:panel>
+						<p:panel id="panelEditarContrato"
+							rendered="#{docenteController.editarContrato}">
+							<ui:include src="/docentes/docenteContrato.xhtml" />
+						</p:panel>
+						<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+							resizable="false" closable="false" closeOnEscape="false"
+							widgetVar="dlgDescarga" modal="true">
+							<p:panel>
+								<h:panelGrid columns="3">
+									<p:commandButton value="Si"
+										update=":tabViewFormularios:formContratacion"
+										style="width:100px" icon="ui ui-icon-check" ajax="false"
+										onclick="dlgDescarga.hide()">
+										<p:fileDownload value="#{docenteController.documentoDescarga}" />
+									</p:commandButton>
+									<p:spacer width="10" />
+									<p:commandButton value="No" onclick="dlgDescarga.hide()"
+										style="width:100px" icon="ui ui-icon-closethick" />
+								</h:panelGrid>
+
+
+							</p:panel>
+
+						</p:dialog>
+					</h:form>
+
+
+				</p:tab>
+
+
+				<p:tab title="Formación Profesional"
+					disabled="#{docenteController.verTabFormacion}">
+
+					<h:form id="formFormacion" enctype="multipart/form-data"
+						acceptcharset="iso-8859-1">
+
+						<p:growl id="grFormacion" autoUpdate="true" showDetail="true"
+							showSummary="false"></p:growl>
+						<p:confirmDialog id="cdFormacion" header="Confirmación"
+							widgetVar="cfFormacion" severity="alert"
+							message="¿Desea eliminar el registro?" showEffect="fade">
+							<center>
+								<p:commandButton value="Si"
+									update=":tabViewFormularios:formFormacion"
+									oncomplete="cfFormacion.hide()"
+									action="#{docenteController.eliminarFormacion}" />
+								<p:commandButton value="No" onclick="cfFormacion.hide()" />
+							</center>
+						</p:confirmDialog>
+						<p:panel>
+							<center>
+
+								<p:commandButton value="Nuevo" style="float:right;"
+									actionListener="#{docenteController.nuevaFormacion}"
+									oncomplete="editarFormacionDlg.show()" async="true"
+									process="@this" update=":tabViewFormularios:formacionFormId" />
+
+								<br /> <br /> <br />
+
+								<p:growl id="msgTabFormacion" showDetail="false" life="3000" />
+
+								<p:dataTable id="tablaFormacion" scrollable="true"
+									value="#{docenteController.formaciones}" var="formDoc"
+									emptyMessage="No hay datos de Formación"
+									style="text-align:center;">
+
+									<p:column headerText="Titulo" width="125">
+										<h:inputTextarea readonly="true"
+											style="font-size:10px;resize:none;" cols="20" rows="1"
+											value="#{formDoc.titulo}" />
+									</p:column>
+									<p:column headerText="Pais" width="125">
+										<h:outputText style="font-size:10px;"
+											value="#{formDoc.pais.nombre}" />
+									</p:column>
+									<p:column headerText="IES" width="125">
+										<h:inputTextarea readonly="true"
+											style="font-size:10px;resize:none;" cols="17" rows="1"
+											value="#{formDoc.nombreIesInternacional}" />
+									</p:column>
+									<p:column headerText="Nivel " width="125">
+										<h:outputText style="font-size:10px;" value="#{formDoc.nivel}" />
+									</p:column>
+									<p:column headerText="Reg Senescyt" width="125">
+										<h:outputText style="font-size:10px;"
+											value="#{formDoc.numeroRegistroSenescyt}" />
+									</p:column>
+
+									<p:column headerText="Acciones" width="125">
+										<center>
+											<p:commandButton title="seleccionar" icon="ui-icon-pencil"
+												action="#{docenteController.editarFormacionLista}"
+												update=":tabViewFormularios:formacionFormId @this @form"
+												async="true" process="@this" style="width:16px;height:16px;">
+												<f:setPropertyActionListener
+													target="#{docenteController.formacionDocente}"
+													value="#{formDoc}" />
+											</p:commandButton>
+											<p:commandButton title="eliminar" icon="ui-icon-close"
+												oncomplete="cfFormacion.show()" async="true" process="@this"
+												update=":tabViewFormularios:formFormacion"
+												style="width:16px;height:16px;">
+												<f:setPropertyActionListener value="#{formDoc}"
+													target="#{docenteController.formacionDocente}" />
+												<f:setPropertyActionListener value="#{formDoc.grado.id}"
+													target="#{docenteController.idNivelTitulo}" />
+
+											</p:commandButton>
+											<p:commandButton title="Mostrar Evidencias"
+												icon="ui-icon-circle-triangle-s" ajax="false"
+												action="#{docenteController.cargarEConcepto}"
+												rendered="#{docenteController.alertaEvaluador}"
+												style="width:16px;height:16px;">
+												<f:setPropertyActionListener
+													target="#{docenteController.formacionDocente}"
+													value="#{formDoc}" />
+											</p:commandButton>
+										</center>
+									</p:column>
+
+								</p:dataTable>
+								<p:outputPanel rendered="#{docenteController.evidenciaConcepto}">
+									<p:fieldset legend="Evidencias"
+										style="margin:  20px 0px 0px 0px;">
+										<p:outputLabel style="font-weight: bold;float: left;"
+											value="#{docenteController.formacionDocente.titulo}" />
+										<br />
+										<p:dataTable id="tablaEConcepto" var="evidenciaconcepto"
+											value="#{docenteController.listaEvidenciaConcepto}"
+											emptyMessage="No hay Conceptos">
+
+											<p:column headerText="Evidencias" style="white-space: normal">
+												<h:outputText value="#{evidenciaconcepto.nombre}" />
+											</p:column>
+											<p:column headerText="Lista Archivos">
+												<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+													var="evidencia" emptyMessage="No hay Evidencias">
+
+													<p:column>
+														<h:outputText value="#{evidencia.nombreArchivo}" />
+
+													</p:column>
+													<p:column>
+
+														<p:commandButton title="descargar" icon="ui-icon-document"
+															oncomplete="dlgDescarga.show()"
+															update=":tabViewFormularios:formFormacion"
+															process="@this"
+															actionListener="#{docenteController.enviarEvidencia(evidencia)}">
+
+														</p:commandButton>
+
+
+													</p:column>
+
+												</p:dataTable>
+											</p:column>
+
+
+										</p:dataTable>
+
+									</p:fieldset>
+								</p:outputPanel>
+							</center>
+						</p:panel>
+						<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+							resizable="false" closable="false" closeOnEscape="false"
+							widgetVar="dlgDescarga" modal="true">
+							<p:panel>
+								<h:panelGrid columns="3">
+									<p:commandButton value="Si"
+										update=":tabViewFormularios:formFormacion" style="width:100px"
+										icon="ui ui-icon-check" ajax="false"
+										onclick="dlgDescarga.hide()">
+										<p:fileDownload value="#{docenteController.documentoDescarga}" />
+									</p:commandButton>
+									<p:spacer width="10" />
+									<p:commandButton value="No" onclick="dlgDescarga.hide()"
+										style="width:100px" icon="ui ui-icon-closethick" />
+								</h:panelGrid>
+
+
+							</p:panel>
+
+						</p:dialog>
+					</h:form>
+					<ui:include src="/docentes/docenteFormacion.xhtml" />
+				</p:tab>
+
+				<p:tab title="Cursos de Capacitación"
+					disabled="#{docenteController.verTabCursos}">
+
+					<h:form id="formCurso" enctype="multipart/form-data"
+						acceptcharset="iso-8859-1">
+
+						<p:growl id="grCurso" autoUpdate="true" showDetail="true"
+							showSummary="false"></p:growl>
+
+						<p:confirmDialog id="cdCurso" header="Confirmación"
+							widgetVar="cfCurso" severity="alert"
+							message="¿Desea eliminar el curso #{docenteController.cursoCapacitacion.nombre}?"
+							showEffect="fade">
+							<center>
+								<p:commandButton value="Si"
+									update=":tabViewFormularios:formCurso"
+									oncomplete="cfCurso.hide()"
+									action="#{docenteController.eliminarCurso}" />
+								<p:commandButton value="No" onclick="cfCurso.hide()" />
+							</center>
+						</p:confirmDialog>
+
+						<center>
+							<p:panel>
+
+								<p:commandButton value="Nuevo" style="float:right;"
+									actionListener="#{docenteController.nuevoCurso}"
+									oncomplete="editarCapacitacionDlg.show()" async="true"
+									process="@this" update=":tabViewFormularios:capacitacionFormId" />
+
+								<br />
+								<br />
+								<br />
+
+								<p:growl id="msgTabCurso" showDetail="false" life="3000" />
+
+								<p:dataTable id="tablaCursos"
+									value="#{docenteController.cursos}" var="cur"
+									emptyMessage="No hay datos de Cursos de Capacitacion"
+									style="text-align:center;width:auto;height:auto"
+									paginator="true" rows="10" border="1"
+									paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+									rowsPerPageTemplate="5,10,15">
+
+									<p:column headerText="Nombre" width="125">
+										<h:inputTextarea value="#{cur.nombre}"
+											style="font-size:10px;resize:none;" cols="20" rows="3" />
+									</p:column>
+									
+									<p:column headerText="Institución" width="125">
+										<h:inputTextarea value="#{cur.institutoCapacitacion}"
+											style="font-size:10px;resize:none;" cols="20" rows="3" />
+									</p:column>
+									
+									<p:column headerText="Financiado por el Instito" width="125">
+										<h:outputText value="#{cur.financiadoPorInsitucion ? 'SI':'NO'}"/>
+									</p:column>							
+																		
+									<p:column headerText="Fecha Inicio" width="125">
+										<h:outputText value="#{cur.fechaInicio}">
+											<f:convertDateTime pattern="dd-MM-yyyy" />
+										</h:outputText>
+									</p:column>
+									<p:column headerText="Fecha Fin" width="125">
+										<h:outputText value="#{cur.fechaFin}">
+											<f:convertDateTime pattern="dd-MM-yyyy" />
+										</h:outputText>
+									</p:column>
+									<p:column headerText="Horas" width="125">
+										<h:outputText value="#{cur.numeroHoras}" />
+									</p:column>
+
+									<p:column headerText="Acciones" width="125">
+										<center>
+											<p:commandButton title="seleccionar" icon="ui-icon-pencil"
+												action="#{docenteController.editarCapacitacion}"
+												style="width:16px;height:16px;" async="true" process="@this"
+												update=":tabViewFormularios:capacitacionFormId">
+												<f:setPropertyActionListener
+													target="#{docenteController.cursoCapacitacion}"
+													value="#{cur}" />
+											</p:commandButton>
+											<p:commandButton title="eliminar" icon="ui-icon-close"
+												oncomplete="cfCurso.show()"
+												update=":tabViewFormularios:formCurso"
+												style="width:16px;height:16px;">
+												<f:setPropertyActionListener value="#{cur}"
+													target="#{docenteController.cursoCapacitacion}" />
+											</p:commandButton>
+											<p:commandButton title="Mostrar Evidencias"
+												icon="ui-icon-circle-triangle-s"
+												action="#{docenteController.cargarEConcepto}"
+												update=":tabViewFormularios:formCurso"
+												style="width:16px;height:16px;"
+												rendered="#{docenteController.alertaEvaluador}">
+												<f:setPropertyActionListener
+													target="#{docenteController.cursoCapacitacion}"
+													value="#{cur}" />
+											</p:commandButton>
+										</center>
+									</p:column>
+								</p:dataTable>
+								<p:outputPanel rendered="#{docenteController.evidenciaConcepto}">
+									<p:fieldset legend="Evidencias"
+										style="margin:  20px 0px 0px 0px;">
+										<p:outputLabel style="font-weight: bold;float: left;"
+											value="#{docenteController.cursoCapacitacion.nombre}" />
+										<br />
+										<p:dataTable id="tablaEConcepto" var="evidenciaconcepto"
+											value="#{docenteController.listaEvidenciaConcepto}"
+											emptyMessage="No hay Conceptos">
+
+											<p:column headerText="Evidencias" style="white-space: normal">
+												<h:outputText value="#{evidenciaconcepto.nombre}" />
+											</p:column>
+											<p:column headerText="Lista Archivos">
+												<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+													var="evidencia" emptyMessage="No hay Evidencias">
+
+													<p:column>
+														<h:outputText value="#{evidencia.nombreArchivo}" />
+
+													</p:column>
+													<p:column>
+
+														<p:commandButton title="descargar" icon="ui-icon-document"
+															oncomplete="dlgDescarga.show()"
+															update=":tabViewFormularios:formCurso" process="@this"
+															actionListener="#{docenteController.enviarEvidencia(evidencia)}">
+
+														</p:commandButton>
+
+
+													</p:column>
+
+												</p:dataTable>
+											</p:column>
+
+
+										</p:dataTable>
+
+									</p:fieldset>
+								</p:outputPanel>
+							</p:panel>
+						</center>
+						<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+							resizable="false" closable="false" closeOnEscape="false"
+							widgetVar="dlgDescarga" modal="true">
+							<p:panel>
+								<h:panelGrid columns="3">
+									<p:commandButton value="Si"
+										update=":tabViewFormularios:formCurso" style="width:100px"
+										icon="ui ui-icon-check" ajax="false"
+										onclick="dlgDescarga.hide()">
+										<p:fileDownload value="#{docenteController.documentoDescarga}" />
+									</p:commandButton>
+									<p:spacer width="10" />
+									<p:commandButton value="No" onclick="dlgDescarga.hide()"
+										style="width:100px" icon="ui ui-icon-closethick" />
+								</h:panelGrid>
+
+
+							</p:panel>
+
+						</p:dialog>
+					</h:form>
+					<ui:include src="/docentes/docenteCapacitacion.xhtml"></ui:include>
+				</p:tab>
+
+				<p:tab title="Cargos Directivos"
+					disabled="#{docenteController.verTabCargosDireccion}">
+					<h:form id="formCargosDirectivos" acceptcharset="iso-8859-1">
+
+						<p:growl id="grCargosDirectivos" autoUpdate="true"
+							showDetail="true" showSummary="false"></p:growl>
+
+						<p:confirmDialog id="cdCargoDirectivo" header="Confirmación"
+							widgetVar="cfCargoDirectivo" severity="alert"
+							message="¿Desea eliminar el cargo de #{docenteController.cargoDirectivoDocente.autoridadAcademica.value}?"
+							showEffect="fade">
+							<center>
+								<p:commandButton value="Si"
+									update=":tabViewFormularios:formCargosDirectivos"
+									oncomplete="cfCargoDirectivo.hide()"
+									action="#{docenteController.eliminarCargoDirectivo}" />
+								<p:commandButton value="No" onclick="cfCargoDirectivo.hide()" />
+							</center>
+						</p:confirmDialog>
+						<p:panel>
+							<center>
+
+								<p:commandButton value="Nuevo" style="float:right;"
+									action="#{docenteController.nuevoCargoDirectivo}"
+									oncomplete="editarDirectivoDlg.show()" async="true"
+									process="@this"
+									update=":tabViewFormularios:editarDirectivoDlgId" />
+
+								<br /> <br /> <br />
+								<p:growl id="msgTabCargosDirectivos" showDetail="false"
+									life="3000" />
+
+								<p:dataTable id="tablaCargosDirectivos" scrollable="true"
+									value="#{docenteController.cargosDirectivos}" var="carg"
+									emptyMessage="No hay datos de Cargos Directivos">
+
+									<p:column headerText="Autoridad" width="125">
+										<h:inputTextarea disabled="true"
+											style="font-size:10px;resize:none;" cols="20" rows="1"
+											value="#{carg.autoridadAcademica.value}" />
+									</p:column>
+									<p:column headerText="Fecha Inicio" width="125">
+										<h:outputText style="font-size:10px;"
+											value="#{carg.fechaInicio}">
+											<f:convertDateTime pattern="dd-MM-yyyy" />
+										</h:outputText>
+									</p:column>
+									<p:column headerText="Fecha Fin" width="125">
+										<h:outputText style="font-size:10px;" value="#{carg.fechaFin}">
+											<f:convertDateTime pattern="dd-MM-yyyy" />
+										</h:outputText>
+									</p:column>
+									<p:column headerText="Número Documento" width="125">
+										<h:outputText style="font-size:10px;"
+											value="#{carg.numeroDocumento}" />
+									</p:column>
+
+									<p:column headerText="Acciones" width="125">
+										<center>
+											<p:commandButton title="seleccionar" icon="ui-icon-pencil"
+												style="width:16px;height:16px;"
+												action="#{docenteController.editarCargoDirectivo}"
+												async="true" process="@this"
+												update=":tabViewFormularios:editarDirectivoDlgId">
+												<f:setPropertyActionListener value="#{carg}"
+													target="#{docenteController.cargoDirectivoDocente}" />
+											</p:commandButton>
+											<p:commandButton title="eliminar" icon="ui-icon-close"
+												oncomplete="cfCargoDirectivo.show()"
+												update=":tabViewFormularios:formCargosDirectivos"
+												style="width:16px;height:16px;">
+												<f:setPropertyActionListener value="#{carg}"
+													target="#{docenteController.cargoDirectivoDocente}" />
+											</p:commandButton>
+											<p:commandButton title="Mostrar Evidencias"
+												icon="ui-icon-circle-triangle-s" ajax="false"
+												action="#{docenteController.cargarEConcepto}"
+												style="width:16px;height:16px;"
+												rendered="#{docenteController.alertaEvaluador}">
+												<f:setPropertyActionListener
+													target="#{docenteController.cargoDirectivoDocente}"
+													value="#{carg}" />
+											</p:commandButton>
+
+										</center>
+									</p:column>
+								</p:dataTable>
+								<p:outputPanel rendered="#{docenteController.evidenciaConcepto}">
+									<p:fieldset legend="Evidencias"
+										style="margin:  20px 0px 0px 0px;">
+										<p:outputLabel style="font-weight: bold;float: left;"
+											value="#{docenteController.cargoDirectivoDocente.autoridadAcademica.value}" />
+										<br />
+										<p:dataTable id="tablaEConcepto" var="evidenciaconcepto"
+											value="#{docenteController.listaEvidenciaConcepto}"
+											emptyMessage="No hay Conceptos">
+
+											<p:column headerText="Evidencias" style="white-space: normal">
+												<h:outputText value="#{evidenciaconcepto.nombre}" />
+											</p:column>
+											<p:column headerText="Lista Archivos">
+												<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+													var="evidencia" emptyMessage="No hay Evidencias">
+
+													<p:column>
+														<h:outputText value="#{evidencia.nombreArchivo}" />
+
+													</p:column>
+													<p:column>
+
+														<p:commandButton title="descargar" icon="ui-icon-document"
+															oncomplete="dlgDescarga.show()"
+															update=":tabViewFormularios:formCargosDirectivos"
+															process="@this"
+															actionListener="#{docenteController.enviarEvidencia(evidencia)}">
+
+														</p:commandButton>
+
+
+													</p:column>
+
+												</p:dataTable>
+											</p:column>
+
+
+										</p:dataTable>
+
+									</p:fieldset>
+								</p:outputPanel>
+							</center>
+						</p:panel>
+						<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+							resizable="false" closable="false" closeOnEscape="false"
+							widgetVar="dlgDescarga" modal="true">
+							<p:panel>
+								<h:panelGrid columns="3">
+									<p:commandButton value="Si"
+										update=":tabViewFormularios:formCargosDirectivos"
+										style="width:100px" icon="ui ui-icon-check" ajax="false"
+										onclick="dlgDescarga.hide()">
+										<p:fileDownload value="#{docenteController.documentoDescarga}" />
+									</p:commandButton>
+									<p:spacer width="10" />
+									<p:commandButton value="No" onclick="dlgDescarga.hide()"
+										style="width:100px" icon="ui ui-icon-closethick" />
+								</h:panelGrid>
+
+
+							</p:panel>
+
+						</p:dialog>
+					</h:form>
+					<ui:include src="/docentes/docenteCargoDireccion.xhtml"></ui:include>
+				</p:tab>
+
+				<p:tab title="Experiencia Profesional"
+					disabled="#{docenteController.verTabExperienciaProf}">
+
+					<h:form id="formExpProfesional" acceptcharset="iso-8859-1">
+
+						<p:growl id="grExpProfesional" autoUpdate="true" showDetail="true"
+							showSummary="false"></p:growl>
+
+						<p:confirmDialog id="cdExperienciaProf" header="Confirmación"
+							widgetVar="cfExperienciaProf" severity="alert"
+							message="¿Desea eliminar la Experiencia Profesional actual?"
+							showEffect="fade">
+							<center>
+								<p:commandButton value="Si"
+									update=":tabViewFormularios:formExpProfesional"
+									oncomplete="cfExperienciaProf.hide()"
+									action="#{docenteController.eliminarExperienciaProf}" />
+								<p:commandButton value="No" onclick="cfExperienciaProf.hide()" />
+							</center>
+						</p:confirmDialog>
+
+						<center>
+							<p:panel>
+
+								<p:commandButton value="Nuevo"
+									action="#{docenteController.nuevoExperienciaProfesional}"
+									oncomplete="editarExperienciaProfDlg.show()" async="true"
+									process="@this"
+									update=":tabViewFormularios:editarExperienciaProfDlgId"
+									style="float:right;" />
+
+								<br />
+								<br />
+								<br />
+
+								<p:growl id="msgTabExperienciaProf" showDetail="false"
+									life="3000" />
+
+								<p:dataTable id="tablaExpProf" scrollable="true"
+									value="#{docenteController.listaExperienciaProfesionalDTO}"
+									var="ep" emptyMessage="No hay datos de experiencia profesional">
+
+									<p:column headerText="Institución" filterBy="#{ep.institucion}"
+										cols="60">
+										<h:inputTextarea value="#{ep.institucion}" readonly="true"
+											cols="60" rows="1" />
+									</p:column>
+									<p:column headerText="Cargo" filterBy="#{ep.cargo}" cols="60">
+										<h:inputTextarea value="#{ep.cargo}" readonly="true" cols="60"
+											rows="1" />
+									</p:column>
+									<p:column headerText="Fecha Inicio" width="125">
+										<h:outputText style="font-size:10px;"
+											value="#{ep.fechaInicio}">
+											<f:convertDateTime pattern="dd-MM-yyyy" />
+										</h:outputText>
+									</p:column>
+									<p:column headerText="Fecha Fin" width="125">
+										<h:outputText style="font-size:10px;" value="#{ep.fechaFin}">
+											<f:convertDateTime pattern="dd-MM-yyyy" />
+										</h:outputText>
+									</p:column>
+									<p:column headerText="Acciones" width="125">
+										<center>
+											<p:commandButton title="seleccionar" icon="ui-icon-pencil"
+												action="#{docenteController.editarExperienciaProfesional}"
+												style="width:16px;height:16px;" async="true" process="@this"
+												update=":tabViewFormularios:editarExperienciaProfDlgId">
+												<f:setPropertyActionListener value="#{ep}"
+													target="#{docenteController.experienciaProfesionalDocente}" />
+											</p:commandButton>
+											<p:commandButton title="eliminar" icon="ui-icon-close"
+												oncomplete="cfExperienciaProf.show()"
+												update=":tabViewFormularios:formExpProfesional"
+												style="width:16px;height:16px;">
+												<f:setPropertyActionListener value="#{ep}"
+													target="#{docenteController.experienciaProfesionalDocente}" />
+											</p:commandButton>
+											<p:commandButton title="Mostrar Evidencias"
+												icon="ui-icon-circle-triangle-s" ajax="false"
+												action="#{docenteController.cargarEConcepto}"
+												style="width:16px;height:16px;"
+												rendered="#{docenteController.alertaEvaluador}">
+												<f:setPropertyActionListener
+													target="#{docenteController.experienciaProfesionalDocente}"
+													value="#{ep}" />
+											</p:commandButton>
+
+
+										</center>
+									</p:column>
+
+								</p:dataTable>
+								<p:outputPanel rendered="#{docenteController.evidenciaConcepto}">
+									<p:fieldset legend="Evidencias"
+										style="margin:  20px 0px 0px 0px;">
+										<p:outputLabel style="font-weight: bold;float: left;"
+											value="#{docenteController.experienciaProfesionalDocente.institucion}" />
+										<br />
+										<p:dataTable id="tablaEConcepto" var="evidenciaconcepto"
+											value="#{docenteController.listaEvidenciaConcepto}"
+											emptyMessage="No hay Conceptos">
+
+											<p:column headerText="Evidencias" style="white-space: normal">
+												<h:outputText value="#{evidenciaconcepto.nombre}" />
+											</p:column>
+											<p:column headerText="Lista Archivos">
+												<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+													var="evidencia" emptyMessage="No hay Evidencias">
+
+													<p:column>
+														<h:outputText value="#{evidencia.nombreArchivo}" />
+
+													</p:column>
+													<p:column>
+
+														<p:commandButton title="descargar" icon="ui-icon-document"
+															oncomplete="dlgDescarga.show()"
+															update=":tabViewFormularios:formExpProfesional"
+															process="@this"
+															actionListener="#{docenteController.enviarEvidencia(evidencia)}">
+
+														</p:commandButton>
+
+													</p:column>
+
+												</p:dataTable>
+											</p:column>
+
+										</p:dataTable>
+
+									</p:fieldset>
+								</p:outputPanel>
+							</p:panel>
+						</center>
+						<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+							resizable="false" closable="false" closeOnEscape="false"
+							widgetVar="dlgDescarga" modal="true">
+							<p:panel>
+								<h:panelGrid columns="3">
+									<p:commandButton value="Si"
+										update=":tabViewFormularios:formExpProfesional"
+										style="width:100px" icon="ui ui-icon-check" ajax="false"
+										onclick="dlgDescarga.hide()">
+										<p:fileDownload value="#{docenteController.documentoDescarga}" />
+									</p:commandButton>
+									<p:spacer width="10" />
+									<p:commandButton value="No" onclick="dlgDescarga.hide()"
+										style="width:100px" icon="ui ui-icon-closethick" />
+								</h:panelGrid>
+
+
+							</p:panel>
+
+						</p:dialog>
+					</h:form>
+					<ui:include src="/docentes/docenteExperienciaProfesional.xhtml" />
+				</p:tab>
+
+			</p:tabView>
+		</p:fieldset>
+		<p:dialog id="modalContratacionPeriodo"
+			header="Contratacion Periodo Academico"
+			widgetVar="dlgContratacionPeriodo" modal="true">
+			<h:form id="formContratacionPeriodoAcademico"
+				acceptcharset="iso-8859-1">
+				<p:growl id="msgContratacionPeriodoId" globalOnly="true"
+					showDetail="false" life="3000" />
+				<fieldset>
+					<h:outputText style="font-weight: bold;" value="Horas" />
+					<h:panelGrid id="pnlContratacionPeriodo" columns="3"
+						cellspacing="10" cellpadding="5">
+
+						<h:outputText value="Periodo :" />
+						<p:selectOneMenu value="#{docenteController.idPeriodoAcademico}"
+							required="true" requiredMessage="Este campo es obligatorio"
+							style="width:210px;" id="comboPeriodoId">
+							<p:ajax event="change" update="@this" global="false" />
+							<f:selectItem itemLabel="--Seleccionar--" itemValue="" />
+							<f:selectItems value="#{docenteController.periodosAcademicos}"
+								var="pa" itemValue="#{pa.id}" itemLabel="#{pa}" />
+						</p:selectOneMenu>
+						<h:panelGroup>
+							<p:commandButton value="Administrar Periodos" async="true"
+								process="@this" onclick="dlgContratacionPeriodo.hide()"
+								oncomplete="dlgPeriodosAcademicos.show()" />
+							<p:message for="comboPeriodoId" />
+						</h:panelGroup>
+
+						<h:outputText value="Hora clase - periodo :" />
+						<p:inputText id="horaPeriodoId"
+							value="#{docenteController.contratacionPeriodoAcademicoDTO.horasClase60min}"
+							size="4" maxlength="3" required="true"
+							requiredMessage="Este campo es obligatorio"
+							onkeypress="return validarNumero(event)">
+						</p:inputText>
+						<p:message for="horaPeriodoId" />
+
+						<h:outputText value="Hora clase - semanal :" />
+						<p:inputText id="horaSemanalId"
+							value="#{docenteController.contratacionPeriodoAcademicoDTO.horasClaseSemanal}"
+							size="4" maxlength="4" required="true"
+							requiredMessage="Este campo es obligatorio"
+							onkeypress="return validarNumero(event)">
+						</p:inputText>
+						<p:message for="horaSemanalId" />
+					</h:panelGrid>
+					<p:spacer width="10" />
+				</fieldset>
+				<p:commandButton value="Guardar"
+					update=":tabViewFormularios:formContratacion :tabViewFormularios"
+					action="#{docenteController.guardarContratacionesPeriodo}"
+					oncomplete="verificarErroresContratacionPeriodo(xhr, status, args)" />
+
+				<p:spacer width="20" />
+				<p:commandButton value="Salir" async="true" process="@this"
+					update="@form" oncomplete="dlgContratacionPeriodo.hide()">
+					<p:resetInput target=":modalContratacionPeriodo" />
+				</p:commandButton>
+			</h:form>
+		</p:dialog>
+
+		<p:confirmDialog id="delConfirmation"
+			message="Está seguro de eliminar el registro?" header="Confirmación"
+			severity="alert" widgetVar="confirmacionEliminarContratacionPeriodo">
+			<p:commandButton id="eliminarContPeriodoOkBtnId" value="Si"
+				update=":tabViewFormularios:formContratacion:tablaContratacionPeriodo"
+				oncomplete="confirmacionEliminarContratacionPeriodo.hide()"
+				actionListener="#{docenteController.eliminarContratacionPeriodo}"
+				immediate="true" />
+			<p:commandButton id="eliminarContPeriodoNoBtnId" value="No"
+				onclick="confirmacionEliminarContratacionPeriodo.hide()"
+				immediate="true" />
+		</p:confirmDialog>
+
+		<p:confirmDialog id="delConfirmationHoras"
+			message="Está seguro de eliminar el registro?" header="Confirmación"
+			severity="alert" widgetVar="confirmacionEliminarHorasNoAcad">
+			<p:commandButton id="eliminarOkBtnId" value="Si"
+				oncomplete="confirmacionEliminarHorasNoAcad.hide()"
+				actionListener="#{docenteController.eliminarHorasNoAcad}"
+				immediate="true" />
+			<p:commandButton id="eliminarNoBtnId" value="No"
+				onclick="confirmacionEliminarHorasNoAcad.hide()" immediate="true" />
+		</p:confirmDialog>
+
+		<p:dialog id="modalListaPeriodos"
+			header="Lista de Periodos Academicos"
+			widgetVar="dlgPeriodosAcademicos" modal="true">
+
+			<h:form id="formListaPeriodosAcademicos" acceptcharset="iso-8859-1">
+				<p:commandButton id="nuevoPeriodoAcademicoId" value="Nuevo"
+					action="#{docenteController.nuevoPeriodoAcademico}"
+					oncomplete="dlgPeriodoAcademico.show()"
+					update="@form :formPeriodoAcademico" style="float:right">
+				</p:commandButton>
+				<br></br>
+				<br></br>
+				<br></br>
+				<p:dataTable id="tablaListaPeriodosAcademicos"
+					value="#{docenteController.periodosAcademicos}" var="detalle"
+					emptyMessage="No hay datos de los periodos">
+
+					<p:column headerText="Periodo">
+						<h:outputText style="font-size:10px;" value="#{detalle}" />
+					</p:column>
+					<p:column headerText="Acciones">
+						<p:commandButton oncomplete="dlgPeriodoAcademico.show()"
+							rendered="false" update="@form :formPeriodoAcademico"
+							icon="ui-icon-pencil" style="width:24px;height:24px;">
+							<f:setPropertyActionListener
+								target="#{docenteController.periodoAcademicoDTO}"
+								value="#{detalle}">
+							</f:setPropertyActionListener>
+						</p:commandButton>
+						<p:commandButton
+							oncomplete="confirmacionEliminarPeriodoAcademico.show()"
+							update="@form :formPeriodoAcademico" icon="ui-icon-close"
+							style="width:24px;height:24px;">
+							<f:setPropertyActionListener
+								target="#{docenteController.periodoAcademicoDTO}"
+								value="#{detalle}">
+							</f:setPropertyActionListener>
+						</p:commandButton>
+					</p:column>
+
+				</p:dataTable>
+				<p:commandButton value="Guardar"
+					update="@form :tabViewFormularios:formContratacion :formContratacionPeriodoAcademico"
+					actionListener="#{docenteController.guardarPeriodosAcademicos}"
+					oncomplete="if (!args.validationFailed) dlgPeriodosAcademicos.hide()" />
+
+				<p:spacer width="20" />
+				<p:commandButton value="Salir" async="true" process="@this"
+					update="@form :tabViewFormularios:formContratacion"
+					action="#{docenteController.cancelarPeriodosAcademicos}"
+					onclick="dlgPeriodosAcademicos.hide()" />
+			</h:form>
+		</p:dialog>
+
+
+
+		<p:dialog id="modalPeriodoAcademico" header="Periodo Academico"
+			widgetVar="dlgPeriodoAcademico" modal="true">
+
+			<h:form id="formPeriodoAcademico" acceptcharset="iso-8859-1">
+				<h:panelGroup styleClass="ui-messages-error ui-corner-all"
+					layout="block"
+					rendered="#{docenteController.mensajeErrorPeriodo != null and docenteController.mensajeErrorPeriodo != ''}">
+					<h:panelGroup styleClass="ui-messages-error-icon"></h:panelGroup>
+					<ul>
+						<li><h:panelGroup styleClass="ui-messages-error-summary">
+								<h:outputText value="#{docenteController.mensajeErrorPeriodo}"></h:outputText>
+							</h:panelGroup></li>
+					</ul>
+				</h:panelGroup>
+
+				<fieldset>
+					<h:outputText style="font-weight: bold;" value="Periodos" />
+					<h:panelGrid id="pnlPeriodoAcademicoId" columns="2"
+						cellspacing="10" cellpadding="5">
+
+						<h:outputText value="Inicio :" />
+						<h:panelGroup>
+							<p:selectOneMenu
+								value="#{docenteController.mesInicioPeriodoAcademico}">
+								<p:ajax event="change" update="@this" process="@this" />
+								<f:selectItems value="#{docenteController.MESES}" />
+							</p:selectOneMenu>
+							<p:selectOneMenu
+								value="#{docenteController.anioInicioPeriodoAcademico}">
+								<p:ajax event="change" update="@this" process="@this" />
+								<f:selectItems value="#{docenteController.ANIOS}" />
+							</p:selectOneMenu>
+						</h:panelGroup>
+
+						<h:outputText value="Fin :" />
+						<h:panelGroup>
+							<p:selectOneMenu
+								value="#{docenteController.mesFinPeriodoAcademico}">
+								<p:ajax event="change" update="@this" process="@this" />
+								<f:selectItems value="#{docenteController.MESES}" />
+							</p:selectOneMenu>
+							<p:selectOneMenu
+								value="#{docenteController.anioFinPeriodoAcademico}">
+								<p:ajax event="change" update="@this" process="@this" />
+								<f:selectItems value="#{docenteController.ANIOS}" />
+							</p:selectOneMenu>
+						</h:panelGroup>
+
+					</h:panelGrid>
+					<p:spacer width="10" />
+				</fieldset>
+				<p:commandButton value="Guardar"
+					update="@form :formListaPeriodosAcademicos"
+					action="#{docenteController.guardarPeriodoAcademico}"
+					oncomplete="verificarErroresPeriodos(xhr, status, args)" />
+				<p:spacer width="20" />
+				<p:commandButton value="Salir" async="true" process="@this"
+					update="@form :formListaPeriodosAcademicos"
+					onclick="dlgPeriodoAcademico.hide()">
+					<f:setPropertyActionListener
+						target="#{docenteController.mensajeErrorPeriodo}" value="#{null}">
+					</f:setPropertyActionListener>
+					<p:resetInput target=":modalPeriodoAcademico" />
+				</p:commandButton>
+			</h:form>
+		</p:dialog>
+
+		<p:confirmDialog id="delConfirmationPeriodoAcademico"
+			message="Está seguro de eliminar.?" header="Confirmación"
+			severity="alert" widgetVar="confirmacionEliminarPeriodoAcademico">
+			<p:commandButton id="eliminarPeriodoOkBtnId" value="Si"
+				update=":formListaPeriodosAcademicos"
+				oncomplete="confirmacionEliminarPeriodoAcademico.hide()"
+				actionListener="#{docenteController.eliminarPeriodoAcademico}" />
+			<p:commandButton id="eliminarPeriodoNoBtnId" value="No" async="true"
+				process="@this"
+				onclick="confirmacionEliminarPeriodoAcademico.hide()" />
+		</p:confirmDialog>
+
+		<p:dialog id="modalDocenteAsignaturaHoraClase" header="Hora Clase"
+			widgetVar="dlgDocenteAsignaturaHoraClase" modal="true">
+
+			<h:form id="formDocenteAsignaturaHoraClase"
+				acceptcharset="iso-8859-1">
+				<h:panelGroup styleClass="ui-messages-error ui-corner-all"
+					layout="block"
+					rendered="#{docenteController.mensajeErrorPeriodo != null and docenteController.mensajeErrorPeriodo != ''}">
+					<h:panelGroup styleClass="ui-messages-error-icon" />
+					<ul>
+						<li><h:panelGroup styleClass="ui-messages-error-summary">
+								<h:outputText value="#{docenteController.mensajeErrorPeriodo}" />
+							</h:panelGroup></li>
+					</ul>
+				</h:panelGroup>
+				<p:commandButton value="Guardar"
+					update="@form :formListaPeriodosAcademicos" process="@this"
+					actionListener="#{docenteController.guardarPeriodoAcademico}"
+					oncomplete="if (#{docenteController.mensajeErrorPeriodo ==''}) dlgPeriodoAcademico.hide()" />
+				<p:spacer width="20" />
+				<p:commandButton value="Salir" async="true" process="@this"
+					onclick="dlgDocenteAsignaturaHoraClase.hide()">
+					<f:setPropertyActionListener
+						target="#{docenteController.mensajeErrorPeriodo}" value="#{null}">
+					</f:setPropertyActionListener>
+				</p:commandButton>
+			</h:form>
+		</p:dialog>
+
+		<p:confirmDialog id="delConfirmacionDocenteAsignaturaHoraClase"
+			message="Está seguro de eliminar.?" header="Confirmación"
+			severity="alert"
+			widgetVar="dlgConfirmacionEliminarDocenteAsignaturaHoraClase">
+			<p:commandButton id="eliminarDocenteAsigHoraClaseOkBtnId" value="Si"
+				update=":formListaPeriodosAcademicos"
+				oncomplete="confirmacionEliminarPeriodoAcademico.hide()"
+				actionListener="#{docenteController.eliminarPeriodoAcademico}" />
+			<p:commandButton id="eliminarDocenteAsigHoraCalseNoBtnId" value="No"
+				async="true" process="@this"
+				onclick="confirmacionEliminarPeriodoAcademico.hide()" />
+		</p:confirmDialog>
+
+
+		<p:dialog id="modalConfirmarReingreso"
+			header="Advertencia reingreso de docente."
+			widgetVar="dlgConfirmarReingreso" modal="true">
+			<h:form>
+				<center>
+					<h4>El docente se encuentra inactivo, se procederá a activar
+						todos sus registros. Es necesario que actualice la fecha de
+						ingreso a la IES.</h4>
+					<br />
+					<p:commandButton value="Aceptar"
+						action="#{docenteController.activarDocente}"
+						oncomplete="dlgConfirmarReingreso.hide();"
+						update=":tabViewFormularios" />
+				</center>
+			</h:form>
+		</p:dialog>
+
+	</ui:define>
+</ui:composition>
+</html>

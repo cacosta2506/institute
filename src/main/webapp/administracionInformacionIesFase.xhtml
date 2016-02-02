@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage value="images/saving.gif" />
+			</center>
+		</p:dialog>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<p:messages id="messages" showDetail="false" autoUpdate="true"
+			showSummary="true" closable="true" globalOnly="true" />
+
+		<h:form id="formulario" acceptcharset="iso-8859-1">
+			<p:panel header="Información IES"
+				style="text-align:center;font-size:large;">
+				<br />
+				<br />
+				<p:commandButton value="Nuevo" style="float:right"
+					oncomplete="dlgNewInfoFase.show();">
+				</p:commandButton>
+				<br />
+				<br />
+				<p:dataTable id="tablaInforIes" var="tblInfoIes"
+					value="#{admIesFaseController.listaIesFase}" border="0"
+					style="width:auto;height:auto" paginator="true" rows="10"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15">
+
+					<p:column headerText="Código">
+						<h:outputText value="#{tblInfoIes.informacionIesDTO.ies.codigo}" />
+					</p:column>
+
+					<p:column headerText="Nombre">
+						<h:outputText value="#{tblInfoIes.informacionIesDTO.ies.nombre}" />
+					</p:column>
+
+					<p:column headerText="Fase">
+						<h:outputText value="#{tblInfoIes.faseEvaluacionDTO.descripcion}" />
+					</p:column>
+
+					<p:column headerText="Fecha Inicio">
+						<h:outputText value="#{tblInfoIes.fechaInicio}" />
+					</p:column>
+
+					<p:column headerText="Fecha Fin">
+						<h:outputText value="#{tblInfoIes.fechaFin}" />
+					</p:column>
+
+				</p:dataTable>
+			</p:panel>
+		</h:form>
+
+		<p:dialog id="newInfFase" widgetVar="dlgNewInfoFase" modal="true"
+			width="1000">
+			<div align="center">
+				<h:form id="formNewInfoFase" acceptcharset="iso-8859-1">
+					<p:messages id="detmessages" showDetail="true" />
+					<fieldset>
+						<h:panelGrid columns="2" cellpadding="10" cellspacing="10">
+							<h:panelGrid columns="1">
+								<p:dataTable value="#{admIesFaseController.listaIes}" var="ies"
+									rows="7" paginator="true">
+									<p:column headerText="Código" filterBy="#{ies.ies.codigo}"
+										width="30">
+										<h:outputText value="#{ies.ies.codigo}" />
+									</p:column>
+									<p:column headerText="Nombre" filterBy="#{ies.ies.nombre}"
+										width="50">
+										<h:outputText value="#{ies.ies.nombre}" />
+									</p:column>
+									<p:column>
+										<p:commandLink value="Seleccionar" update=":formNewInfoFase">
+											<f:setPropertyActionListener
+												target="#{admIesFaseController.informacionIes}"
+												value="#{ies}" />
+										</p:commandLink>
+									</p:column>
+								</p:dataTable>
+							</h:panelGrid>
+							<h:panelGrid columns="1" id="infIesFase">
+								<h:panelGrid columns="4" id="iesInf">
+									<h:outputText value="Institución: " />
+									<h:inputText style="width: 25px;"
+										value="#{admIesFaseController.informacionIes.id}"
+										disabled="true" id="txt_idInfIes" />
+									<h:inputText style="width: 250px;"
+										value="#{admIesFaseController.informacionIes.ies.nombre}"
+										disabled="true" id="txt_nombreIes" />
+									<p:message id="iconMessageIes" for="txt_idInfIes"
+										display="icon" />
+								</h:panelGrid>
+
+								<h:panelGrid columns="3">
+									<h:outputText value="Fase: " />
+									<h:selectOneMenu value="#{admIesFaseController.idFase}"
+										id="cmb_idFase">
+										<f:selectItems value="#{admIesFaseController.listaFases}"
+											var="fases" itemValue="#{fases.id}"
+											itemLabel="#{fases.descripcion}" />
+									</h:selectOneMenu>
+									<p:message id="iconMessageFase" for="cmb_idFase" display="icon" />
+
+									<h:outputText value="Fecha Inicio: " />
+									<p:calendar
+										value="#{admIesFaseController.informacionIesFase.fechaInicio}"
+										id="popupCalFI" />
+									<p:message id="iconMessageFI" for="popupCalFI" display="icon" />
+
+									<h:outputText value="Fecha Fin: " />
+									<p:calendar
+										value="#{admIesFaseController.informacionIesFase.fechaFin}"
+										id="popupCalFF" />
+									<p:message id="iconMessageFF" for="popupCalFF" display="icon" />
+								</h:panelGrid>
+							</h:panelGrid>
+						</h:panelGrid>
+						<div align="center">
+							<p:commandButton value="Guardar" style="align:center;"
+								update=":formNewInfoFase detmessages"
+								action="#{admIesFaseController.registrarInformacionIesFase}" />
+						</div>
+						<br />
+					</fieldset>
+				</h:form>
+			</div>
+		</p:dialog>
+
+	</ui:define>
+</ui:composition>
+</html>

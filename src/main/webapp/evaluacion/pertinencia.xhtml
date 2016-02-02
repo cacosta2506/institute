@@ -1,0 +1,603 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+		<script type="text/javascript"
+			src="${facesContext.externalContext.request.contextPath}/resources/js/validacionesUtil.js"></script>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formCabecera" acceptcharset="iso-8859-1">
+			<p:growl id="mensajesPrincipal" showDetail="false" />
+			<p:ajaxStatus onstart="statusDialog.show();"
+				onsuccess="statusDialog.hide();" />
+			<p:dialog modal="true" widgetVar="statusDialog" resizable="false"
+				header="Espere por favor." draggable="false" closable="false">
+				<p:graphicImage name="ajax-loader.gif" library="img" />
+			</p:dialog>
+
+			<p:dialog id="cfCalcularVariable" header="Calcular Variables"
+				resizable="false" closable="false" closeOnEscape="false"
+				widgetVar="dlgCalcularVariable" modal="true" width="300">
+
+				<p:panel>
+
+					<h:outputText
+						value="Esta acción actualizará los valores de las variables en base a la verificación de la información realizada previamente.La verificación del detalle de las variables sufrirá cambios y debe realizar nuevamente la evaluación.¿Está seguro de realizar esta acción?" />
+
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" style="width:100px"
+							icon="ui ui-icon-check"
+							action="#{evaluacionPertinenciaController.calcularVariablesPertinencia}"
+							ajax="true" update=":formPrincipal">
+
+
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgCalcularVariable.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+
+
+				</p:panel>
+
+			</p:dialog>
+		</h:form>
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+			<center>
+
+				<p:panel header="VARIABLES DE PERTINENCIA">
+					<br />
+
+					<br />
+					<br />
+					<p:dataTable id="tblVariablePertinencia" var="vv"
+						value="#{evaluacionPertinenciaController.listaVariablesPertinencia}"
+						>
+						<p:column headerText="Variable" style="width:250px">
+							<h:outputText
+								value="#{vv.variableProcesoDTO.variableDTO.etiqueta}" />
+						</p:column>
+						
+						<p:column headerText="Valor Inicial Reportado" style="width:80px">
+							<h:outputText value="#{vv.valorInicialReportado}" />
+						</p:column>
+
+						<p:column headerText="Valor Inicial" style="width:80px">
+							<h:outputText value="#{vv.valorInicial}" />
+						</p:column>
+
+						<p:column headerText="Universo" style="width:80px">
+							<h:outputText value="#{vv.totalUniverso}" />
+						</p:column>
+
+						<p:column headerText="Muestra" style="width:80px">
+							<h:outputText value="#{vv.totalMuestra}" />
+						</p:column>
+
+						<p:column headerText="Aceptados" style="width:80px">
+							<h:outputText value="#{vv.valorVerificado}" />
+						</p:column>
+
+						<p:column headerText="No Aceptados" style="width:80px">
+							<h:outputText value="#{vv.registrosNoAceptados}" />
+						</p:column>
+
+						<p:column headerText="Evaluación">
+							<h:outputText
+								value="#{(vv.registrosNoAceptados+vv.valorVerificado)==vv.totalMuestra? 'COMPLETO' : 'INCOMPLETO'}" />
+						</p:column>
+
+						<p:column headerText="Valor/ Ponderación" style="width:80px">
+							<h:outputText value="#{vv.valor}" />
+						</p:column>
+
+						<p:column headerText="Valor Modificado" style="width:80px; white-space:normal; text-align:center">
+							<h:outputText value="" style="color:red;"
+								rendered="#{vv.modificado}" class="fa fa-circle fa-2x" />
+							<h:outputText value="" style="color:green;"
+								rendered="#{!vv.modificado}" class="fa fa-circle fa-2x" />
+						</p:column>
+
+						<p:column headerText="Observación"
+							style="width:300px;white-space:normal;">
+							<p:inputTextarea value="#{vv.observacion}" rows="4" cols="50"
+								style="resize:none;">
+							</p:inputTextarea>
+						</p:column>
+
+						<p:column headerText="Acciones" style="width:100px">
+							<center>
+								<p:commandLink
+									value="#{vv.variableProcesoDTO.verificacion ? 'Verificar': 'Ver'}"
+									action="#{evaluacionPertinenciaController.cargarMuestraDetalleVariablesPertinencia}"
+									update=":formMuestraProyectos :formMuestraActividades">
+									<f:setPropertyActionListener
+										target="#{evaluacionPertinenciaController.valorVariableDTO}"
+										value="#{vv}" />
+								</p:commandLink>
+							</center>
+						</p:column>
+						
+						<p:column headerText="Última modificación"
+								style="width:80px; white-space:normal;">
+								<h:outputText value="#{vv.auditoriaDTO.usuarioModificacion}" />
+								<span></span>
+								<h:outputText value="#{vv.auditoriaDTO.fechaModificacion}">
+									<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+										timeZone="GMT-5" />
+								</h:outputText>
+							</p:column>
+
+						<p:column headerText="Histórico" style="width:100px">
+							<center>
+								<p:commandLink value="Histórico"
+									actionListener="#{evaluacionPertinenciaController.obtenerHistoricoVariable(vv)}"
+									update=":formPrincipal" oncomplete="historicoModal.show()"
+									async="true" process="@this">
+									<f:setPropertyActionListener
+										target="#{evaluacionPertinenciaController.valorVariableDTO}"
+										value="#{vv}" />
+								</p:commandLink>
+							</center>
+						</p:column>
+					</p:dataTable>
+					<br />
+					<p:commandButton value="Guardar"
+						update=":formPrincipal :formCabecera:mensajesPrincipal"
+						action="#{evaluacionPertinenciaController.guardarObservacionVariablesPertinencia}" />
+				</p:panel>
+
+				<p:dialog widgetVar="historicoModal" modal="true"
+					header="Histórico de la variable: #{evaluacionPertinenciaController.valorVariableDTO.variableProcesoDTO.variableDTO.etiqueta}"
+					resizable="false" closeOnEscape="false" showEffect="fade"
+					hideEffect="fade">
+					<br />
+					<p:dataTable id="tblhistoricos" var="vv"
+						value="#{evaluacionPertinenciaController.historicosVariable}"
+						paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						style="width:600px" paginator="true" rows="5">
+						<p:column headerText="Valor Ponderado" style="width:80px">
+							<h:outputText value="#{vv.valor}" />
+						</p:column>
+						<p:column headerText="Observación" style="white-space: normal; width:40%" >
+							<h:inputTextarea rows="3" disabled="true" value="#{vv.observacion}" />
+						</p:column>
+						<p:column headerText="Fase" style="white-space: normal">
+							<h:outputText value="#{vv.faseIesDTO.tipo.valor}" />
+						</p:column>
+						<p:column headerText="Usuario" style="width:80px">
+							<h:outputText value="#{vv.auditoriaDTO.usuarioModificacion}">
+							</h:outputText>
+						</p:column>
+						<p:column headerText="Fecha" style="width:80px">
+							<center>
+								<h:outputText value="#{vv.auditoriaDTO.fechaModificacion}">
+									<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+										timeZone="GMT-5" />
+								</h:outputText>
+							</center>
+						</p:column>
+					</p:dataTable>
+					<br></br>
+					<p:commandButton value="Cerrar" async="true" process="@this"
+						onclick="historicoModal.hide()" />
+				</p:dialog>
+			</center>
+		</h:form>
+
+		<!-- DIALOGO PARA PRESENTAR LA MUESTRA DE LOS PROYECTOS -->
+		<p:dialog id="modalDialogMuestraProyectos" header="Verificar/Ver"
+			widgetVar="dlgMuestraProyecto" modal="true" width="1200" height="500">
+			<div align="center">
+				<h:form id="formMuestraProyectos" acceptcharset="iso-8859-1">
+					<p:growl id="messagesProyectos" showDetail="false" />
+					<h:panelGrid columns="1" cellspacing="10">
+						<p:fieldset
+							legend="#{evaluacionPertinenciaController.valorVariableDTO.variableProcesoDTO.variableDTO.etiqueta}">
+							<p:dataTable id="tbl_MuestraProyectos" var="item" rows="4"
+								value="#{evaluacionPertinenciaController.listaMuestraDetalle}"
+								paginator="true" scrollWidth="1000" >
+								<p:column headerText="Proyecto" style="white-space: normal"
+									filterBy="#{item.proyecto.nombre}">
+									<h:outputText value="#{item.proyecto.nombre}" />
+								</p:column>
+								<p:column headerText="Fecha Inicio">
+									<h:outputText value="#{item.proyecto.fechaInicio}">
+										<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+								<p:column headerText="Fecha Fin Real">
+									<h:outputText value="#{item.proyecto.fechaFinReal}">
+										<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+								
+								<p:column headerText="Participantes">
+									<p:dataTable var="part" border=""
+										value="#{item.proyecto.listaParticipacionProyectosDTO}"
+										paginator="true" rows="10"
+										paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+										<p:column headerText="Nombre">
+											<h:outputText
+												value="#{part.personaDTO.apellidoPaterno} #{part.personaDTO.apellidoMaterno} #{part.personaDTO.nombres}" />
+										</p:column>
+										<p:column headerText="Horas">
+											<h:outputText value="#{part.horasParticipacion}">
+											</h:outputText>
+										</p:column>
+
+										<p:column headerText="Origen">
+											<h:outputText value="#{part.tabla}">
+											</h:outputText>
+										</p:column>
+									</p:dataTable>
+								</p:column>
+								
+								<p:column headerText="Verificado" style="widht:20px; white-space:normal;">
+									<p:outputPanel
+										rendered="#{!evaluacionPertinenciaController.alertaMulticarrera}">
+										<h:outputText value="#{item.muestraDetalle.verificado=='1' ? 'SI': 'NO'}" />
+									</p:outputPanel>
+									<p:selectOneMenu value="#{item.muestraDetalle.verificado}"
+										rendered="#{evaluacionPertinenciaController.alertaMulticarrera}"
+										disabled="#{!evaluacionPertinenciaController.valorVariableDTO.variableProcesoDTO.verificacion}">
+										<f:selectItem itemLabel="-- seleccione --" itemValue="-1" />
+										<f:selectItem itemLabel="Sí" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="0" />
+										<p:ajax event="change" update="@this" global="false"
+											async="true" />
+									</p:selectOneMenu>
+								</p:column>
+								<p:column headerText="Valor Evaluación">
+								<p:outputPanel
+										rendered="#{!evaluacionPertinenciaController.alertaMulticarrera}">
+										<h:outputText value="#{item.muestraDetalle.ponderacion}"	>
+										</h:outputText>
+									</p:outputPanel>
+									<p:outputPanel
+										rendered="#{evaluacionPertinenciaController.alertaMulticarrera}">
+										<p:inputText value="#{item.muestraDetalle.ponderacion}"
+											maxlength="3" size="3"
+											onkeypress="return validarIngresoSoloNumeros(event)">
+										</p:inputText>
+									</p:outputPanel>
+
+								</p:column>
+								<p:column headerText="Observaciones">
+								<!--	<p:outputPanel
+										rendered="#{!evaluacionPertinenciaController.valorVariableDTO.variableProcesoDTO.verificacion}">-->
+										<p:inputTextarea rows="2" style="resize:none;"
+											value="#{item.proyecto.observacionEvaluador}" cols="25" 
+											readonly="true">
+										</p:inputTextarea>
+									<!--</p:outputPanel>
+
+									<p:outputPanel
+										rendered="#{evaluacionPertinenciaController.valorVariableDTO.variableProcesoDTO.verificacion}">
+										<p:inputTextarea rows="2" style="resize:none;"
+											value="#{item.muestraDetalle.observaciones}" cols="25">
+										</p:inputTextarea>
+									</p:outputPanel>-->
+
+								</p:column>
+								<p:column
+									sortBy="#{item.muestraDetalle.auditoria.fechaModificacion}"
+									headerText="Fecha Modificacion" style="font-size:9px;">
+									<h:outputText style="font-size:10px;"
+										value="#{item.muestraDetalle.auditoria.fechaModificacion}">
+										<f:convertDateTime pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+								<p:column headerText="Históricos">
+									<center>
+										<p:commandLink value="Visualizar"
+											actionListener="#{evaluacionPertinenciaController.obtenerHistoricoMuestra(item.muestraDetalle.id)}"
+											update=":historicoMuestraModalId" async="true"
+											process="@this" oncomplete="historicoMuestraModal.show()">
+											<f:setPropertyActionListener
+												target="#{evaluacionPertinenciaController.muestraDetalleDTO}"
+												value="#{item.muestraDetalle}" />
+										</p:commandLink>
+									</center>
+								</p:column>
+								<p:column headerText="Evidencia">
+									<center>
+										<p:commandButton title="Mostrar Evidencias"
+											icon="ui-icon-circle-triangle-s" update="@form"
+											actionListener="#{evaluacionPertinenciaController.cargarListaEvidencias(item.muestraDetalle, 'VINCULACION-INVESTIGACION')}"
+											async="true" process="@this">
+										</p:commandButton>
+									</center>
+								</p:column>
+							</p:dataTable>
+						</p:fieldset>
+					</h:panelGrid>
+					<p:spacer height="5" />
+					<p:commandButton value="Guardar"
+						update=":formMuestraProyectos :formPrincipal"
+						action="#{evaluacionPertinenciaController.registrarValoresMuestraDetalles('VINCULACION')}"
+						rendered="#{evaluacionPertinenciaController.valorVariableDTO.variableProcesoDTO.verificacion}" />
+					<p:spacer width="20" />
+					<p:commandButton value="Salir" onclick="confirmation.show()" />
+					<p:spacer height="5" />
+
+					<p:outputPanel id="opHistoricos"
+						rendered="#{verificacionController.verDetalleHistoricos}">
+						<p:panel style="width: 1060px"
+							header="HISTORICO DE #{verificacionController.itemHistorico.proyecto.nombre}">
+							<p:dataTable value="#{verificacionController.detalles}"
+								var="detalle">
+								<p:column headerText="FASE">
+									<h:outputText value="#{detalle.fase}" />
+								</p:column>
+								<p:column headerText="VALOR">
+									<h:outputText value="#{detalle.valor}" />
+								</p:column>
+								<p:column headerText="OBSERVACIONES">
+									<p:outputPanel rendered="#{detalle.observaciones!=null}">
+										<h:inputTextarea rows="2" disabled="true"
+											value="#{detalle.observaciones}" cols="60" />
+									</p:outputPanel>
+								</p:column>
+								<p:column headerText="USUARIO">
+									<h:outputText value="#{detalle.usuarioModificacion}" />
+								</p:column>
+								<p:column headerText="FECHA MODIFICACION">
+									<h:outputText value="#{detalle.fechaModificacion}">
+										<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+							</p:dataTable>
+						</p:panel>
+					</p:outputPanel>
+
+
+
+					<p:outputPanel rendered="#{evaluacionPertinenciaController.mostrarEvidencias}">
+						<p:fieldset legend="Evidencias" style="margin:  20px 0px 0px 0px;">
+							<p:dataTable var="evidenciaconcepto"
+								value="#{evaluacionPertinenciaController.listaEvidenciaConcepto}"
+								emptyMessage="No hay Conceptos">
+
+								<p:column headerText="Evidencias">
+									<h:outputText value="#{evidenciaconcepto.nombre}" />
+								</p:column>
+								<p:column headerText="Lista Archivos">
+									<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+										var="evidencia" emptyMessage="No hay Evidencias">
+										<p:column>
+											<h:outputText value="#{evidencia.nombreArchivo}" />
+										</p:column>
+										<p:column>
+											<p:commandButton title="descargar" icon="ui-icon-document"
+												oncomplete="dlgDescarga.show()" update="@form"
+												process="@this"
+												actionListener="#{evaluacionPertinenciaController.enviarEvidencia(evidencia)}">
+											</p:commandButton>
+										</p:column>
+									</p:dataTable>
+								</p:column>
+							</p:dataTable>
+						</p:fieldset>
+					</p:outputPanel>
+
+
+				</h:form>
+			</div>
+		</p:dialog>
+
+
+
+		<p:dialog widgetVar="historicoMuestraModal" modal="true"
+			id="historicoMuestraModalId" header="Histórico" resizable="false"
+			closeOnEscape="false" showEffect="fade" hideEffect="fade">
+			<br />
+			<center>
+				<p:dataTable id="tblhistoricosMuestra" var="vv"
+					value="#{evaluacionPertinenciaController.historicoMuestraDetalle}"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					style="width:900px" paginator="true" rows="10">
+					<p:column headerText="Valor Evaluación" style="width:80px">
+						<h:outputText value="#{vv.valor}" />
+					</p:column>
+					<p:column headerText="Observación" style="white-space: normal">
+						<h:outputText value="#{vv.observacion}" />
+					</p:column>
+					<p:column headerText="Fase" style="white-space: normal;width:80px">
+						<h:outputText value="#{vv.faseIesDTO.faseDTO.nombre}" />
+					</p:column>
+					<p:column headerText="Usuario" style="width:80px">
+						<h:outputText value="#{vv.auditoria.usuarioModificacion}">
+						</h:outputText>
+					</p:column>
+					<p:column headerText="Fecha" style="width:80px">
+						<center>
+							<h:outputText value="#{vv.auditoria.fechaModificacion}">
+								<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+									timeZone="GMT-5" />
+							</h:outputText>
+						</center>
+					</p:column>
+				</p:dataTable>
+				<br></br>
+				<p:commandButton value="Cerrar" async="true" process="@this"
+					onclick="historicoMuestraModal.hide()" />
+			</center>
+		</p:dialog>
+
+		<!-- DIALOGO PARA PRESENTAR LA MUESTRA DE LOS ACTIVIDADES -->
+		<p:dialog id="modalDialogMuestraActividades" header="Verificar/Ver"
+			widgetVar="dlgMuestraActividades" modal="true" width="1200" height="500">
+			<div align="center">
+				<h:form id="formMuestraActividades" acceptcharset="iso-8859-1">
+					<p:growl id="messagesActividades" showDetail="false" />
+					<h:panelGrid columns="1" cellspacing="10">
+						<p:fieldset
+							legend="#{evaluacionPertinenciaController.valorVariableDTO.variableProcesoDTO.variableDTO.etiqueta}">
+							<p:dataTable id="tbl_MuestraActividades" var="item" rows="4"
+								value="#{evaluacionPertinenciaController.listaMuestraDetalle}"
+								paginator="true" scrollWidth="1000" style="width: 900px">
+
+								<p:column headerText="Actividad" style="white-space: normal"
+									filterBy="#{item.actividadVinculacionDTO.nombre}">
+									<h:outputText value="#{item.actividadVinculacionDTO.nombre}" />
+								</p:column>
+								<p:column headerText="Fecha Inicio">
+									<h:outputText
+										value="#{item.actividadVinculacionDTO.fechaInicio}">
+										<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+								<p:column headerText="Fecha Fin">
+									<h:outputText value="#{item.actividadVinculacionDTO.fechaFin}">
+										<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+
+								<p:column headerText="Valor Evaluación">
+									<h:outputText
+										value="#{item.muestraDetalle.verificado=='1' ? 'SI': 'NO'}" />
+								</p:column>
+
+
+								<p:column headerText="Observaciones" style="white-space: normal">
+									<p:inputTextarea rows="2" style="resize:none;"
+										value="#{item.actividadVinculacionDTO.observacionEvaluador}"
+										cols="50" readonly="true">
+									</p:inputTextarea>
+								</p:column>
+
+								<p:column headerText="Evaluador">
+									<h:outputText
+										value="#{item.actividadVinculacionDTO.auditoria.usuarioModificacion}">
+									</h:outputText>
+								</p:column>
+
+								<p:column headerText="Fecha Modificación">
+									<h:outputText
+										value="#{item.actividadVinculacionDTO.auditoria.fechaModificacion}">
+									</h:outputText>
+								</p:column>
+
+								<p:column headerText="Históricos" rendered="false">
+									<center>
+										<p:commandLink value="Visualizar">
+										</p:commandLink>
+									</center>
+								</p:column>
+
+								<p:column headerText="Evidencia">
+									<center>
+										<p:commandButton title="Mostrar Evidencias"
+											icon="ui-icon-circle-triangle-s" update="@form"
+											actionListener="#{evaluacionPertinenciaController.cargarListaEvidencias(item.muestraDetalle, 'VINCULACION-INVESTIGACION')}"
+											async="true" process="@this">
+										</p:commandButton>
+									</center>
+								</p:column>
+							</p:dataTable>
+						</p:fieldset>
+
+						<p:fieldset legend="Proyectos considerados como Actividades">
+							<p:dataTable id="tbl_MuestraProyectoActividad" var="itemPA"
+								rows="4" value="#{evaluacionPertinenciaController.listaProyectosActividad}"
+								paginator="true" scrollWidth="1000" style="width: 1150px">
+								<p:column headerText="Proyecto"
+									style=" width:70px; white-space: normal;"
+									filterBy="#{itemPA.nombre}">
+									<h:outputText value="#{itemPA.nombre}" />
+								</p:column>
+								<p:column headerText="Fecha Inicio">
+									<h:outputText value="#{itemPA.fechaInicio}">
+										<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+								<p:column headerText="Fecha Fin Real">
+									<h:outputText value="#{itemPA.fechaFinReal}">
+										<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+								<p:column headerText="Observaciones">
+									<p:inputTextarea rows="2" style="resize:none;"
+										value="#{itemPA.observacionEvaluador}" cols="50"
+										readonly="true">
+									</p:inputTextarea>
+								</p:column>
+
+								<p:column headerText="Evaluador">
+									<h:outputText
+										value="#{itemPA.auditoriaDTO.usuarioModificacion}">
+									</h:outputText>
+								</p:column>
+
+								<p:column headerText="Fecha Modificación">
+									<h:outputText value="#{itemPA.auditoriaDTO.fechaModificacion}">
+									</h:outputText>
+								</p:column>
+
+							</p:dataTable>
+						</p:fieldset>
+
+					</h:panelGrid>
+					<p:spacer height="5" />
+					<p:commandButton value="Salir" onclick="confirmation.show()" />
+
+					<p:outputPanel rendered="#{evaluacionPertinenciaController.mostrarEvidencias}">
+						<p:fieldset legend="Evidencias" style="margin:  20px 0px 0px 0px;">
+							<p:dataTable var="evidenciaconcepto"
+								value="#{evaluacionPertinenciaController.listaEvidenciaConcepto}"
+								emptyMessage="No hay Conceptos">
+
+								<p:column headerText="Evidencias">
+									<h:outputText value="#{evidenciaconcepto.nombre}" />
+								</p:column>
+								<p:column headerText="Lista Archivos">
+									<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+										var="evidencia" emptyMessage="No hay Evidencias">
+										<p:column>
+											<h:outputText value="#{evidencia.nombreArchivo}" />
+										</p:column>
+										<p:column>
+											<p:commandButton title="descargar" icon="ui-icon-document"
+												oncomplete="dlgDescarga.show()" update="@form"
+												process="@this"
+												actionListener="#{evaluacionPertinenciaController.enviarEvidencia(evidencia)}">
+											</p:commandButton>
+										</p:column>
+									</p:dataTable>
+								</p:column>
+							</p:dataTable>
+						</p:fieldset>
+					</p:outputPanel>
+				</h:form>
+			</div>
+		</p:dialog>
+
+
+		<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+			resizable="false" closable="false" closeOnEscape="false"
+			widgetVar="dlgDescarga" modal="true">
+			<h:form>
+				<p:panel>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" style="width:100px"
+							icon="ui ui-icon-check" ajax="false" onclick="dlgDescarga.hide()">
+							<p:fileDownload value="#{evaluacionPertinenciaController.documentoDescarga}" />
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgDescarga.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+				</p:panel>
+			</h:form>
+		</p:dialog>
+
+
+	</ui:define>
+</ui:composition>
+</html>

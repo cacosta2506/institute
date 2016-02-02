@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui">
+
+<ui:composition>
+
+
+        <p:dialog id="dlgContratacion" widgetVar="dialogContratacion"
+                header="CONTRATACIÓN DE #{funcionarioController.funcionarioSeleccionado.apellidoPaterno} #{funcionarioController.funcionarioSeleccionado.apellidoMaterno} #{funcionarioController.funcionarioSeleccionado.nombres}"
+                resizable="false" modal="true" closable="false">
+				<h:inputHidden value="#{ingresoController.soloLectura}" />
+                <h:form id="formContratacionDialog" acceptcharset="iso-8859-1">
+                        <p:messages id="msgContratacion" autoUpdate="false"
+                                showDetail="false" closable="true" />
+
+                        <center>
+                                <p:panel>
+                                        <h:panelGrid columns="4" cellpadding="10" cellspacing="10">
+
+                                                <h:outputText style="float:right;" value="Numero Contrato:" />
+                                                <h:inputText style="width:210px;"
+                                                        value="#{funcionarioController.contratoFuncionario.numeroContrato}" />
+                                                <h:outputText value="" />
+                                                <h:outputText value="" />
+
+                                                <h:outputText style="float:right;" value="Relacion IES:" />
+                                                <p:selectOneMenu
+                                                        value="#{funcionarioController.contratoFuncionario.relacionIes}">
+                                                        <f:selectItems value="#{funcionarioController.relacionesIes}"
+                                                                var="rel" itemValue="#{rel}" itemLabel="#{rel}" />
+                                                </p:selectOneMenu>
+                                                <h:outputText style="float:right;" value="Fecha Inicio:" />
+                                                <p:calendar
+                                                        value="#{funcionarioController.contratoFuncionario.fechaInicio}"
+                                                        navigator="true" effect="slide" pattern="dd-MM-yyyy">
+                                                        <p:ajax event="dateSelect" update="@this" global="false" />
+                                                </p:calendar>
+                                                <h:outputText style="float:right;" value="Fecha Fin (opcional):" />
+                                                <p:calendar value="#{funcionarioController.contratoFuncionario.fechaFin}"
+                                                        navigator="true" effect="slide" pattern="dd-MM-yyyy">
+                                                        <p:ajax event="dateSelect" update="@this" global="false" />
+                                                </p:calendar>
+
+                                                <h:outputText style="float:right;" value="Concurso:" />
+                                                <p:selectBooleanCheckbox
+                                                        value="#{funcionarioController.contratoFuncionario.ingresoPorConcurso}">
+                                                        <p:ajax event="change" update="@this" global="false" />
+                                                </p:selectBooleanCheckbox>
+                                                <h:outputText style="float:right;" value="Remuneracion Contrato:" />
+                                                <h:inputText style="width:210px;"
+                                                        value="#{funcionarioController.contratoFuncionario.remuneracionContrato}" />
+
+                                        </h:panelGrid>
+
+                                        <h:panelGrid columns="2" cellpadding="10" cellspacing="10"
+                                                style="float:right;">
+                                                <p:commandButton value="Guardar"
+                                                        action="#{funcionarioController.guardar}"
+                                                        update=":formContratacionDialog" />
+                                                <p:commandButton value="Cerrar"
+                                                        update=":tabViewFormularios:formContratacion"
+                                                        oncomplete="dialogContratacion.hide()" global="false"
+                                                        action="#{funcionarioController.cancelarContrato}" />
+                                        </h:panelGrid>
+
+                                </p:panel>
+                        </center>
+                </h:form>
+        </p:dialog>
+</ui:composition>
+</html>

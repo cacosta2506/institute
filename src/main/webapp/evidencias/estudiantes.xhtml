@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage name="saving.gif" library="img" />
+			</center>
+		</p:dialog>
+
+		<p:messages id="messages" showDetail="false" autoUpdate="true"
+			showSummary="true" closable="true" globalOnly="true" />
+
+
+		<h:form id="formulario" enctype="multipart/form-data" acceptcharset="iso-8859-1">
+
+			<p:panel header="EVIDENCIA GRADUADOS" style="text-align:left;"
+				id="ev_estudiante">
+				<h:inputHidden value="#{webServiceController.identificacion}" />
+				<p:outputPanel
+					rendered="#{evidenciaEstController.verActualizarMuestra}">
+					<center>
+						<br />
+						<div class="info2">
+							<p>El botón Actualizar muestra se debe utilizar siempre y
+								cuando se haya realizado alguna modificación en los datos de
+								estudiantes mediante carga masiva o en la interfaz prevista para
+								ello.</p>
+
+						</div>
+						<br />
+						<p:commandButton value="ACTUALIZAR MUESTRA" update=":formulario"
+							action="#{evidenciaEstController.actualizarMuestra}"></p:commandButton>
+						<br />
+					</center>
+				</p:outputPanel>
+				<p:outputPanel
+					rendered="#{evidenciaEstController.verActualizarGraduados and !evidenciaEstController.verActualizarMuestra}">
+					<center>
+						<br />
+						<div class="info2">
+							<p>El botón Actualizar Valor se debe utilizar siempre y
+								cuando se haya realizado alguna modificación en los datos de
+								estudiantes mediante carga masiva o en la interfaz prevista para
+								ello.</p>
+
+						</div>
+						<br />
+						<p:commandButton value="ACTUALIZAR VALOR" update=":formulario"
+							action="#{evidenciaEstController.actualizarValor}"></p:commandButton>
+						<br />
+					</center>
+				</p:outputPanel>
+				<br />
+				<p:dataTable id="tablaVariable" var="variable"
+					rendered="#{!evidenciaEstController.valorVariableDTO.isEmpty()}"
+					value="#{evidenciaEstController.valorVariableDTO}"
+					paginator="false">
+					<p:column headerText="Valor Inicial">
+						<h:outputText value="#{variable.valorInicial}" />
+					</p:column>
+					<p:column headerText="Total Universo">
+						<h:outputText value="#{variable.totalUniverso}" />
+					</p:column>
+					<p:column headerText="Total Muestra">
+						<h:outputText value="#{variable.totalMuestra}" />
+					</p:column>
+				</p:dataTable>
+				<br />
+					<h:panelGrid columns="3">
+						<h:outputText
+							value="Nro. Registros encontrados: #{evidenciaEstController.listaEstudiantes.size()}" />
+						<h:outputText
+							value="Nro. graduados validados SENESCYT: #{evidenciaEstController.numeroGraduadosValidados}"
+							rendered="#{evidenciaEstController.numeroGraduadosValidados>0}" />
+						<h:outputText
+							value="Total Registros: #{evidenciaEstController.numeroGraduadosValidados}"
+							rendered="#{evidenciaEstController.numeroGraduadosValidados>0}" />
+					</h:panelGrid>
+					<p:dataTable id="tablaEstudiantes" var="estudiante"
+						value="#{evidenciaEstController.listaEstudiantes}"
+						rowKey="#{estudiante.id}" selectionMode="single" paginator="true"
+						rows="10"
+						selection="#{evidenciaEstController.estudianteSeleccionado}"
+						emptyMessage="No hay Docentes"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15">
+
+						<p:ajax event="rowSelect" update=":formulario"
+							listener="#{evidenciaEstController.cargarCarrerasEstudiante}" />
+
+						<p:column headerText="Identificación">
+							<h:outputText value="#{estudiante.identificacion}" />
+						</p:column>
+
+						<p:column headerText="Estudiante">
+							<h:outputText
+								value="#{estudiante.apellidoPaterno} #{estudiante.nombres}" />
+						</p:column>
+
+					</p:dataTable>
+
+				<p:fieldset legend="CARRERAS DEL ESTUDIANTE"
+					rendered="#{evidenciaEstController.mostrarCarreras}">
+					<p:dataTable id="tablaCarreras" var="carrera"
+						value="#{evidenciaEstController.listaCarrerasEstudiante}"
+						rowKey="#{carrera.id}" selectionMode="single" paginator="true"
+						rows="10"
+						selection="#{evidenciaEstController.carreraSeleccionada}"
+						emptyMessage="No existe carreras para el estudiante"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15">
+
+						<p:ajax event="rowSelect" update=":formulario"
+							listener="#{evidenciaEstController.cargarEvidencias}" />
+
+						<p:column headerText="Carrera">
+							<h:outputText
+								value="#{carrera.informacionCarreraDTO.carreraIesDTO.nombre}" />
+						</p:column>
+
+						<p:column headerText="Créditos aprobados">
+							<h:outputText value="#{carrera.numeroCreditosAprobados}" />
+						</p:column>
+
+					</p:dataTable>
+				</p:fieldset>
+
+				<p:fieldset legend="MATRÍCULAS DEL ESTUDIANTE"
+					rendered="#{evidenciaEstController.mostrarMatriculas}">
+					<p:dataTable id="tablaMatriculas" var="periodo"
+						value="#{evidenciaEstController.listaMatriculasEstudiante}"
+						rowKey="#{periodo.id}" selectionMode="single" paginator="true"
+						rows="10"
+						selection="#{evidenciaEstController.periodoSeleccionado}"
+						emptyMessage="No existe carreras para el estudiante"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15">
+
+						<p:ajax event="rowSelect" update=":formulario"
+							listener="#{evidenciaEstController.cargarEvidencias}" />
+
+						<p:column headerText="Carrera">
+							<h:outputText
+								value="#{periodo.carreraEstudianteDTO.informacionCarreraDTO.carreraIesDTO.nombre}" />
+						</p:column>
+
+						<p:column headerText="Matrícula">
+							<h:outputText value="#{periodo.periodoAcademicoDTO}" />
+						</p:column>
+
+					</p:dataTable>
+				</p:fieldset>
+				<p:outputPanel
+					rendered="#{evidenciaEstController.evidenciaConcepto}">
+					<p:fieldset legend="Evidencias" style="margin:  20px 0px 0px 0px;">
+						<p:dataTable id="tablaEConcepto" var="evidenciaconcepto"
+							value="#{evidenciaEstController.listaEvidenciaConcepto}"
+							emptyMessage="No hay Conceptos">
+
+							<p:column headerText="Evidencias">
+								<h:outputText value="#{evidenciaconcepto.nombre}" />
+							</p:column>
+							<p:column headerText="Lista Archivos">
+								<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+									var="evidencia" emptyMessage="No hay Evidencias">
+
+									<p:column>
+										<h:outputText value="#{evidencia.nombreArchivo}" />
+									</p:column>
+									<p:column>
+
+										<p:commandButton title="descargar" icon="ui-icon-document"
+											oncomplete="dlgDescarga.show()" update=":formulario"
+											process="@this"
+											actionListener="#{evidenciaEstController.enviarEvidencia(evidencia)}">
+										</p:commandButton>
+										<p:commandButton title="eliminar evidencia"
+											icon="ui-icon-close" oncomplete="dlgEliminar.show()"
+											process="@this" update=":formulario"
+											rendered="#{evidencia.faseIesDTO.faseProcesoDTO.id eq evidenciaEstController.faseiesDTO.faseProcesoDTO.id ? true: false}">
+											<f:setPropertyActionListener
+												target="#{evidenciaEstController.evidenciaSeleccionada}"
+												value="#{evidencia}" />
+											<f:setPropertyActionListener
+												target="#{evidenciaEstController.evidenciaConceptoSeleccionada}"
+												value="#{evidenciaconcepto}" />
+										</p:commandButton>
+									</p:column>
+
+								</p:dataTable>
+							</p:column>
+
+							<p:column headerText="Acciones">
+								<p:commandButton value="Cargar Evidencias"
+									oncomplete="dlgCargarEvidencia.show()" update=":formEvidencia">
+									<f:setPropertyActionListener
+										target="#{evidenciaEstController.evidenciaConceptoSeleccionado}"
+										value="#{evidenciaconcepto}" />
+								</p:commandButton>
+
+							</p:column>
+
+
+						</p:dataTable>
+
+					</p:fieldset>
+				</p:outputPanel>
+			</p:panel>
+			<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+				resizable="false" closable="false" closeOnEscape="false"
+				widgetVar="dlgDescarga" modal="true">
+				<p:panel>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" update=":formulario"
+							style="width:100px" icon="ui ui-icon-check" ajax="false"
+							onclick="dlgDescarga.hide()">
+							<p:fileDownload
+								value="#{evidenciaEstController.documentoDescarga}" />
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgDescarga.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+
+
+				</p:panel>
+
+			</p:dialog>
+
+			<p:confirmDialog id="cfEliminar" widgetVar="dlgEliminar"
+				header="Eliminar Evidencia" severity="alert"
+				message="¿Desea eliminar la evidencia seleccionada?">
+				<center>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" update=":formulario"
+							actionListener="#{evidenciaEstController.eliminarEvidencia}"
+							onclick="dlgEliminar.hide()" style="width:100px"
+							icon="ui ui-icon-check" />
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgEliminar.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+				</center>
+			</p:confirmDialog>
+
+
+		</h:form>
+		<p:dialog id="idInforEvidencia" header="Cargar Evidencias"
+			resizable="false" closable="true" closeOnEscape="false"
+			widgetVar="dlgCargarEvidencia" modal="true">
+			<p:panel>
+
+				<h:form id="formEvidencia" enctype="multipart/form-data" acceptcharset="iso-8859-1">
+
+					<p:fileUpload id="idUpload" mode="simple"
+						allowTypes="/(\.|\/)(pdf|doc|docx|xls|xlsx|ppt|pptx|jpeg|jpg|png)$/"
+						value="#{evidenciaEstController.file}" />
+					<p:commandButton process="idUpload" value="Cargar" ajax="false"
+						actionListener="#{evidenciaEstController.uploadfile}" />
+				</h:form>
+			</p:panel>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

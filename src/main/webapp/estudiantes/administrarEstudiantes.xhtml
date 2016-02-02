@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage name="saving.gif" library="img" />
+			</center>
+		</p:dialog>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formulario" acceptcharset="iso-8859-1">
+			<p:growl autoUpdate="true" sticky="true" />
+			<f:facet name="header" />
+			<p:confirmDialog id="deleteConfirmDialog"
+				message="Está seguro de eliminar este estudiante?"
+				header="Iniciando proceso de eliminación" severity="alert"
+				widgetVar="deleteConfirmation">
+				<p:commandButton id="confirm" value="Si"
+					update=":formulario:tablaEstudiantes"
+					oncomplete="deleteConfirmation.hide()"
+					action="#{estudianteController.eliminarEstudiante}" />
+				<p:commandButton id="decline" value="No"
+					onclick="deleteConfirmation.hide()" type="button" />
+			</p:confirmDialog>
+
+			<center>
+				<p:panel header="ADMINISTRACIÓN DE ESTUDIANTES"
+					style="margin-right:10px;">
+					<h:panelGrid columns="3" cellpadding="0" cellspacing="1"
+						style="float:left;">
+						<h:outputText style="float:right;font-size:10px;" value="Cedula:" />
+						<h:inputText value="#{estudianteController.identificacion}" />
+						<p:commandButton style="width:20px;height:20px"
+							update=":formulario" icon="ui-icon-search" title="Buscar"
+							action="#{estudianteController.buscarEstudiantePorCedula}" />
+					</h:panelGrid>
+
+					<p:commandButton style="float:right;" value="Nuevo"
+						update="formulario"
+						action="#{estudianteController.nuevoEstudiante}">
+					</p:commandButton>
+					<br />
+					<br />
+					<br />
+
+					<h:panelGrid id="paginadores" columns="3">
+						<p:commandButton style="width:80px;" title="atras"
+							icon="ui-icon-arrowreturnthick-1-w" id="btnAtras"
+							disabled="#{estudianteController.indice > 0 ? false : true}"
+							actionListener="#{estudianteController.modificarIndice}"
+							action="#{estudianteController.listarEstudiantes}"
+							update=":formulario" />
+						<p:spacer />
+						<p:commandButton style="width:80px;" title="siguiente"
+							update=":formulario" icon="ui-icon-arrowreturnthick-1-e"
+							disabled="#{not estudianteController.habilitarSiguiente}"
+							actionListener="#{estudianteController.modificarIndice}"
+							action="#{estudianteController.listarEstudiantes}"
+							id="btnSiguiente" />
+					</h:panelGrid>
+
+					<h:panelGrid columns="2" style="float:right;">
+						<h:outputText value="registros: " />
+						<p:selectOneMenu value="#{estudianteController.registros}"
+							immediate="true"
+							valueChangeListener="#{estudianteController.tomarRango}">
+							<p:ajax event="change" update="@this :formulario" />
+							<f:selectItems value="#{estudianteController.rangos}" var="ran"
+								itemValue="#{ran}" itemLabel="#{ran}" />
+						</p:selectOneMenu>
+					</h:panelGrid>
+					<br />
+					<br />
+					<br />
+					<br />
+					<br />
+					<h:panelGrid id="cmbPeriodosAcademicos" columns="2">
+						<h:outputText value="Periodo :" />
+						<p:selectOneMenu
+							value="#{estudianteController.idPeriodoAcademico}"
+							style="width:210px;" id="comboPeriodoId">
+							<p:ajax event="change" update=":formulario"
+								listener="#{estudianteController.buscarEstudiantePorPeriodoAcademico}" />
+							<f:selectItem itemLabel="--Seleccionar--" itemValue="-1" />
+							<f:selectItems value="#{estudianteController.periodosAcademicos}"
+								var="pa" itemValue="#{pa.id}" itemLabel="#{pa}" />
+						</p:selectOneMenu>
+
+					</h:panelGrid>
+					<br />
+					<h:outputText
+						style="font-size:14px;float:left;color:#0078D0;font-weight:bold;"
+						value="Total estudiantes: #{estudianteController.numeroEstudiantes}" />
+					<br />
+					<br />
+					<br />
+
+					<p:dataTable id="tablaEstudiantes" scrollHeight="500"
+						scrollable="true"
+						filteredValue="#{estudianteController.listaEstudiantesIesDTOEncontrados}"
+						value="#{estudianteController.listaEstudiantesIesDTO}" var="est"
+						emptyMessage="No se encontraron estudiantes">
+
+						<p:column headerText="Identificación"
+							filterBy="#{est.identificacion}">
+							<h:outputText value="#{est.identificacion}" />
+						</p:column>
+
+						<p:column headerText="Apellidos" filterBy="#{est.apellidoPaterno}">
+							<h:outputText
+								value="#{est.apellidoPaterno} #{est.apellidoMaterno}" />
+						</p:column>
+
+						<p:column headerText="Nombres" filterBy="#{est.nombres}">
+							<h:outputText value="#{est.nombres}" />
+						</p:column>
+
+						<p:column headerText="Discapacidad">
+							<h:outputText value="#{est.discapacidad.value}" />
+						</p:column>
+
+						<!-- editar -->
+						<p:column headerText="Acciones">
+							<p:commandButton
+								action="#{estudianteController.editarEstudiante}"
+								update=":formulario" ajax="false" icon="ui-icon-folder-open"
+								style="width:16px;height:16px;">
+
+								<f:setPropertyActionListener
+									target="#{estudianteController.estudianteSeleccionado}"
+									value="#{est}" />
+							</p:commandButton>
+							<p:commandButton oncomplete="deleteConfirmation.show()"
+								icon="ui-icon-close" style="width:16px;height:16px;">
+
+								<f:setPropertyActionListener
+									target="#{estudianteController.estudianteSeleccionado}"
+									value="#{est}" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</center>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

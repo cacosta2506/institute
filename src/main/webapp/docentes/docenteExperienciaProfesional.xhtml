@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition>
+
+
+	<p:dialog id="editarExperienciaProfDlgId"
+		header="Experiencia Profesional afin a su actividad docente"
+		widgetVar="editarExperienciaProfDlg" modal="true">
+<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<h:form id="experienciaProfFormId" acceptcharset="iso-8859-1">
+
+			<center>
+				<p:fieldset legend="Información General">
+					<h:panelGrid columns="4" cellpadding="10" cellspacing="10">
+
+						<h:outputText style="float:right;" value="Institución:" />
+						<h:inputTextarea style="width:250px; resize:none;" tabindex="1"
+							value="#{docenteController.experienciaProfesionalDocente.institucion}"
+							cols="20" rows="1" />
+
+						<h:outputText style="float:right;" value="Cargo/Función:" />
+						<h:inputTextarea style="width:250px; resize:none;" tabindex="2"
+							value="#{docenteController.experienciaProfesionalDocente.cargo}"
+							cols="20" rows="1" />
+
+						<h:outputText style="float:right;" value="Fecha Inicio:" />
+						<p:calendar yearRange="c-25:c+25" size="37" tabindex="3"
+							mindate="#{docenteController.fechaMin}"
+							maxdate="#{docenteController.fechaActual}"
+							value="#{docenteController.experienciaProfesionalDocente.fechaInicio}"
+							navigator="true" effect="slide" pattern="dd-MM-yyyy">
+							<p:ajax event="dateSelect" update="@this" global="false" />
+						</p:calendar>
+
+						<h:outputText style="float:right;" value="Fecha Fin:" />
+						<p:calendar yearRange="c-25:c+25" size="37" tabindex="4"
+							mindate="#{docenteController.fechaMin}"
+							maxdate="#{docenteController.fechaActual}"
+							value="#{docenteController.experienciaProfesionalDocente.fechaFin}"
+							navigator="true" effect="slide" pattern="dd-MM-yyyy">
+							<p:ajax event="dateSelect" update="@this" global="false" />
+						</p:calendar>
+					</h:panelGrid>
+				</p:fieldset>
+				<p:fieldset legend="Evaluación"
+					rendered="#{docenteController.alertaEvaluador}">
+						<h:panelGrid columns="2" cellspacing="5">
+						<h:outputText value="Aceptado Evaluador:" />
+						<p:selectOneMenu
+							value="#{docenteController.experienciaProfesionalDocente.aceptadoEvaluador}"
+							style="width:210px;" tabindex="6">
+							<f:selectItem itemLabel="Sí" itemValue="TRUE" />
+							<f:selectItem itemLabel="No" itemValue="FALSE" />
+
+							<p:ajax event="change" update="@this" global="false" />
+						</p:selectOneMenu>
+
+
+						<h:outputText value="Observación Evaluador:" />
+						<h:inputTextarea id="txtObservacionEP" tabindex="6"
+							style="resize:none; width:250px;" cols="30"
+							value="#{docenteController.experienciaProfesionalDocente.observacionEvaluador}"
+							required="true" requiredMessage="Debe ingresar una observación" />
+					</h:panelGrid>
+				</p:fieldset>
+				<br />
+				<h:panelGrid columns="2" cellpadding="10" cellspacing="10">
+					<p:commandButton value="Guardar" tabindex="7"
+						action="#{docenteController.guardarExperienciaProfesional}"
+						oncomplete="verificarErroresExpeProf(xhr, status, args)"
+						update="@form :tabViewFormularios:formExpProfesional" />
+					<p:commandButton value="Cerrar" tabindex="11"
+						action="#{docenteController.cancelarExperienciaProfesional}"
+						oncomplete="editarExperienciaProfDlg.hide()" async="true"
+						process="@this"
+						update="@form :tabViewFormularios:formExpProfesional">
+						<p:resetInput target=":editarExperienciaProfDlgId" />
+					</p:commandButton>
+				</h:panelGrid>
+			</center>
+		</h:form>
+	</p:dialog>
+
+</ui:composition>
+</html>

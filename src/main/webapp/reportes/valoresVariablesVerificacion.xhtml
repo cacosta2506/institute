@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:l="http://www.lapis.com/jsf/exporter">
+<f:metadata>
+	<f:event listener="#{reporteVariablesController.obtenerDatosIniciales}"
+		type="preRenderView"></f:event>
+</f:metadata>
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false"
+			header="Espere por favor, esto puede tomar algunos segundos">
+			<center>
+				<p:graphicImage value="../images/saving.gif" alt="..." />
+			</center>
+		</p:dialog>
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+			<p:growl id="growl" sticky="true"></p:growl>
+			<h:panelGrid columns="2">
+				<p:commandButton value="Generar Reporte"
+					update="panelResultadoCuantitativas"
+					action="#{reporteVerificacionController.generarVariables}"></p:commandButton>
+			</h:panelGrid>
+			<p:panel id="panelResultadoCuantitativas"
+				header="VARIABLES CUANTITATIVAS" rendered="true">
+				<h:outputText
+					value="Número de variables: #{reporteVerificacionController.listaValoresVariablesEvaluador.size()}" />
+				<p:dataTable id="tblResultadoCuantitativas"
+					value="#{reporteVerificacionController.listaValoresVariablesEvaluador}"
+					var="valorVariable" paginator="true" rows="15"
+					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15">
+
+					<p:column headerText="Variable">
+						<h:outputText style="white-space: normal"
+							value="#{valorVariable.variableProcesoDTO.variableDTO.etiqueta}" />
+					</p:column>
+
+					<p:column headerText="Valor Inicial">
+						<h:outputText value="#{valorVariable.valorInicial}" />
+					</p:column>
+
+					<p:column headerText="Valor Inicial Ponderado">
+						<h:outputText value="#{valorVariable.valorInicial}" />
+					</p:column>
+
+					<p:column headerText="Aceptados">
+						<h:outputText value="#{valorVariable.valorVerificado}" />
+					</p:column>
+
+					<p:column headerText="No Aceptados">
+						<h:outputText value="#{valorVariable.registrosNoAceptados}" />
+					</p:column>
+
+					<p:column headerText="Valor / Ponderacion">
+						<h:outputText value="#{valorVariable.valor}" />
+					</p:column>
+
+				</p:dataTable>
+
+
+				<div class="info2">
+
+					<p class="titulo-mensaje">Importante:</p>
+					<p>Debe considerar que si desea regresar a la verificación de
+						datos y realizar algún cambio, esto puede afectar el valor de las
+						variables, por tanto debe verificar la observación de las
+						variables afectadas.</p>
+
+					<p:commandButton value="Finalizar verificación de datos"
+						rendered="#{!reporteVerificacionController.listaValoresVariablesEvaluador.isEmpty()}"
+						action="#{reporteVerificacionController.cambiarFase()}" />
+
+				</div>
+
+			</p:panel>
+
+		</h:form>
+
+
+	</ui:define>
+</ui:composition>
+</html>

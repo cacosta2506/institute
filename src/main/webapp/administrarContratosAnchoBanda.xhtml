@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formContratos" acceptcharset="iso-8859-1">
+			<p:growl id="mensajesPrincipal" autoUpdate="false" showDetail="false"
+				closable="true" />
+			<f:facet name="header"></f:facet>
+			<p:confirmDialog id="deleteConfirmDialog"
+				message="Está seguro de eliminar el Contrato?"
+				header="Iniciando proceso de eliminación" severity="alert"
+				widgetVar="deleteConfirmation">
+				<div align="center">
+					<p:commandButton id="confirm" value="Si" update=":formContratos "
+						oncomplete="deleteConfirmation.hide()"
+						action="#{anchoBandaController.eliminarContrato}" />
+					<p:commandButton id="decline" value="No"
+						onclick="deleteConfirmation.hide()" type="button" />
+				</div>
+			</p:confirmDialog>
+
+			<center>
+				<p:panel header="ADMINISTRACIÓN DE CONTRATOS ANCHO DE BANDA"
+					style="text-align:center;">
+					<p:outputPanel rendered="#{!anchoBandaController.alertaEvaluador}">
+						<p:commandButton style="float:right;" value="Nuevo"
+							action="#{anchoBandaController.nuevoContrato}"
+							update=":formAdmContrato">
+						</p:commandButton>
+					</p:outputPanel>
+					<br />
+					<br />
+					<br />
+					<h:outputText
+						style="font-size:12px;float:left;color:#0078D0;font-weight:bold;"
+						value="Nro. contratos de ancho de banda registrados: #{anchoBandaController.totalContratos}" />
+					<br />
+					<p:dataTable id="tablaContratos"
+						value="#{anchoBandaController.listaContratoAnchoBandaDTO}"
+						var="cab" emptyMessage="No se encontraron registros"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15"
+						style="width:auto;height:auto"
+						paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+
+						<p:column headerText="Nro. Contrato" filterBy="#{cab.numContrato}">
+							<h:inputTextarea value="#{cab.numContrato}" readonly="true"
+								cols="50" style="resize:none;" />
+						</p:column>
+						<p:column headerText="Fecha Inicio">
+							<h:outputText value="#{cab.fechaInicioContrato}">
+								<f:convertDateTime pattern="dd-MM-yyyy" />
+							</h:outputText>
+						</p:column>
+						<p:column headerText="Fecha Fin">
+							<h:outputText value="#{cab.fechaFinContrato}">
+								<f:convertDateTime pattern="dd-MM-yyyy" />
+							</h:outputText>
+						</p:column>
+						<p:column headerText="Kbps Internet Contratado">
+							<h:outputText value="#{cab.numKbpsInternetContratado}" />
+						</p:column>
+						<p:column headerText="Evaluación"
+							rendered="#{anchoBandaController.alertaEvaluador}">
+							<h:outputText value="#{cab.aceptadoEvaluador ? 'SI': 'NO'}" />
+						</p:column>
+						<p:column headerText="Observación"
+							rendered="#{anchoBandaController.alertaEvaluador}">
+							<h:outputText value="#{cab.observacionEvaluador}" />
+						</p:column>
+						<!-- 
+						<p:column headerText="Evaluado" style=" width:1%;"
+						rendered="#{!anchoBandaController.alertaFase}">
+							<h:outputText value="" style="color: red"
+								class="fa fa-circle fa-2x"/>
+						</p:column>
+						<p:column headerText="Evaluado" style=" width:1%;"
+						rendered="#{anchoBandaController.alertaFase}">
+							<h:outputText value="" style="color: green"
+								class="fa fa-circle fa-2x"/>
+						</p:column>
+                          -->
+						<!-- editar -->
+						<p:column headerText="Acciones">
+							<p:commandButton icon="ui-icon-pencil" update=":formAdmContrato :formContratos"
+								style="width:24px;height:24px;"
+								action="#{anchoBandaController.cargarEdicion}">
+								<f:setPropertyActionListener
+									target="#{anchoBandaController.contratoAnchoBandaDTO}"
+									value="#{cab}" />
+							</p:commandButton>
+							<p:commandButton oncomplete="deleteConfirmation.show();"
+								title="eliminar" icon="ui-icon-close"
+								style="width:24px;height:24px;"
+								rendered="#{!anchoBandaController.alertaEvaluador}">
+								<f:setPropertyActionListener
+									target="#{anchoBandaController.contratoAnchoBandaDTO}"
+									value="#{cab}" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</center>
+		</h:form>
+
+		<p:dialog widgetVar="dialogContrato"
+			header="Nuevo/Editar Contratación Ancho Banda" resizable="true">
+			<center>
+				<h:form id="formAdmContrato" acceptcharset="iso-8859-1">
+					<p:fieldset legend="Información General">
+						<h:panelGrid columns="2" cellspacing="5">
+
+							<h:outputText value="Número Contrato: " />
+							<p:inputText id="txt_nomContrato" tabindex="1"
+								value="#{anchoBandaController.contratoAnchoBandaDTO.numContrato}"
+								style="width:250px" />
+
+							<h:outputText value="Empresa brinda servicio: " />
+							<p:inputTextarea id="txt_institucion" tabindex="2"
+								value="#{anchoBandaController.contratoAnchoBandaDTO.empresaServicio}"
+								cols="30" style="width:250px; resize:none;" rows="2" />
+
+							<h:outputText value="Fecha Inicio:" />
+							<p:calendar showButtonPanel="true" navigator="true" size="37"
+								tabindex="3" pattern="dd-MM-yyyy" id="calFechaInicio"
+								value="#{anchoBandaController.contratoAnchoBandaDTO.fechaInicioContrato}" />
+
+							<h:outputText value="Fecha Fin:" />
+							<p:calendar showButtonPanel="true" navigator="true" size="37"
+								tabindex="4" pattern="dd-MM-yyyy" id="calFechaFin"
+								value="#{anchoBandaController.contratoAnchoBandaDTO.fechaFinContrato}" />
+
+							<p:outputLabel value="No. Kbps Internet Contratado:" />
+							<p:spinner min="0" max="5000" tabindex="5" maxlength="6"
+								value="#{anchoBandaController.contratoAnchoBandaDTO.numKbpsInternetContratado}" />
+
+							<h:outputText style="float:left;" value="Usuarios:" />
+							<p:selectOneMenu
+								value="#{anchoBandaController.usuarioAnchoBanda}"
+								style="width:210px;" tabindex="6">
+								<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+								<f:selectItems
+									value="#{anchoBandaController.listaUsuariosAnchoBanda}"
+									var="tle" itemValue="#{tle}" itemLabel="#{tle}" />
+								<p:ajax event="change" update="@this" global="false" />
+							</p:selectOneMenu>
+
+							<h:outputText value="Edificios cobertura: " />
+							<p:inputTextarea id="txt_coberturaEdf" tabindex="7" rows="4"
+								value="#{anchoBandaController.contratoAnchoBandaDTO.coberturaEdificios}"
+								cols="30" style="width:250px; resize:none;" />
+
+						</h:panelGrid>
+					</p:fieldset>
+
+					<p:fieldset legend="Evaluación"
+						rendered="#{anchoBandaController.alertaEvaluador}">
+						<h:panelGrid columns="2" cellspacing="5">
+							<h:outputText value="Aceptado Evaluador: " />
+							<p:selectOneMenu
+								value="#{anchoBandaController.contratoAnchoBandaDTO.aceptadoEvaluador}"
+								style="width:210px;" tabindex="6">
+								<f:selectItem itemLabel="Sí" itemValue="TRUE" />
+								<f:selectItem itemLabel="No" itemValue="FALSE" />
+
+								<p:ajax event="change" update="@this" global="false" />
+							</p:selectOneMenu>
+
+							<h:outputText value="Observación Evaluador:" />
+							<p:inputTextarea id="txtObservacion"
+								style="resize:none; width:250px;" tabindex="9"
+								value="#{anchoBandaController.contratoAnchoBandaDTO.observacionEvaluador}"
+								cols="30" required="true"
+								requiredMessage="Debe ingresar una observación" />
+
+						</h:panelGrid>
+					</p:fieldset>
+					<br />
+					<h:panelGrid columns="2">
+						<p:commandButton value="Guardar" tabindex="10"
+							action="#{anchoBandaController.guardarContratoAnchoBanda}"
+							update=":formContratos :formAdmContrato" />
+						<p:commandButton value="Cerrar" process="@this" async="true"
+							tabindex="11"
+							action="#{anchoBandaController.limpiarContratoAnchoBanda}"
+							oncomplete="dialogContrato.hide();" />
+					</h:panelGrid>
+
+				</h:form>
+			</center>
+		</p:dialog>
+
+
+	</ui:define>
+</ui:composition>
+</html>

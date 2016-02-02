@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage name="saving.gif" library="img" />
+			</center>
+		</p:dialog>
+
+		<p:messages id="messages" showDetail="false" autoUpdate="true"
+			showSummary="true" closable="true" globalOnly="true" />
+
+
+		<h:form id="formulario" enctype="multipart/form-data" acceptcharset="iso-8859-1">
+
+			<p:panel header="EVIDENCIA CARRERAS" style="text-align:left;"
+				id="ev_carrera">
+
+
+
+
+				<h:panelGrid columns="2" style="margin:12px;">
+					<h:outputText value="Matriz/Extensión: " />
+					<p:selectOneMenu value="#{evidenciaCarreraController.idSede}">
+						<p:ajax event="change" update="@this :formulario" global="false"
+							listener="#{evidenciaCarreraController.cargarCarreras}" />
+						<f:selectItem itemLabel="--Seleccionar--" itemValue="-1" />
+						<f:selectItems value="#{evidenciaCarreraController.listaSede}"
+							var="pa" itemValue="#{pa.id}" itemLabel="#{pa.nombre}" />
+					</p:selectOneMenu>
+
+				</h:panelGrid>
+
+
+				<p:outputPanel rendered="#{evidenciaCarreraController.carreras}">
+					<p:dataTable id="tablaCarrerasDocentes" var="carrera"
+						value="#{evidenciaCarreraController.listaCarreras}"
+						paginator="true" rows="10" emptyMessage="No hay Carreras"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15">
+						<p:column headerText="Modalidad">
+							<h:outputText value="#{carrera.carreraIesDTO.modalidad}" />
+						</p:column>
+
+						<p:column headerText="Nivel">
+							<h:outputText value="#{carrera.carreraIesDTO.nivel}" />
+						</p:column>
+						<p:column headerText="Carrera">
+							<h:outputText value="#{carrera.carreraIesDTO.nombre}" />
+						</p:column>
+
+						<p:column headerText="Fecha Creación">
+							<h:outputText value="#{carrera.fechaCreacion}" />
+						</p:column>
+
+						<p:column headerText="Evidencia">
+							<p:commandButton title="Mostrar Evidencias"
+								icon="ui-icon-circle-triangle-s" update=":formulario"
+								action="#{evidenciaCarreraController.cargarEConcepto}"
+								immediate="true">
+								<f:setPropertyActionListener
+									target="#{evidenciaCarreraController.carreraSeleccionada}"
+									value="#{carrera}" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+				</p:outputPanel>
+
+				<p:outputPanel
+					rendered="#{evidenciaCarreraController.evidenciaConcepto}">
+					<p:fieldset legend="Evidencias de #{evidenciaCarreraController.carreraSeleccionada.carreraIesDTO.nombre}" style="margin:  20px 0px 0px 0px;">
+						<p:dataTable id="tablaEConcepto" var="evidenciaconcepto"
+							value="#{evidenciaCarreraController.listaEvidenciaConcepto}"
+							emptyMessage="No hay Conceptos">
+
+							<p:column headerText="Evidencias">
+								<h:outputText value="#{evidenciaconcepto.nombre}" />
+							</p:column>
+							<p:column headerText="Lista Archivos">
+								<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+									var="evidencia" emptyMessage="No hay Evidencias">
+
+									<p:column>
+										<h:outputText value="#{evidencia.nombreArchivo}" />
+
+									</p:column>
+									<p:column>
+
+										<p:commandButton title="descargar" icon="ui-icon-document"
+											oncomplete="dlgDescarga.show()" update=":formulario"
+											process="@this"
+											actionListener="#{evidenciaCarreraController.enviarEvidencia(evidencia)}">
+
+										</p:commandButton>
+										<p:commandButton title="eliminar evidencia"
+											icon="ui-icon-close" oncomplete="dlgEliminar.show()"
+											process="@this" update=":formulario" rendered="#{evidencia.faseIesDTO.faseProcesoDTO.id eq evidenciaCarreraController.faseiesDTO.faseProcesoDTO.id ? true: false}">
+											<f:setPropertyActionListener
+												target="#{evidenciaCarreraController.evidenciaSeleccionada}"
+												value="#{evidencia}" />
+											<f:setPropertyActionListener
+												target="#{evidenciaCarreraController.evidenciaConceptoSeleccionada}"
+												value="#{evidenciaconcepto}" />
+										</p:commandButton>
+
+									</p:column>
+
+								</p:dataTable>
+							</p:column>
+
+							<p:column headerText="Acciones">
+								<p:commandButton value="Cargar Evidencias"
+									oncomplete="dlgCargarEvidencia.show()" update=":formEvidencia">
+									<f:setPropertyActionListener
+										target="#{evidenciaCarreraController.evidenciaConceptoSeleccionado}"
+										value="#{evidenciaconcepto}" />
+								</p:commandButton>
+
+							</p:column>
+
+
+						</p:dataTable>
+
+					</p:fieldset>
+				</p:outputPanel>
+			</p:panel>
+			<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+				resizable="false" closable="false" closeOnEscape="false"
+				widgetVar="dlgDescarga" modal="true">
+				<p:panel>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" update=":formulario"
+							style="width:100px" icon="ui ui-icon-check" ajax="false"
+							onclick="dlgDescarga.hide()">
+							<p:fileDownload
+								value="#{evidenciaCarreraController.documentoDescarga}" />
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgDescarga.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+
+
+				</p:panel>
+
+			</p:dialog>
+
+			<p:confirmDialog id="cfEliminar" widgetVar="dlgEliminar"
+				header="Eliminar Evidencia" severity="alert"
+				message="¿Desea eliminar la evidencia seleccionada?">
+				<center>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" update=":formulario"
+							actionListener="#{evidenciaCarreraController.eliminarEvidencia}"
+							onclick="dlgEliminar.hide()" style="width:100px"
+							icon="ui ui-icon-check" />
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgEliminar.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+				</center>
+			</p:confirmDialog>
+
+
+		</h:form>
+		<p:dialog id="idInforEvidencia" header="Cargar Evidencias"
+			resizable="false" closable="true" closeOnEscape="false"
+			widgetVar="dlgCargarEvidencia" modal="true">
+			<p:panel>
+
+				<h:form id="formEvidencia" enctype="multipart/form-data" acceptcharset="iso-8859-1">
+
+					<p:fileUpload id="idUpload" mode="simple"
+						allowTypes="/(\.|\/)(pdf|doc|docx|xls|xlsx|ppt|pptx|jpeg|jpg|png)$/"
+						value="#{evidenciaCarreraController.file}" />
+
+					<p:commandButton process="idUpload" value="Cargar" ajax="false"
+						actionListener="#{evidenciaCarreraController.uploadfile}" />
+
+
+
+				</h:form>
+
+
+			</p:panel>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

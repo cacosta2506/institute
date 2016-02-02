@@ -1,0 +1,410 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage name="saving.gif" library="img" />
+			</center>
+		</p:dialog>
+		<p:messages id="messages" showDetail="false" autoUpdate="true"
+			showSummary="true" closable="true" globalOnly="true" />
+		<h:form id="formulario" enctype="multipart/form-data" acceptcharset="iso-8859-1">
+
+			<p:panel header="EVIDENCIA MALLAS" style="text-align:left;"
+				id="ev_malla">
+				<h:panelGrid columns="6" style="margin:12px;">
+					<h:outputText value="Sede: " />
+					<p:selectOneMenu value="#{evidenciaMallaController.idSede}">
+						<p:ajax event="change" update="@this :formulario" global="false"
+							listener="#{evidenciaMallaController.cargarCarreras}" />
+						<f:selectItem itemLabel="--seleccionar--" itemValue="-1" />
+						<f:selectItems value="#{evidenciaMallaController.listaSede}"
+							var="pa" itemValue="#{pa.id}" itemLabel="#{pa.nombre}" />
+					</p:selectOneMenu>
+					<p:spacer></p:spacer>
+					<p:spacer></p:spacer>
+					<h:outputText value="Carrera: " />
+					<p:selectOneMenu
+						value="#{evidenciaMallaController.carreraSeleccionada}"
+						converter="infoCarreraConverter">
+						<p:ajax event="change" update="@this :formulario" global="false"
+							listener="#{evidenciaMallaController.cargarEConcepto}" />
+						<f:selectItem itemLabel="--Seleccionar--" itemValue="" />
+						<f:selectItems value="#{evidenciaMallaController.listaCarreras}"
+							var="pa" itemValue="#{pa}"
+							itemLabel="[#{pa.carreraIesDTO.codigo}]- #{pa.carreraIesDTO.nombre}" />
+					</p:selectOneMenu>
+				</h:panelGrid>
+
+
+
+				<p:outputPanel
+					rendered="#{evidenciaMallaController.evidenciaConcepto}">
+					<div class="info3">
+						<p>Seleccione el Plan curricular para agregar los Programas de
+							Asignatura, dando click sobre la malla correspondiente</p>
+					</div>
+					<p:fieldset legend="Evidencias Mallas"
+						style="margin:  20px 0px 0px 0px;">
+						<p:dataTable id="tablaEConcepto" var="evidenciaconcepto"
+							value="#{evidenciaMallaController.listaMallas}"
+							rowKey="#{evidenciaconcepto.id}" selectionMode="single"
+							emptyMessage="No hay Mallas"
+							selection="#{evidenciaMallaController.mallaTSeleccionada}">
+							<p:ajax event="rowSelect" update=":formulario"
+								listener="#{evidenciaMallaController.cargarAsignatura}" />
+							<p:column headerText="Malla">
+								<h:outputText value="#{evidenciaconcepto.codigoUnico}" />
+							</p:column>
+
+							<p:column headerText="Fecha Inicio">
+								<h:outputText value="#{evidenciaconcepto.fechaInicioVigencia}" />
+							</p:column>
+							<p:column headerText="Fecha Fin">
+								<h:outputText value="#{evidenciaconcepto.fechaFinVigencia}" />
+							</p:column>
+							<p:column headerText="Lista Archivos">
+								<p:dataTable value="#{evidenciaconcepto.evidenciasDTO}"
+									var="evidencia" emptyMessage="No hay Evidencias">
+
+									<p:column>
+										<h:outputText value="#{evidencia.nombreArchivo}" />
+									</p:column>
+									<p:column>
+										<p:commandButton title="descargar" icon="ui-icon-document"
+											oncomplete="dlgDescarga.show()" update=":formulario"
+											process="@this"
+											actionListener="#{evidenciaMallaController.enviarEvidencia(evidencia)}">
+										</p:commandButton>
+										<p:commandButton title="eliminar evidencia"
+											icon="ui-icon-close" oncomplete="dlgEliminar.show()"
+											process="@this" update=":formulario"
+											rendered="#{evidencia.faseIesDTO.faseProcesoDTO.id eq evidenciaMallaController.faseiesDTO.faseProcesoDTO.id ? true: false}">
+											<f:setPropertyActionListener
+												target="#{evidenciaMallaController.evidenciaSeleccionada}"
+												value="#{evidencia}" />
+											<f:setPropertyActionListener
+												target="#{evidenciaMallaController.mallaSeleccionada}"
+												value="#{evidenciaconcepto}" />
+										</p:commandButton>
+
+									</p:column>
+
+								</p:dataTable>
+							</p:column>
+
+							<p:column headerText="Acciones">
+								<p:commandButton value="Cargar Evidencias"
+									oncomplete="dlgCargarEvidencia.show()" update=":formEvidencia"
+									action="#{evidenciaMallaController.cargarEMConcepto}">
+									<f:setPropertyActionListener
+										target="#{evidenciaMallaController.mallaSeleccionada}"
+										value="#{evidenciaconcepto}" />
+								</p:commandButton>
+
+							</p:column>
+
+						</p:dataTable>
+
+					</p:fieldset>
+				</p:outputPanel>
+
+				<p:outputPanel
+					rendered="#{evidenciaMallaController.evidenciaAsignatura}">
+					<p:fieldset legend="Programas de estudio de Asignaturas"
+						style="margin:  20px 0px 0px 0px;">
+						<br />
+						<div class="info3">
+							<p>Seleccione el botón CargarEvidencia para subir el PEA
+								correspondiente a la asignatura. Puede descargar el archivo
+								dando click sobre el código de PEA correspondiente.</p>
+						</div>
+
+						<br />
+						<p:dataTable id="tablaAEConcepto" var="evidenciaasignaturas"
+							value="#{evidenciaMallaController.listaAsignatura}"
+							emptyMessage="No hay Asignaturas">
+
+							<p:column headerText="Código">
+								<h:outputText value="#{evidenciaasignaturas.codigo}" />
+							</p:column>
+
+							<p:column headerText="Asignatura">
+								<h:outputText value="#{evidenciaasignaturas.nombre}" />
+							</p:column>
+
+							<p:column headerText="PEA">
+								<p:commandLink value="#{evidenciaasignaturas.peaDTO.codigo}"
+									oncomplete="dlgDescarga.show()" update=":formulario"
+									action="#{evidenciaMallaController.descargarPea(evidenciaasignaturas.peaDTO)}"></p:commandLink>
+							</p:column>
+
+							<p:column headerText="Evidencia">
+								<p:commandButton value="Cargar Evidencia" update=":formNuevoPea"
+									rendered="#{evidenciaasignaturas.peaDTO==null}"
+									oncomplete="dlgNuevoPea.show()">
+									<f:setPropertyActionListener
+										target="#{evidenciaMallaController.asignaturaSeleccionada}"
+										value="#{evidenciaasignaturas}" />
+								</p:commandButton>
+							</p:column>
+
+							<p:column headerText="Acciones">
+								<p:commandButton title="eliminar evidencia" icon="ui-icon-close"
+									rendered="#{evidenciaasignaturas.peaDTO.faseIesDTO.faseProcesoDTO.id eq evidenciaMallaController.faseiesDTO.faseProcesoDTO.id ? true: false}"
+									oncomplete="dlgEliminarPea.show()" process="@this"
+									update=":formulario">
+									<f:setPropertyActionListener
+										target="#{evidenciaMallaController.peaSeleccionado}"
+										value="#{evidenciaasignaturas.peaDTO}" />
+								</p:commandButton>
+								<p:commandButton
+									action="#{evidenciaMallaController.cargarEdicion(evidenciaasignaturas.peaDTO)}"
+									icon="ui-icon-pencil" oncomplete="dlgEditarPea.show()"
+									update=":formEditarPea">
+								</p:commandButton>
+
+							</p:column>
+
+						</p:dataTable>
+
+					</p:fieldset>
+				</p:outputPanel>
+
+			</p:panel>
+			<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+				resizable="false" closable="false" closeOnEscape="false"
+				widgetVar="dlgDescarga" modal="true">
+				<p:panel>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" update=":formulario"
+							style="width:100px" icon="ui ui-icon-check" ajax="false"
+							onclick="dlgDescarga.hide()">
+							<p:fileDownload
+								value="#{evidenciaMallaController.documentoDescarga}" />
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgDescarga.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+
+
+				</p:panel>
+
+			</p:dialog>
+
+			<p:confirmDialog id="cfEliminar" widgetVar="dlgEliminar"
+				header="Eliminar Evidencia" severity="alert"
+				message="¿Desea eliminar la evidencia seleccionada?">
+				<center>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" update=":formulario"
+							actionListener="#{evidenciaMallaController.eliminarEvidencia}"
+							onclick="dlgEliminar.hide()" style="width:100px"
+							icon="ui ui-icon-check" />
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgEliminar.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+				</center>
+			</p:confirmDialog>
+
+			<p:confirmDialog id="cfEliminarPea" widgetVar="dlgEliminarPea"
+				header="Eliminar PEA" severity="alert"
+				message="Al eliminar el PEA se eliminarán todas las referencias de otras asignaturas al mismo. Está seguro de eliminar el PEA?">
+				<center>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si"
+							update=":formulario :formulario:tablaAEConcepto"
+							actionListener="#{evidenciaMallaController.eliminarEvidenciaPea}"
+							action="#{evidenciaMallaController.registrarPeasPorAsignatura}"
+							onclick="dlgEliminarPea.hide()" style="width:100px"
+							icon="ui ui-icon-check" />
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgEliminarPea.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+				</center>
+			</p:confirmDialog>
+
+
+		</h:form>
+		<p:dialog id="idInforEvidencia" header="Cargar Evidencias"
+			resizable="false" closable="true" closeOnEscape="false"
+			widgetVar="dlgCargarEvidencia" modal="true">
+			<p:panel>
+				<h:form id="formEvidencia" enctype="multipart/form-data" acceptcharset="iso-8859-1">
+					<p:fileUpload id="idUpload" mode="simple"
+						allowTypes="/(\.|\/)(pdf|doc|docx|xls|xlsx|ppt|pptx|jpeg|jpg|png)$/"
+						value="#{evidenciaMallaController.file}" />
+					<p:commandButton process="idUpload" value="Cargar" ajax="false"
+						actionListener="#{evidenciaMallaController.uploadfile}" />
+				</h:form>
+			</p:panel>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgNuevoPea"
+			header="Nuevo Programa de Estudios de la Asignatura" resizable="true"
+			showEffect="fold" hideEffect="fold">
+			<center>
+				<p:messages id="msjPrinci" showDetail="true" autoUpdate="true"
+					showSummary="false" />
+
+				<h:form id="formNuevoPea" enctype="multipart/form-data" acceptcharset="iso-8859-1">
+					<p:fieldset legend="PEA - EVIDENCIA">
+						<p:fileUpload id="idUpload" mode="simple"
+							allowTypes="/(\.|\/)(pdf|doc|docx|xls|xlsx|ppt|pptx|jpeg|jpg|png)$/"
+							value="#{evidenciaMallaController.file}" />
+						<p:commandButton process="idUpload" value="Cargar" ajax="false"
+							actionListener="#{evidenciaMallaController.uploadfile}" />
+					</p:fieldset>
+				</h:form>
+			</center>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgEditarPea"
+			header="Editar Programa de Estudios de la Asignatura"
+			resizable="false" width="1000" height="600" showEffect="fold"
+			hideEffect="fold">
+			<center>
+
+				<p:growl id="msjEditarPea" showDetail="true" autoUpdate="true"
+					showSummary="false" />
+
+				<h:form id="formEditarPea" acceptcharset="iso-8859-1">
+					<h:panelGrid columns="2">
+						<h:outputText value="PEA:" style="font-weight:bold" />
+						<h:outputText
+							value="#{evidenciaMallaController.peaSeleccionado.codigo}" />
+					</h:panelGrid>
+					<br />
+					<h:panelGrid columns="2">
+
+						<h:outputText value="Matriz/Extensión" />
+						<p:selectOneMenu id="idSdIs" style="width:250px"
+							value="#{evidenciaMallaController.idSedeIesSeleccionada}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems value="#{evidenciaMallaController.listaSede}"
+								var="lis" itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+							<p:ajax update="idCarrer"
+								listener="#{evidenciaMallaController.cargarCarrerasAux}" />
+						</p:selectOneMenu>
+
+						<h:outputText value="Carrera:" />
+						<p:selectOneMenu id="idCarrer" style="width:250px"
+							value="#{evidenciaMallaController.idInformacionCarreraSeleccionada}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems
+								value="#{evidenciaMallaController.listaInformacionCarreraDto}"
+								var="lis" itemLabel="#{lis.tituloOtorga}" itemValue="#{lis.id}" />
+							<p:ajax update="mallA" event="change"
+								listener="#{evidenciaMallaController.cargarMalla}" />
+						</p:selectOneMenu>
+
+						<h:outputText value="Malla Curricular:" />
+						<p:selectOneMenu id="mallA" style="width:250px"
+							value="#{evidenciaMallaController.idMallaSeleccionada}">
+							<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+							<f:selectItems value="#{evidenciaMallaController.listaMallaDto}"
+								var="lis" itemLabel="#{lis.identificacion}"
+								itemValue="#{lis.id}" />
+							<p:ajax update="tblAsigntura"
+								listener="#{evidenciaMallaController.cargarAsignaturasAux}" />
+						</p:selectOneMenu>
+					</h:panelGrid>
+
+					<br />
+
+
+					<p>Pulse el botón (+) para agregar las asignaturas que
+						comparten el PEA.</p>
+
+
+					<p:dataTable id="tblAsigntura" emptyMessage="No existe Asignaturas"
+						paginator="true" paginatorPosition="top"
+						paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rows="8"
+						value="#{evidenciaMallaController.listaAsignaturasAgregar}"
+						var="asig">
+						<p:column style="font-size:10px;" headerText="Código">
+							<h:outputText style="font-size:10px;" value="#{asig.codigo}" />
+						</p:column>
+						<p:column style="font-size:10px;" headerText="Asignatura">
+							<h:outputText style="font-size:10px;" value="#{asig.nombre}" />
+						</p:column>
+						<p:column headerText="Acciones" style="font-size:10px;">
+							<p:commandButton icon="ui-icon-circle-plus"
+								update=":formEditarPea"
+								action="#{evidenciaMallaController.agregarAsignatura(asig)}"
+								style="width:15px;height:15px;" />
+						</p:column>
+					</p:dataTable>
+
+					<br />
+
+					<p:dataTable id="idtaedit" var="asgEdit"
+						value="#{evidenciaMallaController.listaAsignaturasPorPea}"
+						emptyMessage="No existe Asignaturas" paginator="true"
+						paginatorPosition="top"
+						paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15" rows="10">
+						<f:facet name="header">
+							<h:outputText value="ASIGNATURAS POR PEA" />
+						</f:facet>
+
+						<p:column headerText="Carrera" style="font-size:10px;">
+							<h:outputText style="font-size:10px;"
+								value="#{asgEdit.mallaCurricularDTO.informacionCarreraDTO.carreraIesDTO.nombre}" />
+						</p:column>
+
+						<p:column headerText="Código" style="font-size:10px;">
+							<h:outputText style="font-size:10px;" value="#{asgEdit.codigo}" />
+						</p:column>
+
+						<p:column headerText="Asignatura" style="font-size:10px;">
+							<h:outputText style="font-size:10px;" value="#{asgEdit.nombre}" />
+						</p:column>
+						<p:column headerText="Acciones">
+							<p:commandButton icon="ui-icon-close" title="Eliminar Asignatura"
+								onclick="dlgAsignaturaEliminar.show()"
+								style="width:20px;height:20px; ">
+								<f:setPropertyActionListener
+									target="#{evidenciaMallaController.asignaturaSeleccionada}"
+									value="#{asgEdit}">
+								</f:setPropertyActionListener>
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<h:panelGrid columns="2">
+						<p:commandButton value="Guardar"
+							actionListener="#{evidenciaMallaController.registrarPeasPorAsignatura}"
+							action="#{evidenciaMallaController.cargarAsignatura}"
+							update=":formulario" oncomplete="dlgEditarPea.hide();" />
+						<p:commandButton value="Cancelar"
+							oncomplete="dlgEditarPea.hide();" />
+					</h:panelGrid>
+				</h:form>
+			</center>
+		</p:dialog>
+		<p:confirmDialog id="delAsignaturaDocente"
+			message="Está seguro de eliminar Asignatura?" header="Confirmación"
+			severity="alert" widgetVar="dlgAsignaturaEliminar">
+			<p:commandButton id="idsi" value="Si"
+				oncomplete="dlgAsignaturaEliminar.hide()" update=":formEditarPea"
+				actionListener="#{evidenciaMallaController.eliminarAsignatura}" />
+			<p:commandButton id="idno" value="No" async="true" process="@this"
+				onclick="dlgAsignaturaEliminar.hide()" />
+		</p:confirmDialog>
+
+	</ui:define>
+</ui:composition>
+</html>

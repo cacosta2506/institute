@@ -1,0 +1,309 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<p:growl id="messages" showDetail="false" autoUpdate="true"
+			showSummary="true" closable="true" globalOnly="true" />
+
+		<p:dialog widgetVar="dialogStatus" modal="true" resizable="false"
+			header="Procesando.. Espere un momento por favor!">
+			<div align="center">
+				<p:ajaxStatus style="width:64px;height:64px;" id="ajaxStatusPanel">
+					<f:facet name="start">
+						<h:graphicImage library="img" name="saving.gif" />
+					</f:facet>
+					<f:facet name="complete">
+						<h:outputText value="" />
+					</f:facet>
+				</p:ajaxStatus>
+			</div>
+		</p:dialog>
+
+		<h:form id="frmCarga" enctype="multipart/form-data"
+			acceptcharset="iso-8859-1">
+			<p:panel header="CARGA MASIVA">
+				<div class="info2">
+					<br />
+					<p class="titulo-mensaje">Importante</p>
+					<p>Antes de seleccionar el botón "Procesar", asegúrese que toda
+						la información que va a cargar en el GIIES es la solicitada;
+						conforme al formato establecido.</p>
+					<p>Una vez cargado el archivo cualquier modificación de datos,
+						deberá ser realizada desde las opciones de menú correspondientes.</p>
+
+					<p>Para la carga de archivos de estudiantes se debe considerar
+						lo siguiente:</p>
+					<ul>
+						<li>1. Cargar la matriz de estudiantes (EST) con los datos
+							personales de los estudiantes tanto del periodo de evaluación
+							como de cohorte.</li>
+						<li>2. Cargar la matriz de asignación de carreras (CPE) a los
+							estudiantes previamente cargados</li>
+						<li>3. Cargar las matrices de matrículas (MAT) de los estudiantes
+							previamente cargados por periodo académico tanto del periodo de
+							evaluación como los periodos de inicio de cohorte.</li>
+					</ul>
+				</div>
+				<br />
+				<br />
+				<br />
+				<center>
+					<h:panelGrid columns="3">
+						<h:outputText value="Tipo de Archivo: " />
+						<p:selectOneMenu value="#{cargaController.tipoCarga}"
+							converter="tipoCargaMasivaConverter">
+							<p:ajax event="change" update=":frmCarga"
+								listener="#{cargaController.obtenerArchivosCarga}" />
+							<f:selectItem itemLabel="--Seleccionar--" itemValue="" />
+							<f:selectItems value="#{cargaController.tiposArchivo}" var="ta"
+								itemValue="#{ta}" itemLabel="#{ta.etiqueta}" />
+						</p:selectOneMenu>
+						<p:commandButton id="cmbDescargar" value="Descargar Plantilla"
+							icon="ui-icon-arrowthickstop-1-s" ajax="false">
+							<p:fileDownload value="#{cargaController.plantillaDescarga}" />
+						</p:commandButton>
+					</h:panelGrid>
+					<br /> <br />
+					<h:panelGrid columns="1"
+						rendered="#{!cargaController.mostrarPeriodosAcademicos}">
+
+
+					</h:panelGrid>
+					<h:panelGrid id="cmbPeriodosAcademicos" columns="3"
+						rendered="#{!cargaController.mostrarPeriodosAcademicos}">
+						<h:outputText value="Periodo :" />
+						<p:selectOneMenu value="#{cargaController.idPeriodoAcademico}"
+							style="width:210px;" id="comboPeriodoId">
+							<p:ajax event="change" update=":frmCarga"
+								listener="#{cargaController.obtenerArchivosCargaPorPeriodo}" />
+							<f:selectItem itemLabel="--Seleccionar--" itemValue="-1" />
+							<f:selectItems value="#{cargaController.periodosAcademicos}"
+								var="pa" itemValue="#{pa.id}" itemLabel="#{pa}" />
+						</p:selectOneMenu>
+
+						<p:commandButton value="Nuevo" title="Nuevo Periodo"
+							oncomplete="dlgPeriodosAcademicos.show();"
+							update=":agregarPeriodo"
+							action="#{cargaController.nuevoPeriodoAcademico}" />
+
+					</h:panelGrid>
+					<br />
+					<div
+						style="color: #00529B; background-color: #BDE5F8; width: 500px; height:">
+						<p>
+							<span style="font-weight: bold; font-size: 1em">Nota:</span> El
+							archivo debe estar almacenado con formato CSV, separado por punto
+							y coma (;).
+						</p>
+					</div>
+
+					<p:fieldset legend="Seleccione el archivo" style="width: 300px">
+
+						<p:fileUpload id="ruta" sizeLimit="5242880"
+							allowTypes="/(\.|\/)(csv)$/"
+							value="#{cargaController.uploadedFile}" mode="simple"></p:fileUpload>
+					</p:fieldset>
+					<p:commandButton value="Procesar" ajax="false"
+						action="#{cargaController.procesar}" onclick="dialogStatus.show()" />
+
+					<p:commandButton value="Limpiar" ajax="false"
+						action="#{cargaController.limpiar}" onclick="dialogStatus.show()" />
+
+				</center>
+			</p:panel>
+
+			<br />
+			<br />
+			<p:fieldset legend="Cargas Masivas Realizadas" id="tblArchivosCarga">
+				<h:panelGroup
+					rendered="#{cargaController.listaArchivosCarga != null and not empty cargaController.listaArchivosCarga}">
+					<p:dataTable var="objArchivo"
+						value="#{cargaController.listaArchivosCarga}"
+						widgetVar="InfoArchivosCarga" border="1"
+						style="width:auto;height:auto" paginator="true" rows="5"
+						paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15">
+
+						<p:column headerText="Nombre Archivo">
+							<h:outputText value="#{objArchivo.nombreArchivo}"></h:outputText>
+						</p:column>
+
+						<p:column headerText="Fecha de Proceso">
+							<h:outputText
+								value="#{objArchivo.auditoriaDTO.fechaModificacion}">
+								<f:convertDateTime type="date" pattern="yyyy-MM-dd hh:mm"
+									timeZone="GMT-5" />
+							</h:outputText>
+						</p:column>
+
+						<p:column headerText="Estado">
+							<h:outputText value="#{objArchivo.estado}"></h:outputText>
+						</p:column>
+
+						<p:column>
+							<p:commandButton value="Archivo Carga"
+								icon="ui-icon-arrowthickstop-1-s" ajax="false">
+								<p:fileDownload
+									value="#{cargaController.exportarArchivoCarga(objArchivo)}" />
+							</p:commandButton>
+							<p:commandButton value="Archivo Error"
+								rendered="#{objArchivo.estado == 'ERROR'}"
+								icon="ui-icon-arrowthickstop-1-s" ajax="false">
+								<p:fileDownload
+									value="#{cargaController.exportarArchivoCargaError(objArchivo)}" />
+							</p:commandButton>
+						</p:column>
+
+						<p:column headerText="Acciones">
+							<p:commandButton value="Eliminar" rendered="#{objArchivo.estado == 'ERROR'}"
+								onclick="dlgEliminarArchivo.show()" icon="ui-icon-close">
+								<f:setPropertyActionListener
+									target="#{cargaController.archivoSeleccionado}"
+									value="#{objArchivo}" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+				</h:panelGroup>
+			</p:fieldset>
+
+		</h:form>
+
+		<p:dialog id="modalListaPeriodos" hideEffect="fade" showEffect="fade"
+			header="Administrar Periodos" resizable="false"
+			widgetVar="dlgPeriodosAcademicos" modal="true">
+			<h:form id="agregarPeriodo" acceptcharset="iso-8859-1">
+
+				<p:fieldset legend="Nuevo Periodo">
+					<h:panelGrid id="PanelNPeriodosAcademicos" columns="5">
+						<h:outputText style="font-size:10px;" value="Mes Inicio: " />
+						<p:selectOneMenu
+							value="#{cargaController.mesInicioPeriodoAcademico}">
+							<p:ajax event="change" update="@this" process="@this" />
+							<f:selectItems value="#{cargaController.MESES}" />
+						</p:selectOneMenu>
+						<p:spacer></p:spacer>
+						<h:outputText style="font-size:10px;" value="Año inicio: " />
+						<p:selectOneMenu
+							value="#{cargaController.anioInicioPeriodoAcademico}">
+							<p:ajax event="change" update="@this" process="@this" />
+							<f:selectItems value="#{cargaController.ANIOS}" />
+						</p:selectOneMenu>
+
+						<h:outputText style="font-size:10px;" value="Mes fin: " />
+						<p:selectOneMenu value="#{cargaController.mesFinPeriodoAcademico}">
+							<p:ajax event="change" update="@this" process="@this" />
+							<f:selectItems value="#{cargaController.MESES}" />
+						</p:selectOneMenu>
+						<p:spacer></p:spacer>
+						<h:outputText style="font-size:10px;" value="Año fin: " />
+						<p:selectOneMenu
+							value="#{cargaController.anioFinPeriodoAcademico}">
+							<p:ajax event="change" update="@this" process="@this" />
+							<f:selectItems value="#{cargaController.ANIOS}" />
+						</p:selectOneMenu>
+
+					</h:panelGrid>
+					<br />
+					<p:commandButton style="align:center;" value="Agregar"
+						action="#{cargaController.agregarPeriodoAcademico}"
+						update=":agregarPeriodo " />
+
+				</p:fieldset>
+
+				<p:dataTable id="tblPeriodos" var="item"
+					value="#{cargaController.periodosAcademicos}"
+					emptyMessage="No se encontraron registros.." style="margin:20px;">
+					<p:column headerText="PERIODO">
+						<h:outputText value="#{item}" />
+
+					</p:column>
+					<p:column headerText="ACCIONES">
+
+						<p:commandButton title="eliminar periodo" icon="ui-icon-close"
+							oncomplete="dlgEliminar.show()" process="@this"
+							update=":agregarPeriodo"
+							rendered="#{item.faseIesDTO.faseProcesoDTO.id eq cargaController.faseIesDTO.faseProcesoDTO.id ? true: false}">
+							<f:setPropertyActionListener
+								target="#{cargaController.periodoAcademicoEliminar}"
+								value="#{item}" />
+
+						</p:commandButton>
+					</p:column>
+
+				</p:dataTable>
+
+				<p:commandButton style="align:center;" value="Guardar"
+					action="#{cargaController.guardarPeriodoAcademico}"
+					update=":agregarPeriodo :frmCarga" />
+
+			</h:form>
+
+
+
+		</p:dialog>
+
+		<p:confirmDialog id="cfEliminar" widgetVar="dlgEliminar"
+			header="Eliminar Periodo" severity="alert"
+			message="¿Desea eliminar el periodo seleccionado?">
+			<center>
+				<h:panelGrid columns="3">
+					<p:commandButton value="Si" update=":agregarPeriodo :frmCarga"
+						actionListener="#{cargaController.eliminarPeriodo}"
+						onclick="dlgEliminar.hide()" style="width:100px"
+						icon="ui ui-icon-check" />
+					<p:spacer width="10" />
+					<p:commandButton value="No" onclick="dlgEliminar.hide()"
+						style="width:100px" icon="ui ui-icon-closethick" />
+				</h:panelGrid>
+			</center>
+		</p:confirmDialog>
+
+
+		<p:confirmDialog id="cfEliminarArchivo" widgetVar="dlgEliminarArchivo"
+			header="Eliminar Archivo" severity="alert"
+			message="¿Desea eliminar el periodo seleccionado?">
+			<center>
+				<h:panelGrid columns="3">
+					<p:commandButton value="Si" update=":frmCarga"
+						actionListener="#{cargaController.eliminarArchivo}"
+						onclick="dlgEliminarArchivo.hide()" style="width:100px"
+						icon="ui ui-icon-check" />
+					<p:spacer width="10" />
+					<p:commandButton value="No" onclick="dlgEliminarArchivo.hide()"
+						style="width:100px" icon="ui ui-icon-closethick" />
+				</h:panelGrid>
+			</center>
+		</p:confirmDialog>
+
+		<p:dialog id="dlgErroresId" widgetVar="dlgErrores" modal="true"
+			closable="false" visible="#{cargaController.mostrarMensajeError}"
+			resizable="false" header="Errores de Formato" hideEffect="fade"
+			showEffect="fade">
+			<p:panel>
+				<h:form id="formNiveles" acceptcharset="iso-8859-1">
+					<h:outputText
+						value="Existen errores en el formato de los campos del archivo, por favor corrija los errores y vuelva a cargar el archivo." />
+					<br />
+					<br />
+					<center>
+						<p:commandButton value="Descargar Archivo"
+							onclick="dlgErrores.hide();dialogStatus.hide();"
+							icon="ui-icon-arrowthickstop-1-s" ajax="false">
+							<p:fileDownload
+								value="#{cargaController.exportarArchivoErroresFormato()}" />
+						</p:commandButton>
+					</center>
+				</h:form>
+			</p:panel>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

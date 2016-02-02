@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="asignaturas" pageWidth="1020" pageHeight="595" orientation="Landscape" columnWidth="980" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isIgnorePagination="true" uuid="35d6e52b-5f9e-4c41-82d9-feea5b1646da">
+	<property name="ireport.zoom" value="1.0000000000000004"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="135"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["/home/eteran/desarrollo/reportes/malla_grafico/"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="parameter1" class="java.lang.Object" isForPrompting="false">
+		<property name="prueba" value=""/>
+		<defaultValueExpression><![CDATA[$F{asignaturasDTO}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="par_logo" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="asignaturasDTO" class="java.util.List">
+		<fieldDescription><![CDATA[asignaturasDTO]]></fieldDescription>
+	</field>
+	<field name="aniosConTesis" class="java.lang.Integer">
+		<fieldDescription><![CDATA[aniosConTesis]]></fieldDescription>
+	</field>
+	<field name="aniosSinTesis" class="java.lang.Integer">
+		<fieldDescription><![CDATA[aniosSinTesis]]></fieldDescription>
+	</field>
+	<field name="creditosConTesis" class="java.lang.Double">
+		<fieldDescription><![CDATA[creditosConTesis]]></fieldDescription>
+	</field>
+	<field name="creditosSinTesis" class="java.lang.Double">
+		<fieldDescription><![CDATA[creditosSinTesis]]></fieldDescription>
+	</field>
+	<field name="organizacionesCurricularDTO" class="java.util.List">
+		<fieldDescription><![CDATA[organizacionesCurricularDTO]]></fieldDescription>
+	</field>
+	<field name="descripcion" class="java.lang.String">
+		<fieldDescription><![CDATA[descripcion]]></fieldDescription>
+	</field>
+	<field name="fechaFinVigencia" class="java.util.Date">
+		<fieldDescription><![CDATA[fechaFinVigencia]]></fieldDescription>
+	</field>
+	<field name="fechaInicioVigencia" class="java.util.Date">
+		<fieldDescription><![CDATA[fechaInicioVigencia]]></fieldDescription>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="226" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="35" width="971" height="33" forecolor="#070709" uuid="bdaef255-977e-4f74-8285-ec90ed89dec9"/>
+				<textElement textAlignment="Center">
+					<font size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[REPORTE DE MALLA CURRICULAR - GRÁFICO]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="597" y="122" width="200" height="20" uuid="5de26551-a38c-4a7a-b758-4cb1787015cf"/>
+				<textFieldExpression><![CDATA[$F{aniosConTesis}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="597" y="102" width="200" height="20" uuid="b3cd650b-74a0-4111-9d81-343ebfb09dbb"/>
+				<textFieldExpression><![CDATA[$F{aniosSinTesis}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="471" y="102" width="126" height="20" uuid="b9cf2687-5b81-499d-bb78-b5f4ff238bfc"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Meses sin tesis:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="471" y="122" width="126" height="20" uuid="03fed3fb-7e0e-418a-9144-20bc2d40730e"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Meses con tesis:]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="597" y="82" width="100" height="20" uuid="ea4f3021-f023-4e5b-bdac-4f89c820cb8b"/>
+				<textFieldExpression><![CDATA[$F{fechaInicioVigencia}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="471" y="82" width="126" height="20" uuid="7676c0b6-585c-4077-a407-ff560e5db40c"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Periodo:]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="697" y="82" width="100" height="20" uuid="d33efafb-3860-486b-9607-90702d49fd5b"/>
+				<textFieldExpression><![CDATA[$F{fechaFinVigencia}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="597" y="142" width="200" height="20" uuid="e8bc636f-5c4b-4052-b73a-422dec29b7a2"/>
+				<textFieldExpression><![CDATA[$F{creditosSinTesis}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="471" y="142" width="126" height="20" uuid="3782e03b-5295-458b-b9be-0a1630888de5"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Créditos sin tesis:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="597" y="162" width="200" height="20" uuid="c70ee967-0197-46c9-8bb8-a2d13e0a907a"/>
+				<textFieldExpression><![CDATA[$F{creditosConTesis}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="471" y="162" width="126" height="20" uuid="50c6377e-16bb-4cc3-a392-a3802326806c"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Créditos con tesis:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="195" width="315" height="30" uuid="f2e63bce-b811-44cd-9665-510d2a28141a"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[INFORMACIÓN GENERAL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="338" y="195" width="316" height="30" uuid="aafac5d6-5adc-4170-a46b-3b7ada711ae9"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ÁREA FORMACIÓN: OBLIGATORIA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="655" y="195" width="316" height="30" isPrintWhenDetailOverflows="true" uuid="b1a66e4b-b26a-4892-afc9-ab62385eb962"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ÁREA FORMACIÓN: OPTATIVA]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy h:mm">
+				<reportElement x="818" y="0" width="153" height="33" uuid="0a9135ce-5afd-4a23-a472-9f8684aaa96c"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="658" y="0" width="160" height="33" uuid="31b73ca5-57f3-4596-a16e-d8d48e8302cb"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Fecha de generación: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="33" width="1262" height="0" backcolor="#0B08EB" uuid="db1c254e-56a1-41e5-8dbe-3b74cd76fc2c"/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<image>
+				<reportElement x="0" y="0" width="147" height="33" uuid="4d9645bb-7e23-44a3-892f-90229d026d68"/>
+				<imageExpression><![CDATA[$P{par_logo}]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="315" y="195" width="23" height="30" uuid="9a372ba3-bd1e-48c7-b366-a1bf4ff0db7e"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[#]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="40" splitType="Prevent">
+			<printWhenExpression><![CDATA[$V{REPORT_COUNT} == 1]]></printWhenExpression>
+			<subreport>
+				<reportElement x="0" y="0" width="971" height="40" isPrintWhenDetailOverflows="true" uuid="41b36183-aed2-4494-87f0-bc122937f2e9"/>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{organizacionesCurricularDTO})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "mallas_organizacion.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

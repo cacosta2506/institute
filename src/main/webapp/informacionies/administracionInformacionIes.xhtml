@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage value="../images/saving.gif" />
+			</center>
+		</p:dialog>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<p:messages id="messages" showDetail="false" autoUpdate="false"
+			showSummary="true" closable="true" globalOnly="true" />
+		<h:inputHidden value="#{editarinformacionIesController.opcion}" />
+
+		<h:form id="formulario" acceptcharset="iso-8859-1">
+
+			<p:panel header="ADMINISTRACIÓN DE INFORMACIÓN IES"
+				style="text-align:center;">
+
+				<br />
+				<br />
+				<br />
+				<p:dataTable id="tablaInformacionIes" var="objIes"
+					value="#{informacionIesController.listaInformacionIesDto}"
+					widgetVar="tablSedeIes" border="1" style="width:auto;height:auto"
+					rows="10">
+					<p:column headerText="Código">
+						<h:outputText value="#{objIes.ies.codigo}" />
+					</p:column>
+
+					<p:column headerText="Nombre">
+						<h:outputText value="#{objIes.ies.nombre}" />
+					</p:column>
+
+					<!-- editar -->
+					<p:column headerText="Acciones">
+						<p:commandButton icon="ui-icon-pencil"
+							action="#{informacionIesController.editarInformacionIes}"
+							style="width:24px;height:24px;"
+							update=":tabViewFormulariosEditar"
+							oncomplete="dialogInformacionIesEditar.show();">
+							<f:setPropertyActionListener
+								target="#{informacionIesController.informacionIesDto}"
+								value="#{objIes}" />
+						</p:commandButton>
+					</p:column>
+				</p:dataTable>
+			</p:panel>
+		</h:form>
+
+		<p:dialog widgetVar="dialogInformacionIes"
+			header="Nuevo Información IES" resizable="true">
+			<p:messages id="msg" showDetail="false" autoUpdate="true"
+				showSummary="true" closable="true" globalOnly="true" />
+			<p:tabView id="tabViewFormularios">
+				<p:tab title="IES">
+					<h:form id="formIes" acceptcharset="iso-8859-1">
+						<p:panel>
+							<h:panelGrid columns="2" cellspacing="5">
+								<h:outputText value="IES:" />
+								<h:outputText value="#{informacionIesController.iesDto.nombre}" />
+							</h:panelGrid>
+						</p:panel>
+					</h:form>
+				</p:tab>
+				<p:tab title="Ancho de banda">
+					<h:form id="formAnchoBada" acceptcharset="iso-8859-1">
+						<p:commandButton style="float:right;" value="Nuevo"
+							update=":tabViewFormularios:formAnchoBada"
+							action="#{informacionIesController.nuevoAnchoBanda}" />
+						<br />
+						<br />
+						<br />
+						<p:dataTable id="tblAnchoBanda" var="objAnchobanda"
+							value="#{informacionIesController.listaContratoAnchoBanda}">
+
+							<p:column headerText="Número Contrato">
+								<h:outputText value="#{objAnchobanda.numContrato}" />
+							</p:column>
+
+							<p:column headerText="Empresa Servicio">
+								<h:outputText value="#{objAnchobanda.empresaServicio}" />
+							</p:column>
+
+							<p:column headerText="Fecha Inicio Contrato">
+								<h:outputText value="#{objAnchobanda.fechaInicioContrato}" />
+							</p:column>
+
+							<p:column headerText="Fecha Fin Contrato">
+								<h:outputText value="#{objAnchobanda.fechaFinContrato}" />
+							</p:column>
+
+							<p:column headerText="Num Kbps">
+								<h:outputText value="#{objAnchobanda.numKbpsInternetContratado}" />
+							</p:column>
+
+							<p:column>
+								<p:commandButton icon="ui-icon-pencil"
+									style="width:24px;height:24px;"
+									update=":tabViewFormularios:formAnchoBada" />
+
+								<p:commandButton icon="ui-icon-close"
+									update=":tabViewFormularios:formAnchoBada"
+									action="#{informacionIesController.quitarAnchoBanda(objAnchobanda)}"
+									style="width:24px;height:24px;" />
+							</p:column>
+
+						</p:dataTable>
+						<br />
+						<br />
+						<p:outputPanel
+							rendered="#{informacionIesController.panelAnchoBanda}">
+							<p:commandButton style="float:right;" value="Agregar"
+								update=":tabViewFormularios:formAnchoBada"
+								action="#{informacionIesController.agregarAnchoBanda}" />
+							<br />
+							<br />
+							<br />
+							<p:panelGrid columns="4">
+								<p:outputLabel value="Número Contrato" />
+								<p:inputText
+									value="#{informacionIesController.contratoAnchoBanda.numContrato}" />
+
+								<p:outputLabel value="Empresa Servicio" />
+								<p:inputText
+									value="#{informacionIesController.contratoAnchoBanda.empresaServicio}" />
+
+								<p:outputLabel value="Fecha Inicio Contrato" />
+								<p:calendar id="idFechaCreacion" effect="slideDown"
+									value="#{informacionIesController.contratoAnchoBanda.fechaInicioContrato}"
+									navigator="true" pattern="dd-MM-yyyy">
+									<p:ajax event="dateSelect" update="@this" global="false" />
+								</p:calendar>
+
+								<p:outputLabel value="Fecha Fin Contrato" />
+								<p:calendar id="idFechaFInCreacion" effect="slideDown"
+									value="#{informacionIesController.contratoAnchoBanda.fechaFinContrato}"
+									navigator="true" pattern="dd-MM-yyyy">
+									<p:ajax event="dateSelect" update="@this" global="false" />
+								</p:calendar>
+
+								<p:outputLabel value="Num. Kbps Internet Contratado:" />
+								<p:spinner min="0" max="500"
+									value="#{informacionIesController.contratoAnchoBanda.numKbpsInternetContratado}" />
+							</p:panelGrid>
+						</p:outputPanel>
+					</h:form>
+				</p:tab>
+			</p:tabView>
+			<br />
+			<center>
+				<h:panelGrid columns="2">
+					<p:commandButton value="Guardar" update=""
+						action="#{informacionIesController.registrarInformacionIes}" />
+					<p:commandButton value="Cancelar"
+						action="#{informacionIesController.cancelar}"
+						update=":tabViewFormularios:formAnchoBada"
+						oncomplete="dialogInformacionIes.hide()" />
+				</h:panelGrid>
+			</center>
+		</p:dialog>
+
+
+		<p:dialog widgetVar="dialogInformacionIesEditar"
+			header="Editar Información IES" resizable="true">
+			<p:messages id="msg2" showDetail="false" autoUpdate="true"
+				showSummary="true" closable="true" globalOnly="true" />
+			<p:tabView id="tabViewFormulariosEditar">
+				<p:tab title="IES">
+					<h:form id="formIesEditar" acceptcharset="iso-8859-1">
+						<p:panel>
+							<h:panelGrid columns="2" cellspacing="5">
+								<h:outputText value="IES:" />
+								<h:outputText value="#{informacionIesController.iesDto.nombre}" />
+
+								<h:outputText value="Cargos Dirección Académica:" />
+								<p:inputText immediate="true"
+									value="#{informacionIesController.informacionIesDto.numeroCargosDireccionAcademica}" />
+							</h:panelGrid>
+						</p:panel>
+					</h:form>
+				</p:tab>
+				<p:tab title="Ancho de banda">
+					<h:form id="formAnchoBadaEditar" acceptcharset="iso-8859-1">
+						<p:commandButton style="float:right;" value="Nuevo"
+							update=":tabViewFormularios:formAnchoBada"
+							action="#{informacionIesController.nuevoAnchoBanda}" />
+						<br />
+						<br />
+						<br />
+						<p:dataTable id="tblAnchoBandaEditar" var="objAnchobanda"
+							value="#{informacionIesController.listaContratoAnchoBanda}">
+
+							<p:column headerText="Número Contrato">
+								<h:outputText value="#{objAnchobanda.numContrato}" />
+							</p:column>
+
+							<p:column headerText="Empresa Servicio">
+								<h:outputText value="#{objAnchobanda.empresaServicio}" />
+							</p:column>
+
+							<p:column headerText="Fecha Inicio Contrato">
+								<h:outputText value="#{objAnchobanda.fechaInicioContrato}" />
+							</p:column>
+
+							<p:column headerText="Fecha Fin Contrato">
+								<h:outputText value="#{objAnchobanda.fechaFinContrato}" />
+							</p:column>
+
+							<p:column headerText="Num Kbps">
+								<h:outputText value="#{objAnchobanda.numKbpsInternetContratado}" />
+							</p:column>
+
+							<p:column>
+								<p:commandButton icon="ui-icon-pencil"
+									style="width:24px;height:24px;"
+									update=":tabViewFormularios:formAnchoBada" />
+
+								<p:commandButton icon="ui-icon-close"
+									update=":tabViewFormularios:formAnchoBada"
+									action="#{informacionIesController.quitarAnchoBanda(objAnchobanda)}"
+									style="width:24px;height:24px;" />
+							</p:column>
+
+						</p:dataTable>
+						<br />
+						<br />
+						<p:outputPanel
+							rendered="#{informacionIesController.panelAnchoBanda}">
+							<p:commandButton style="float:right;" value="Agregar"
+								update=":tabViewFormularios:formAnchoBada"
+								action="#{informacionIesController.agregarAnchoBanda}" />
+							<br />
+							<br />
+							<br />
+							<p:panelGrid columns="4">
+								<p:outputLabel value="Número Contrato" />
+								<p:inputText
+									value="#{informacionIesController.contratoAnchoBanda.numContrato}" />
+
+								<p:outputLabel value="Empresa Servicio" />
+								<p:inputText
+									value="#{informacionIesController.contratoAnchoBanda.empresaServicio}" />
+
+								<p:outputLabel value="Fecha Inicio Contrato" />
+								<p:calendar id="idFechaCreacionEditar" effect="slideDown"
+									value="#{informacionIesController.contratoAnchoBanda.fechaInicioContrato}"
+									navigator="true" pattern="dd-MM-yyyy">
+									<p:ajax event="dateSelect" update="@this" global="false" />
+								</p:calendar>
+
+								<p:outputLabel value="Fecha Fin Contrato" />
+								<p:calendar id="idFechaFInCreacionEditar" effect="slideDown"
+									value="#{informacionIesController.contratoAnchoBanda.fechaFinContrato}"
+									navigator="true" pattern="dd-MM-yyyy">
+									<p:ajax event="dateSelect" update="@this" global="false" />
+								</p:calendar>
+
+								<p:outputLabel value="Num. Kbps Internet Contratado:" />
+								<p:spinner min="0" max="500"
+									value="#{informacionIesController.contratoAnchoBanda.numKbpsInternetContratado}" />
+							</p:panelGrid>
+						</p:outputPanel>
+					</h:form>
+				</p:tab>
+			</p:tabView>
+			<br />
+			<center>
+				<h:panelGrid columns="2">
+					<p:commandButton value="Guardar" update=":formulario"
+						action="#{informacionIesController.registrarInformacionIes}" />
+					<p:commandButton value="Cancelar"
+						action="#{informacionIesController.cancelar}"
+						update=":tabViewFormulariosEditar:formAnchoBadaEditar"
+						oncomplete="dialogInformacionIesEditar.hide()" />
+				</h:panelGrid>
+			</center>
+		</p:dialog>
+
+	</ui:define>
+</ui:composition>
+</html>

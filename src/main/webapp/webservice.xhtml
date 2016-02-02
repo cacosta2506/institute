@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false"
+			header="Espere por favor, esto puede tomar algunos segundos.">
+			<center>
+				<p:graphicImage value="images/saving.gif" />
+			</center>
+		</p:dialog>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formulario" acceptcharset="iso-8859-1">
+			<p:messages autoUpdate="true" showDetail="false" closable="true" />
+			<center>
+				<h:panelGrid columns="2" style="width:100%;">
+					<p:panel>
+						<p:panel>
+							<h:panelGrid id="panel" columns="2" cellpadding="5"
+								cellspacing="5">
+								<p:commandButton id="btnReadWebService"
+									actionListener="#{clientWSController.tomarNombreBoton}"
+									disabled="#{clientWSController.iesSeleccionada.id == null ? true : false}"
+									value="Leer y Registrar datos desde web service"
+									update=":formulario"
+									action="#{clientWSController.leerWebService}" />
+								<p:commandLink id="btnReadFile" style="color:#00F;"
+									value="#{clientWSController.seleccionado.name}"
+									title="Leer y Registrar datos desde archivo"
+									actionListener="#{clientWSController.tomarNombreBoton}"
+									action="#{clientWSController.readingWS}" update=":formulario"
+									rendered="#{clientWSController.seleccionado == null ? false : true}" />
+							</h:panelGrid>
+						</p:panel>
+						<br />
+						<br />
+						<p:panel>
+							<p:dataTable id="tabla" value="#{clientWSController.mallas}"
+								var="malla">
+								<f:facet name="header">
+									<h:outputText style="font-size: 16px;"
+										value="#{clientWSController.ies.nombre} #{clientWSController.ies.codigo}" />
+								</f:facet>
+
+								<p:columnGroup type="header">
+									<p:row>
+										<p:column rowspan="2" headerText="CARRERA" />
+										<p:column colspan="3" headerText="COHORTE" />
+										<p:column rowspan="2" headerText="FECHA ACTUAL" />
+									</p:row>
+
+									<p:row>
+										<p:column headerText="CODIGO" />
+										<p:column headerText="FECHA INICIO" />
+										<p:column headerText="FECHA FIN" />
+									</p:row>
+								</p:columnGroup>
+
+								<p:column>
+									<h:outputText
+										value="#{malla.informacionCarreraDTO.carreraIesDTO.nombre}" />
+								</p:column>
+								<p:column>
+									<h:outputText value="#{malla.codigoUnico}" />
+								</p:column>
+								<p:column>
+									<h:outputText value="#{malla.fechaInicioVigencia}">
+										<f:convertDateTime pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+								<p:column>
+									<h:outputText value="#{malla.fechaFinVigencia}">
+										<f:convertDateTime pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</p:column>
+
+								<p:column>
+									<h:outputText value="#{clientWSController.fechaActual}" />
+								</p:column>
+
+							</p:dataTable>
+						</p:panel>
+
+						<p:fieldset id="directorios"
+							rendered="#{clientWSController.archivos.size() > 0 ? true : false}"
+							legend="DIRECTORIO: #{clientWSController.carpetaIes}">
+							<p:dataTable
+								rendered="#{clientWSController.archivos.size() > 0 ? true : false}"
+								value="#{clientWSController.archivos}" var="arch">
+								<p:column width="250" headerText="ARCHIVOS XML">
+									<h:outputText value="#{arch}" />
+								</p:column>
+								<p:column width="150" headerText="ACCION">
+									<p:commandButton value="seleccionar"
+										action="#{clientWSController.cargarSeleccionado(arch)}"
+										update=":formulario:panel" />
+								</p:column>
+							</p:dataTable>
+						</p:fieldset>
+					</p:panel>
+				</h:panelGrid>
+			</center>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

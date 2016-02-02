@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+<h:head>
+
+	<link rel="stylesheet"
+		href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css" />
+	<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+	<script
+		src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script>
+
+</h:head>
+
+<style>
+.ui-corner-all {
+	border-radius: 1.5em;
+}
+
+.ui-table th,.ui-table td {
+	line-height: 1em;
+	text-align: left;
+}
+
+.ui-table td {
+	line-height: 1em;
+	text-align: left;
+	border: 1px solid #000;
+}
+
+.ui-table th {
+	font-size: 12px;
+	font-weight: bold;
+	text-align: center;
+	vertical-align: middle;
+	margin: 0;
+	padding: 0;
+	border: 1.5px solid #000;
+}
+
+.ui-page-theme-a a,html .ui-bar-a a,html .ui-body-a a,html body .ui-group-theme-a a
+	{
+	color: #3388CC;
+	font-size: 11px;
+	font-weight: bold;
+}
+
+body,input,select,textarea,button,.ui-btn {
+	font-family: sans-serif;
+	font-size: 11px;
+	line-height: 1em;
+}
+
+.ui-content {
+	border-width: 0;
+	overflow-x: hidden;
+	overflow-y: visible;
+	padding: 0;
+}
+
+.ui-btn,label.ui-btn {
+	border-style: solid;
+	border-width: 1px;
+	font-size: 11px;
+	font-weight: bold;
+}
+
+.ui-table {
+	border-collapse: collapse;
+	padding: 0;
+	width: 100%;
+}
+
+.ui-page-theme-a .ui-btn:focus,html .ui-bar-a .ui-btn:focus,html .ui-body-a .ui-btn:focus,html body .ui-group-theme-a .ui-btn:focus,html head+body .ui-btn.ui-btn-a:focus,.ui-page-theme-a .ui-focus,html .ui-bar-a .ui-focus,html .ui-body-a .ui-focus,html body .ui-group-theme-a .ui-focus,html head+body .ui-btn-a.ui-focus,html head+body .ui-body-a.ui-focus
+	{
+	box-shadow: 0 0 5px #3388CC;
+}
+
+.textoOrganizacion {
+	font-weight: bold;
+	text-decoration: underline
+}
+
+.ui-collapsible-content {
+	padding: 0.2em 1em 0;
+}
+
+.ui-btn-icon-left:after,.ui-btn-icon-right:after,.ui-btn-icon-top:after,.ui-btn-icon-bottom:after,.ui-btn-icon-notext:after
+	{
+	height: 18px;
+	width: 18px;
+}
+
+.estiloAsignatura1 .ui-btn,.estiloAsignatura1 .ui-btn:visited,.estiloAsignatura1 .ui-btn:hover
+	{
+	background-color: #B2FCCC;
+}
+
+.estiloAsignatura2 .ui-btn,.estiloAsignatura2 .ui-btn:visited,.estiloAsignatura2 .ui-btn:hover
+	{
+	background-color: #EFF0A8;
+}
+
+.estiloAsignatura3 .ui-btn,.estiloAsignatura3 .ui-btn:visited,.estiloAsignatura3 .ui-btn:hover
+	{
+	background-color: #FED983;
+}
+
+.estiloPrerequisito .ui-btn,.estiloPrerequisito .ui-btn:visited,.estiloPrerequisito .ui-btn:hover
+	{
+	background-color: #acd5ec;
+}
+
+.estiloCorrequisito .ui-btn,.estiloCorrequisito .ui-btn:visited,.estiloCorrequisito .ui-btn:hover
+	{
+	background-color: #c8c7cb;
+}
+</style>
+
+<h:body>
+	<h:form>
+
+		<h:panelGroup layout="block"
+			style="border-radius: 5px;padding:20px 20px 50px 20px">
+			<h:outputText value="Ir a -> " style="font-weight:bold" />
+			<a id="irLink1">Formación Inicial</a>
+			<h:outputText value=" - " style="font-weight:bold" />
+			<a id="irLink2">Formación profesional o su quivalente</a>
+			<h:outputText value=" - " style="font-weight:bold" />
+			<a id="irLink3">Titulación</a>
+			<br></br>
+			<br></br>
+			<br></br>
+			<a id="expandirTodos">(Abrir todos</a>
+			<h:outputText value=" / " style="font-weight:bold" />
+			<a id="cerrarTodos">Cerrar todos)</a>
+
+
+
+			<table data-role="table" data-mode="columntoggle"
+				class="ui-responsive" data-column-btn-text="Mostrar Columnas"
+				id="myTable">
+				<thead>
+					<tr>
+						<th>INFORMACIÓN GENERAL</th>
+						<th>NIVEL</th>
+						<th data-priority="2">ÁREA FORMACIÓN: OBLIGATORIA</th>
+						<th data-priority="3">ÁREA FORMACIÓN: OPTATIVA</th>
+					</tr>
+				</thead>
+				<tbody>
+					<c:set var="contador" value="0"></c:set>
+					<c:forEach
+						items="#{mallasController.mallaSeleccionada.organizacionesCurricularDTO}"
+						var="item">
+						<c:set var="contador" value="#{contador+1}"></c:set>
+						<c:if test="#{contador==1}">
+							<c:set var="estilo"
+								value="background: none repeat scroll 0 0 #B2FCCC"></c:set>
+						</c:if>
+						<c:if test="#{contador==2}">
+							<c:set var="estilo"
+								value="background: none repeat scroll 0 0 #EFF0A8"></c:set>
+						</c:if>
+						<c:if test="#{contador==3}">
+							<c:set var="estilo"
+								value="background: none repeat scroll 0 0 #FED983"></c:set>
+						</c:if>
+						<tr>
+							<c:if test="#{item.asignaturasPorNivel.size() !=0}">
+								<c:set var="rowspan"
+									value="#{item.asignaturasPorNivel.size()+1}" />
+							</c:if>
+							<td style="#{estilo}" rowspan="#{rowspan}">
+								<p>
+									<a id="link#{contador}"></a>
+									<h:outputText value=" #{item.areaFormacion.valor}" styleClass="textoOrganizacion" />
+								</p>
+							</td>
+						</tr>
+
+                        <c:if test="#{item.asignaturasPorNivel.size() ==0}">
+                            <tr><td></td><td></td><td></td></tr>
+                        </c:if>
+                        
+						<c:forEach items="#{item.asignaturasPorNivel}" var="nivel">
+							<tr>
+								<td
+									style="vertical-align: middle; font-weight: bold; text-align: center">
+
+									<c:if test="#{nivel.nivelMateria !=9999}">
+										<h:outputText value="#{nivel.nivelMateria}" />
+
+									</c:if> <c:if test="#{nivel.nivelMateria ==9999}">
+										<h:outputText value=" " />
+									</c:if>
+								</td>
+
+								<td><c:forEach items="#{nivel.asignaturasDTO}" var="asig">
+										<c:if
+											test="#{'OBLIGATORIA'.equals(asig.areaFormacion) and asig.idAsignaturaPadre == null}">
+											<div data-role="main" class="ui-content">
+												<div data-role="collapsible" data-collapsed="true">
+													<h1 class="estiloAsignatura#{contador}">
+														<h:outputText value="#{asig.nombre}" />
+													</h1>
+													<p>
+														<h:outputText value="Créditos: "
+															style="font-weight: bold;" />
+														<h:outputText value="#{asig.numeroCreditos}" />
+													</p>
+													<p>
+														<h:outputText value="Código: " style="font-weight: bold;" />
+														<h:outputText value="#{asig.codigo}" />
+													</p>
+													<c:if test="${not empty asig.preRequisitoMalla}">
+														<div data-role="main" class="ui-content">
+															<div data-role="collapsible">
+																<h1 class="estiloPrerequisito">Prerequisitos:</h1>
+																<c:forEach items="#{asig.preRequisitoMalla}" var="pre">
+																	<p>
+																		<h:outputText
+																			value="- (#{pre.asignaturaRequisitoDTO.codigo}) #{pre.asignaturaRequisitoDTO.nombre}" />
+																	</p>
+																</c:forEach>
+															</div>
+														</div>
+													</c:if>
+
+													<c:if test="${not empty asig.corRequisitoMalla}">
+														<div data-role="main" class="ui-content">
+															<div data-role="collapsible">
+																<h1 class="estiloCorrequisito">Correquisitos:</h1>
+																<c:forEach items="#{asig.corRequisitoMalla}" var="cor">
+																	<p>
+																		<h:outputText
+																			value="- (#{cor.asignaturaRequisitoDTO.codigo}) #{cor.asignaturaRequisitoDTO.nombre}" />
+																	</p>
+																</c:forEach>
+															</div>
+														</div>
+													</c:if>
+													<c:if test="${not empty asig.asignaturasHijas}">
+														<div data-role="main" class="ui-content">
+															<div data-role="collapsible">
+																<h1>Asignaturas:</h1>
+																<c:forEach items="#{asig.asignaturasHijas}" var="hij">
+																	<p>
+																		<h:outputText value="- (#{hij.codigo}) #{hij.nombre}" />
+																	</p>
+																</c:forEach>
+															</div>
+														</div>
+													</c:if>
+												</div>
+											</div>
+										</c:if>
+									</c:forEach></td>
+
+								<td><c:forEach items="#{nivel.asignaturasDTO}" var="asig">
+										<c:if
+											test="#{'OPTATIVA'.equals(asig.areaFormacion) and asig.idAsignaturaPadre == null}">
+											<div data-role="main" class="ui-content">
+												<div data-role="collapsible" data-collapsed="true">
+													<h1 class="estiloAsignatura#{contador}">
+														<h:outputText value="#{asig.nombre}" />
+													</h1>
+													<p>
+														<h:outputText value="Créditos: "
+															style="font-weight: bold;" />
+														<h:outputText value="#{asig.numeroCreditos}" />
+													</p>
+													<p>
+														<h:outputText value="Código: " style="font-weight: bold;" />
+														<h:outputText value="#{asig.codigo}" />
+													</p>
+													<c:if test="${not empty asig.preRequisitoMalla}">
+														<div data-role="main" class="ui-content">
+															<div data-role="collapsible">
+																<h1 class="estiloPrerequisito">Prerequisitos:</h1>
+																<c:forEach items="#{asig.preRequisitoMalla}" var="pre">
+																	<p>
+																		<h:outputText
+																			value="- (#{pre.asignaturaRequisitoDTO.codigo}) #{pre.asignaturaRequisitoDTO.nombre}" />
+																	</p>
+																</c:forEach>
+															</div>
+														</div>
+													</c:if>
+
+													<c:if test="${not empty asig.corRequisitoMalla}">
+														<div data-role="main" class="ui-content">
+															<div data-role="collapsible">
+																<h1 class="estiloCorrequisito">Correquisitos:</h1>
+																<c:forEach items="#{asig.corRequisitoMalla}" var="cor">
+																	<p>
+																		<h:outputText
+																			value="- (#{cor.asignaturaRequisitoDTO.codigo}) #{cor.asignaturaRequisitoDTO.nombre}" />
+																	</p>
+																</c:forEach>
+															</div>
+														</div>
+													</c:if>
+													<c:if test="${not empty asig.asignaturasHijas}">
+														<div data-role="main" class="ui-content">
+															<div data-role="collapsible">
+																<h1>Asignaturas:</h1>
+																<c:forEach items="#{asig.asignaturasHijas}" var="hij">
+																	<p>
+																		<h:outputText value="- (#{hij.codigo}) #{hij.nombre}" />
+																	</p>
+																</c:forEach>
+															</div>
+														</div>
+													</c:if>
+
+												</div>
+											</div>
+										</c:if>
+									</c:forEach></td>
+							</tr>
+						</c:forEach>
+
+					</c:forEach>
+				</tbody>
+			</table>
+			<br></br>
+			<a id="arriba">ARRIBA</a>
+		</h:panelGroup>
+	</h:form>
+
+	<script type="text/javascript">
+jQuery(document).ready(function(){
+    var link1Position = jQuery('#link1').offset().top;
+    var link2Position = jQuery('#link2').offset().top;
+    var link3Position = jQuery('#link3').offset().top;
+    var arribaPosition = jQuery('#irLink1').offset().top;
+    
+    jQuery('#irLink1').click(function(){
+        jQuery('html, body').animate({scrollTop:link1Position}, 'slow');
+        return false;
+    });
+    jQuery('#irLink2').click(function(){
+        jQuery('html, body').animate({scrollTop:link2Position}, 'slow');
+        return false;
+    });
+    jQuery('#irLink3').click(function(){
+        jQuery('html, body').animate({scrollTop:link3Position}, 'slow');
+        return false;
+    });
+    jQuery('#arriba').click(function(){
+        jQuery('html, body').animate({scrollTop:arribaPosition}, 'slow');
+        return false;
+    });
+
+    jQuery('#prueba').click(function(){
+        jQuery('html, body').animate({scrollTop:arribaPosition}, 'slow');
+        return false;
+    });
+
+    jQuery('#cerrarTodos').click(function(){
+        jQuery('.ui-icon-minus').click();
+        return false;
+    });
+
+    jQuery('#expandirTodos').click(function(){
+        jQuery('.ui-icon-plus').click();
+        return false;
+    });
+    
+});
+</script>
+
+</h:body>
+</html>

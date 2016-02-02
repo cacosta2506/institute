@@ -1,0 +1,519 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+
+	<ui:define name="contenido">
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor...">
+			<center>
+				<p:graphicImage value="../images/saving.gif" />
+			</center>
+		</p:dialog>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<p:fieldset>
+			<p:growl id="msg2" showDetail="false" autoUpdate="true" sticky="true" />
+			<p:commandButton value="Regresar" style="float:right"
+				update=":tabViewFormularios"
+				action="#{proyectoPresupuestoParticipacionController.regresarProyectos}" />
+			<br />
+			<br />
+			<br />
+			<p:tabView id="tabViewFormularios"
+				activeIndex="#{proyectoPresupuestoParticipacionController.indiceTab}">
+				<p:tab title="Proyectos">
+					<h:form id="formProyectos" acceptcharset="iso-8859-1">
+						<p:fieldset legend="Información General">
+							<h:panelGrid id="plgPyecto" columns="3" cellspacing="10"
+								cellpadding="5">
+
+								<h:outputText value="Tipo :" />
+								<p:selectOneMenu id="idti" style="width:250px" tabindex="1"
+									valueChangeListener="#{proyectoPresupuestoParticipacionController.tomarTipo}"
+									value="#{proyectoPresupuestoParticipacionController.tipoSeleccionado}">
+									<p:ajax event="change"
+										update=":tabViewFormularios:formProyectos" global="false" />
+									<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+									<f:selectItems var="tipo" itemValue="#{tipo}"
+										itemLabel="#{tipo}"
+										value="#{proyectoPresupuestoParticipacionController.tipoProyecto}" />
+								</p:selectOneMenu>
+								<h:outputText value="" />
+
+								<h:outputText value="Nombre:" />
+								<p:inputTextarea id="pynombr" style="width:300px" cols="30" tabindex="2"
+									value="#{proyectoPresupuestoParticipacionController.proyectoDto.nombre}">
+									<p:ajax event="blur" update="@this" global="false" />
+								</p:inputTextarea>
+								<h:outputText value="" />
+
+								<h:outputText value="Línea investigación:"
+									rendered="#{proyectoPresupuestoParticipacionController.tipoSeleccionado!='VINCULACION'}" />
+								<p:inputText id="pylineaInvs" style="width:300px" tabindex="3"
+									rendered="#{proyectoPresupuestoParticipacionController.tipoSeleccionado!='VINCULACION'}"
+									value="#{proyectoPresupuestoParticipacionController.proyectoDto.lineaInvestigacion}">
+									<p:ajax event="blur" update="@this" global="false" />
+								</p:inputText>
+								<h:outputText value=""
+									rendered="#{proyectoPresupuestoParticipacionController.tipoSeleccionado!='VINCULACION'}" />
+
+								<h:outputText value="Fecha Inicio: " />
+								<p:calendar id="FechaInicio" effect="slideDown" required="true"
+									requiredMessage="Ingrese Fecha Inicio" size="37" tabindex="4"
+									value="#{proyectoPresupuestoParticipacionController.proyectoDto.fechaInicio}"
+									navigator="true" pattern="dd-MM-yyyy"
+									maxdate="#{proyectoPresupuestoParticipacionController.fechaActual}">
+									<p:ajax event="dateSelect" update="@this" global="false" />
+								</p:calendar>
+								<h:outputText value="" />
+
+								<h:outputText value="Fecha Fin Planeado : " />
+								<p:calendar id="FechaFinPlaneado" effect="slideDown"
+									tabindex="5" required="true"
+									requiredMessage="Ingrese Fecha Fin Planeado"
+									value="#{proyectoPresupuestoParticipacionController.proyectoDto.fechaFinPlaneado}"
+									navigator="true" pattern="dd-MM-yyyy" size="37">
+									<p:ajax event="dateSelect" update="@this" global="false" />
+								</p:calendar>
+								<h:outputText value="" />
+
+								<h:outputText value="Fecha Fin Real (opcional): " />
+								<p:calendar id="FechaFinReal" effect="slideDown" tabindex="6"
+									maxdate="#{proyectoPresupuestoParticipacionController.fechaActual}"
+									value="#{proyectoPresupuestoParticipacionController.proyectoDto.fechaFinReal}"
+									navigator="true" pattern="dd-MM-yyyy" size="37">
+									<p:ajax event="dateSelect" update="@this" global="false" />
+								</p:calendar>
+								<h:outputText value="" />
+
+								<h:outputText value="Breve descripción del proyecto:" />
+								<p:inputTextarea id="txt_descrip" tabindex="7"
+									value="#{proyectoPresupuestoParticipacionController.proyectoDto.descripcion}"
+									cols="30" style="resize:none; width:300px">
+									<p:ajax event="blur" update="@this" process="@this" />
+								</p:inputTextarea>
+								<h:outputText value="" />
+
+								<h:outputText value="Grupo/Entidad beneficiado:" />
+								<p:inputTextarea id="txt_beneficiario" tabindex="8"
+									value="#{proyectoPresupuestoParticipacionController.proyectoDto.beneficiarios}"
+									cols="30" style="resize:none; width:300px">
+									<p:ajax event="blur" update="@this" process="@this" />
+								</p:inputTextarea>
+
+							</h:panelGrid>
+						</p:fieldset>
+						<p:fieldset legend="Evaluación"
+							rendered="#{proyectoPresupuestoParticipacionController.alertaEvaluador}">
+							<h:panelGrid columns="2" cellspacing="5">
+								<h:outputText value="Aceptado Evaluador:" />
+								<p:selectBooleanCheckbox id="bc_aceptadoE" tabindex="9"
+									value="#{proyectoPresupuestoParticipacionController.proyectoDto.aceptadoEvaluador}" />
+
+								<h:outputText value="Observación Evaluador:" />
+
+								<p:inputTextarea id="txtObservacion" tabindex="10"
+									style="resize:none; width:250px;" cols="30"
+									value="#{proyectoPresupuestoParticipacionController.proyectoDto.observacionEvaluador}">
+									<p:ajax event="blur" update="@this" process="@this" />
+								</p:inputTextarea>
+
+
+							</h:panelGrid>
+						</p:fieldset>
+					</h:form>
+				</p:tab>
+
+				<p:tab title="Presupuesto">
+					<h:form id="formPresupuesto" acceptcharset="iso-8859-1">
+						<center>
+							<p:panel>
+								<p:panelGrid columns="1" style="float:right">
+									<p:commandButton oncomplete="dlgPresupuesto.show()"
+										update=":formPresupuesto"
+										action="#{proyectoPresupuestoParticipacionController.nuevoPresupuesto}"
+										value="Nuevo" style="float:right">
+										<p:resetInput target=":modalPresupuesto"></p:resetInput>
+									</p:commandButton>
+								</p:panelGrid>
+								<br />
+								<br />
+								<br />
+								<p:dataTable id="tablaPresupuesto" var="tblPresupuesto"
+									value="#{proyectoPresupuestoParticipacionController.listaPresupuesto}"
+									widgetVar="tablSedeIesDisFis" border="1"
+									emptyMessage="No se encontraron registros"
+									style="width:auto;height:auto" paginator="true" rows="10"
+									paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+									rowsPerPageTemplate="5,10,15">
+
+									<p:column headerText="anio">
+										<h:outputText value="#{tblPresupuesto.anio}" />
+									</p:column>
+
+									<p:column headerText="Presupuesto Planificado">
+										<h:outputText value="#{tblPresupuesto.presupuestoPlanificado}" />
+									</p:column>
+
+									<p:column headerText="Presupuesto Ejecutado">
+										<h:outputText value="#{tblPresupuesto.presupuestoEjecutado}" />
+									</p:column>
+								</p:dataTable>
+							</p:panel>
+						</center>
+					</h:form>
+				</p:tab>
+
+				<p:tab title="Participación">
+					<h:form id="formParticipacion" acceptcharset="iso-8859-1">
+						<center>
+							<p:panel>
+								<p:panelGrid columns="1" style="float:right">
+									<p:commandButton oncomplete="dlgParticipacion.show()"
+										update=":formParticipacion"
+										action="#{proyectoPresupuestoParticipacionController.nuevaParticipacion}"
+										value="Nuevo" style="float:right">
+									</p:commandButton>
+								</p:panelGrid>
+								<br />
+								<br />
+								<br />
+								<p:dataTable id="tablaParticipacion" var="tblParticipacion"
+									value="#{proyectoPresupuestoParticipacionController.listaParticipacion}"
+									widgetVar="tblParticip" border="1"
+									emptyMessage="No se encontraron registros"
+									style="width:auto;height:auto" paginator="true" rows="10"
+									paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+									rowsPerPageTemplate="5,10,15">
+
+									<f:facet name="header">
+                                                                                Lista de Participantes (Docentes - Estudiantes)
+                                                                        </f:facet>
+
+									<p:column headerText="Participante">
+										<h:outputText
+											value="#{tblParticipacion.personaDTO.apellidoPaterno} #{tblParticipacion.personaDTO.apellidoMaterno} #{tblParticipacion.personaDTO.nombres}">
+										</h:outputText>
+									</p:column>
+
+									<p:column headerText="Tipo">
+										<h:outputText value="#{tblParticipacion.tabla}" />
+									</p:column>
+
+
+									<p:column headerText="Horas Vinculación">
+										<h:outputText value="#{tblParticipacion.horasParticipacion}" />
+									</p:column>
+
+									<p:column>
+										<p:commandButton icon="ui-icon-close"
+											update=":tabViewFormularios:formParticipacion:tablaParticipacion"
+											action="#{proyectoPresupuestoParticipacionController.eliminarParticipacion}"
+											style="width:24px;height:24px;">
+											<f:setPropertyActionListener
+												target="#{proyectoPresupuestoParticipacionController.personaDto}"
+												value="#{tblParticipacion.personaDTO}" />
+										</p:commandButton>
+									</p:column>
+								</p:dataTable>
+								<br />
+								<br />
+								<p:outputPanel>
+									<p:dataTable id="tablaCarreras" var="car"
+										value="#{proyectoPresupuestoParticipacionController.listaCarrerasDTO}"
+										widgetVar="tblPartCarreras" border="1"
+										style="width:auto;height:auto" paginator="true" rows="5"
+										paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+										rowsPerPageTemplate="5,10,15">
+
+										<f:facet name="header">
+                                                                                        Lista de Carreras participantes
+                                                                                </f:facet>
+
+										<p:column headerText="Matriz/Extensión">
+											<h:outputText
+												value="#{car.informacionCarreraDTO.sedeIesDTO.nombre}">
+											</h:outputText>
+										</p:column>
+										<p:column headerText="Carrera">
+											<h:outputText
+												value="#{car.informacionCarreraDTO.carreraIesDTO.codigoCarrera} #{car.informacionCarreraDTO.carreraIesDTO.nombre}">
+											</h:outputText>
+										</p:column>
+										<p:column headerText="" width="55">
+											<p:selectBooleanCheckbox value="#{car.take}"
+												disabled="#{not car.enable}">
+												<p:ajax event="change" update="@this" global="false"
+													listener="#{proyectoPresupuestoParticipacionController.agregarCarreras(car)}" />
+											</p:selectBooleanCheckbox>
+										</p:column>
+
+									</p:dataTable>
+								</p:outputPanel>
+							</p:panel>
+						</center>
+					</h:form>
+				</p:tab>
+			</p:tabView>
+
+			<h:form id="formGuardar" acceptcharset="iso-8859-1">
+				<center>
+					<br />
+					<p:commandButton value="Guardar" style="width:150px" ajax="false"
+						action="#{proyectoPresupuestoParticipacionController.guardarProyecto}" />
+				</center>
+			</h:form>
+		</p:fieldset>
+		
+		<p:dialog id="modalPresupuesto" header="Nuevo" resizable="false"
+			widgetVar="dlgPresupuesto" modal="true">
+			<div align="center">
+				<h:form id="formPresupuesto" acceptcharset="iso-8859-1">
+
+					<fieldset>
+						<h:outputText style="font-weight: bold;" value="Presupuesto" />
+						<br />
+						<h:panelGrid id="pnlPresupuesto" columns="2" cellspacing="10"
+							cellpadding="10">
+
+							<h:outputText value="Año :" />
+							<p:selectOneMenu id="preAnio" style="width:150px;"
+								value="#{proyectoPresupuestoParticipacionController.presupuestoProyecDto.anio}">
+								<p:ajax event="change" update="@this" global="false" />
+								<f:selectItems
+									value="#{proyectoPresupuestoParticipacionController.rangoAnios}"
+									var="yy" itemValue="#{yy}" itemLabel="#{yy}" />
+							</p:selectOneMenu>
+
+							<h:outputText value="Presupuesto Planificado :" />
+							<p:inputText id="pr3Planificado"
+								value="#{proyectoPresupuestoParticipacionController.presupuestoProyecDto.presupuestoPlanificado}">
+							</p:inputText>
+
+							<h:outputText value="Presupuesto Ejecutado :" />
+							<p:inputText id="preEjecutado"
+								value="#{proyectoPresupuestoParticipacionController.presupuestoProyecDto.presupuestoEjecutado}">
+							</p:inputText>
+						</h:panelGrid>
+						<p:spacer width="10" />
+					</fieldset>
+					<p:commandButton value="Agregar"
+						update=":tabViewFormularios:formPresupuesto"
+						action="#{proyectoPresupuestoParticipacionController.agregarPresupuestoLista}" />
+					<p:spacer width="20" />
+					<p:commandButton value="Cerrar" immediate="true"
+						onclick="dlgPresupuesto.hide()">
+						<p:resetInput target=":modalPresupuesto"></p:resetInput>
+					</p:commandButton>
+				</h:form>
+			</div>
+		</p:dialog>
+
+		<p:dialog id="modalParticipacion" header="Nuevo"
+			widgetVar="dlgParticipacion" modal="true" resizable="false">
+			<div align="center">
+				<h:form id="formParticipacion" acceptcharset="iso-8859-1">
+					<fieldset>
+						<center>
+							<h:outputText style="font-weight: bold;"
+								value="Nuevo Participante" />
+							<br />
+							<h:panelGrid id="pnlParticipacion" columns="2" cellspacing="10"
+								cellpadding="10">
+								<h:outputText value="Tipo Participante :" />
+								<p:selectOneMenu id="part"
+									value="#{proyectoPresupuestoParticipacionController.personaSeleccionada}">
+									<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+									<f:selectItems var="persona" itemValue="#{persona}"
+										itemLabel="#{persona}"
+										value="#{proyectoPresupuestoParticipacionController.listaParticipanteCombo}" />
+									<p:ajax process="@this" update=":formParticipacion"
+										listener="#{proyectoPresupuestoParticipacionController.seleccionarPersona}" />
+								</p:selectOneMenu>
+							</h:panelGrid>
+							<h:inputHidden value="#{listaDocenteController.identificacion}" />
+
+							<h:panelGrid columns="3" cellspacing="10" cellpadding="5">
+
+								<p:outputPanel id="panelTablaEstudiantes"
+									rendered="#{proyectoPresupuestoParticipacionController.personaSeleccionada=='estudiantes'}">
+
+									<h:panelGrid columns="3" cellpadding="0" cellspacing="1"
+										style="float:left;">
+										<h:outputText style="float:right;font-size:10px;"
+											value="Identificación:" />
+										<h:inputText value="#{estudianteController.identificacion}" />
+										<p:commandButton style="width:20px;height:20px"
+											update=":formParticipacion" icon="ui-icon-search"
+											title="Buscar"
+											action="#{estudianteController.buscarEstudiantePorCedula}" />
+									</h:panelGrid>
+									<br />
+									<br />
+									<p:panel>
+										<center>
+											<h:panelGrid id="paginadoresEstudiantes" columns="3">
+												<p:commandButton style="width:60px;" title="atras"
+													icon="ui-icon-arrowreturnthick-1-w"
+													id="btnAtrasEstudiantes"
+													disabled="#{estudianteController.indice > 0 ? false : true}"
+													actionListener="#{estudianteController.modificarIndice}"
+													action="#{estudianteController.listarEstudiantes}"
+													update=":formParticipacion" />
+												<p:spacer />
+												<p:commandButton style="width:60px;" title="siguiente"
+													update=":formParticipacion"
+													icon="ui-icon-arrowreturnthick-1-e"
+													disabled="#{not estudianteController.habilitarSiguiente}"
+													actionListener="#{estudianteController.modificarIndice}"
+													action="#{estudianteController.listarEstudiantes}"
+													id="btnSiguienteEstudiantes" />
+											</h:panelGrid>
+
+											<h:panelGrid columns="2">
+												<h:outputText value="registros: " />
+												<p:selectOneMenu value="#{estudianteController.registros}"
+													immediate="true"
+													valueChangeListener="#{estudianteController.tomarRango}">
+													<p:ajax event="change" update="@this :formParticipacion" />
+													<f:selectItems value="#{estudianteController.rangos}"
+														var="ran" itemValue="#{ran}" itemLabel="#{ran}" />
+												</p:selectOneMenu>
+											</h:panelGrid>
+										</center>
+									</p:panel>
+									<p:panel
+										style="height:350px; overflow:scroll; overflow-x:hidden;">
+
+										<p:dataTable id="tablaEstudiantes" var="tblPersona"
+											value="#{estudianteController.listaEstudiantesIesDTO}"
+											filteredValue="#{estudianteController.listaEstudiantesIesDTOEncontrados}"
+											widgetVar="Person" border="1" style="width:auto;height:auto">
+
+
+											<p:column headerText="Identificación"
+												filterBy="#{tblPersona.identificacion}"
+												filterMatchMode="contains">
+												<h:outputText value="#{tblPersona.identificacion}" />
+											</p:column>
+
+											<p:column headerText="Nombre"
+												filterBy="#{tblPersona.apellidoPaterno}"
+												filterMatchMode="contains">
+												<h:outputText
+													value="#{tblPersona.apellidoPaterno} #{tblPersona.apellidoMaterno} #{tblPersona.nombres}" />
+											</p:column>
+
+											<p:column headerText="Seleccionar">
+												<p:commandButton icon="ui-icon-circle-arrow-e"
+													update=":formParticipacion:datosPersona"
+													style="width:24px;height:24px;">
+													<f:setPropertyActionListener
+														target="#{proyectoPresupuestoParticipacionController.personaDto}"
+														value="#{tblPersona}" />
+												</p:commandButton>
+											</p:column>
+										</p:dataTable>
+									</p:panel>
+								</p:outputPanel>
+
+								<p:outputPanel id="panelTablaDocentes"
+									rendered="#{proyectoPresupuestoParticipacionController.personaSeleccionada=='docentes'}">
+
+									<p:panel
+										style="height:350px; overflow:scroll; overflow-x:hidden;">
+										<p:dataTable id="tablaDocentes" paginator="false"
+											value="#{proyectoPresupuestoParticipacionController.docentes}"
+											var="doc" emptyMessage="No se encontraron registros">
+
+											<p:column id="ced" headerText="Identificación"
+												filterBy="#{doc.identificacion}" width="100"
+												filterMatchMode="contains">
+												<h:outputText value="#{doc.identificacion}" />
+											</p:column>
+
+											<p:column id="nom" headerText="Nombre" width="200"
+												filterBy="#{doc.apellidoPaterno}" filterMatchMode="contains">
+												<h:outputText
+													value="#{doc.apellidoPaterno} #{doc.apellidoMaterno} #{doc.nombres}" />
+											</p:column>
+
+											<p:column headerText="Seleccionar" width="100">
+												<center>
+													<p:commandButton title="seleccionar"
+														update=":formParticipacion:datosPersona"
+														icon="ui-icon-circle-arrow-e"
+														style="width:16px;height:16px;">
+														<f:setPropertyActionListener
+															target="#{proyectoPresupuestoParticipacionController.personaDto}"
+															value="#{doc}" />
+													</p:commandButton>
+												</center>
+											</p:column>
+										</p:dataTable>
+									</p:panel>
+								</p:outputPanel>
+
+								<p:outputPanel>
+									<h:panelGrid id="datosPersona" columns="2" cellspacing="10"
+										cellpadding="5">
+										<h:outputLabel value="Identificación:" />
+										<h:outputText
+											value="#{proyectoPresupuestoParticipacionController.personaDto.identificacion}" />
+
+										<h:outputText value="Nombre:" />
+										<h:outputLabel
+											value="#{proyectoPresupuestoParticipacionController.personaDto.apellidoPaterno}  #{proyectoPresupuestoParticipacionController.personaDto.apellidoMaterno} #{proyectoPresupuestoParticipacionController.personaDto.nombres}" />
+
+										<h:outputText value="Horas:" />
+										<p:inputText maxlength="3"
+											value="#{proyectoPresupuestoParticipacionController.horasPersona}" />
+										<h:outputText value="" />
+
+										<p:commandButton value="Agregar"
+											action="#{proyectoPresupuestoParticipacionController.agregarParticipacion()}"
+											update=":formParticipacion:datosPersona :formParticipacion:tablaVistaParticipantes" />
+									</h:panelGrid>
+
+									<p:dataTable id="tablaVistaParticipantes" var="pv"
+										value="#{proyectoPresupuestoParticipacionController.vistaParticipaciones}"
+										style="width:auto;height:auto" paginator="true" rows="10"
+										paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+
+										<p:column headerText="Participante">
+											<h:outputText style="font-size:10px;"
+												value="#{pv.personaDTO.apellidoPaterno} #{pv.personaDTO.apellidoMaterno} #{pv.personaDTO.nombres}" />
+										</p:column>
+
+										<p:column headerText="Horas Vinculación">
+											<h:outputText value="#{pv.horasParticipacion}" />
+										</p:column>
+									</p:dataTable>
+								</p:outputPanel>
+
+							</h:panelGrid>
+
+							<p:spacer width="10" />
+						</center>
+					</fieldset>
+					<p:commandButton value="Guardar"
+						update=":tabViewFormularios:formParticipacion:tablaParticipacion"
+						action="#{proyectoPresupuestoParticipacionController.agregarParticipacionLista}" />
+					<p:spacer width="20" />
+					<p:commandButton value="Cerrar" immediate="true"
+						onclick="dlgParticipacion.hide()" />
+				</h:form>
+			</div>
+		</p:dialog>
+
+	</ui:define>
+
+</ui:composition>
+</html>

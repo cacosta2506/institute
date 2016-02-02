@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition>
+
+	<p:messages id="msgAsignatura" autoUpdate="false" showDetail="false"
+		closable="true" />
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+	<center>
+		<p:outputPanel id="panelPeriodo">
+			<p:panel rendered="#{!docenteAsigController.nuevoPeriodo}">
+				<h:panelGrid columns="4" cellspacing="5">
+					<h:outputText value="Periodo Académico: " />
+					<h:selectOneMenu id="cmb_PeriodoAsignaturaDocente"
+						value="#{docenteAsigController.periodoSeleccionado.id}">
+						<f:selectItem itemLabel="--Seleccionar--" />
+						<f:selectItems
+							value="#{docenteAsigController.periodosMatricula.entrySet()}"
+							var="periodo" itemValue="#{periodo.key}"
+							itemLabel="#{periodo.value}" />
+						<p:ajax event="change" update="@form" global="false" />
+					</h:selectOneMenu>
+					<p:commandButton value="Nuevo"
+						update=":tabViewFormularios:formDocenteAsignatura"
+						immediate="true"
+						action="#{docenteAsigController.crearNuevoPeriodo}">
+					</p:commandButton>
+				</h:panelGrid>
+			</p:panel>
+			<p:panel rendered="#{docenteAsigController.nuevoPeriodo}">
+				<h:panelGrid columns="4">
+					<p:outputLabel value="Fecha Inicio de Periodo:" />
+					<p:calendar navigator="true" effect="drop"
+						value="#{docenteAsigController.docenteAsignaturaDTO.fechaInicio}"
+						mindate="#{docenteAsigController.minDate}"
+						maxdate="#{docenteAsigController.maxDate}" pattern="dd-MM-yyyy">
+						<p:ajax event="change" process="@this" />
+					</p:calendar>
+					<p:outputLabel value="Fecha Fin de Periodo:" />
+					<p:calendar navigator="true" effect="drop"
+						value="#{docenteAsigController.docenteAsignaturaDTO.fechaFin}"
+						mindate="#{docenteAsigController.minDate}"
+						maxdate="#{docenteAsigController.maxDate}" pattern="dd-MM-yyyy">
+						<p:ajax event="change" process="@this" />
+					</p:calendar>
+				</h:panelGrid>
+			</p:panel>
+		</p:outputPanel>
+
+
+		<p:fieldset legend="Ingrese los siguientes datos">
+
+
+			<h:panelGrid columns="2">
+				<h:outputText value="Matriz/Extensión" />
+				<p:selectOneMenu id="cmb_idSdIs" style="width:250px"
+					value="#{docenteAsigController.idSedeSeleccionada}">
+					<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+					<f:selectItems value="#{docenteAsigController.listaSedeIesDto}"
+						var="lis" itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+					<p:ajax update="cmb_idCarrer"
+						listener="#{docenteAsigController.cargarCarreras}" />
+				</p:selectOneMenu>
+
+				<h:outputText value="Carrera:" />
+				<p:selectOneMenu id="cmb_idCarrer" style="width:250px"
+					value="#{docenteAsigController.idInformacionCarreraSeleccionada}">
+					<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+					<f:selectItems
+						value="#{docenteAsigController.listaInformacionCarreraDto}"
+						var="lis" itemValue="#{lis.id}"
+						itemLabel="#{lis.carreraIesDTO.nombre} [ #{lis.carreraIesDTO.codigo} ]" />
+					<p:ajax update="cmb_malla"
+						listener="#{docenteAsigController.obtenerMallas}" />
+				</p:selectOneMenu>
+
+				<h:outputLabel value="Malla: " />
+				<h:selectOneMenu value="#{docenteAsigController.selectMalla.id}"
+					id="cmb_malla">
+					<f:selectItem itemLabel="--Seleccionar--" />
+					<f:selectItems
+						value="#{docenteAsigController.listaMallas.entrySet()}"
+						var="malla" itemValue="#{malla.key}" itemLabel="#{malla.value}" />
+					<p:ajax event="change" update=":formMalla:asigDisponibles"
+						listener="#{docenteAsigController.obtenerAsignaturasDisponibles}" />
+				</h:selectOneMenu>
+				<h:outputText value="" />
+
+				<p:outputLabel value="Asignatura:" />
+				<h:outputText value="" style="width: 10px" />
+				<p:inputTextarea readonly="true" cols="90" rows="2"
+					value="#{docenteAsigController.selectAsignaturaDto.nombre}"
+					id="txtAsignaturaNombre">
+					<p:ajax event="focus" oncomplete="mallaDlgDocente.show()" />
+				</p:inputTextarea>
+
+			</h:panelGrid>
+
+			<h:panelGrid columns="4">
+				<p:outputLabel value="Fecha Inicio:" />
+				<p:calendar locale="es"
+					value="#{docenteAsigController.docenteAsignaturaDTO.fechaInicio}"
+					navigator="true" effect="drop"
+					mindate="#{docenteAsigController.minDate}"
+					maxdate="#{docenteAsigController.maxDate}" pattern="dd/MM/yyyy">
+					<p:ajax event="dateSelect" update="@this" />
+				</p:calendar>
+				<p:outputLabel value="Fecha Fin:" />
+				<p:calendar locale="es"
+					value="#{docenteAsigController.docenteAsignaturaDTO.fechaFin}"
+					navigator="true" effect="drop"
+					mindate="#{docenteAsigController.docenteAsignaturaDTO.fechaInicio}"
+					maxdate="#{docenteAsigController.maxDate}" pattern="dd/MM/yyyy">
+					<p:ajax event="dateSelect" update="@this" />
+				</p:calendar>
+
+				<p:outputLabel value="Nº horas clase semanales:" for="sp1" />
+				<p:spinner id="sp1"
+					value="#{docenteAsigController.docenteAsignaturaDTO.numHoras}"
+					min="0" />
+
+				<p:outputLabel value="Duración hora clase (min):" for="sp2" />
+				<p:spinner id="sp2"
+					value="#{docenteAsigController.docenteAsignaturaDTO.duracionHoraClase}"
+					min="0" />
+
+				<p:outputLabel value="Nº paralelos:" for="sp3" />
+				<p:spinner id="sp3"
+					value="#{docenteAsigController.docenteAsignaturaDTO.numParalelos}"
+					min="0" />
+
+
+			</h:panelGrid>
+			<div align="right">
+				<p:commandButton value="Guardar" styleClass="ui-priority-primary"
+					actionListener="#{docenteAsigController.agregarDocenteAsignatura}"
+					icon="ui-icon-check"
+					update=":tabViewFormularios:formDocenteAsignatura" />
+				<p:commandButton value="Cancelar"
+					update=":tabViewFormularios:formDocenteAsignatura"
+					action="#{docenteAsigController.cancelarEdicion}" />
+			</div>
+		</p:fieldset>
+	</center>
+</ui:composition>
+</html>

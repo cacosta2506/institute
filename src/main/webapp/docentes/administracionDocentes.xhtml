@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false" header="Espere por favor">
+			<center>
+				<p:graphicImage value="../images/saving.gif" alt="..." />
+			</center>
+		</p:dialog>
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formCabecera" acceptcharset="iso-8859-1">
+			<p:messages id="msgAdministracionDocente" autoUpdate="false"
+				showDetail="false" closable="true" />
+		</h:form>
+		
+		<h:form id="formAdministracion" acceptcharset="iso-8859-1">
+			<p:growl id="msgAdministracionDocenteG" showDetail="false" life="3000" />
+			<h:outputText style="visibility:hidden;font-size:0px;"
+				value="#{docenteController.carreraSeleccionada.nombre}" />
+			<h:inputHidden value="#{webServiceController.identificacion}" />
+			<center>
+				<p:panel header="ADMINISTRACIÓN DE DOCENTES">
+
+					<h:panelGrid columns="3" cellpadding="0" cellspacing="1"
+						style="float:left;">
+						<h:outputText style="float:right;font-size:10px;" value="Cedula:" />
+						<h:inputText value="#{docenteController.identificacion}" />
+						<p:commandButton style="width:20px;height:20px"
+							update=":formAdministracion" icon="ui-icon-search" title="Buscar"
+							action="#{docenteController.buscarDocentePorCedula}" />
+					</h:panelGrid>
+					<p:outputPanel rendered="#{!docenteController.alertaEvaluador}">
+						<p:commandButton style="float:right;" value="Nuevo"
+							action="#{docenteController.nuevo}" update="@all"
+							actionListener="#{docenteController.iniciarNuevoDocente}">
+							<f:setPropertyActionListener value="Datos Personales"
+								target="#{docenteController.pestania}" />
+						</p:commandButton>
+					</p:outputPanel>
+					<br />
+					<br />
+
+					<h:panelGrid id="paginadores" columns="3">
+						<p:commandButton style="width:80px;" title="atras"
+							icon="ui-icon-arrowreturnthick-1-w" id="btnAtras"
+							disabled="#{docenteController.indice > 0 ? false : true}"
+							actionListener="#{docenteController.modificarIndice}"
+							action="#{docenteController.listarDocentes}"
+							update=":formAdministracion" />
+						<p:spacer />
+						<p:commandButton style="width:80px;" title="siguiente"
+							update=":formAdministracion" icon="ui-icon-arrowreturnthick-1-e"
+							disabled="#{not docenteController.habilitarSiguiente}"
+							actionListener="#{docenteController.modificarIndice}"
+							process="@this" action="#{docenteController.listarDocentes}"
+							id="btnSiguiente" />
+					</h:panelGrid>
+
+					<h:panelGrid columns="2" style="float:right;">
+						<h:outputText value="registros: " />
+						<p:selectOneMenu value="#{docenteController.registros}"
+							immediate="true"
+							valueChangeListener="#{docenteController.tomarRango}">
+							<p:ajax event="change" update="@this :formAdministracion" />
+							<f:selectItems value="#{docenteController.rangos}" var="ran"
+								itemValue="#{ran}" itemLabel="#{ran}" />
+						</p:selectOneMenu>
+					</h:panelGrid>
+					<br />
+					<br />
+					<br />
+
+					<h:outputText
+						style="font-size:14px;float:left;color:#0078D0;font-weight:bold;"
+						value="Total docentes: #{docenteController.totalDocentes}" />
+					<br />
+					<br />
+
+					<p:dataTable id="tablaDocentes" paginator="false"
+						scrollHeight="500" scrollable="true"
+						filteredValue="#{docenteController.docentesFiltros}"
+						value="#{docenteController.docentes}" var="doc"
+						emptyMessage="No se encontraron docentes">
+
+						<p:column headerText="Identificación"
+							filterBy="#{doc.identificacion}">
+							<h:outputText value="#{doc.identificacion}" />
+						</p:column>
+
+						<p:column headerText="Apellidos" filterBy="#{doc.apellidoPaterno}">
+							<h:outputText
+								value="#{doc.apellidoPaterno} #{doc.apellidoMaterno}" />
+						</p:column>
+
+						<p:column headerText="Nombres" filterBy="#{doc.nombres}">
+							<h:outputText value="#{doc.nombres}" />
+						</p:column>
+
+						<p:column headerText="Discapacidad">
+							<h:outputText value="#{doc.discapacidad.value}" />
+						</p:column>
+
+						<p:column headerText="Acciones">
+							<center>
+								<p:commandButton title="seleccionar" icon="ui-icon-folder-open"
+									action="#{docenteController.nuevo}"
+									style="width:16px;height:16px;" update=":formCabecera:msgAdministracionDocente">
+									<f:setPropertyActionListener
+										target="#{docenteController.docenteSeleccionado}"
+										value="#{doc}" />
+									<f:setPropertyActionListener
+										target="#{docenteAsigController.seleccion}" value="#{doc}" />
+									<f:setPropertyActionListener value="0"
+										target="#{docenteController.indiceTab}" />
+								</p:commandButton>
+								<p:commandButton title="eliminar" icon="ui-icon-close"
+									actionListener="#{docenteController.iniciarNuevoDocente}"
+									oncomplete="dialogEliminarDoc.show()" update=":formEliminarDoc"
+									style="width:16px;height:16px;"
+									rendered="#{!docenteController.alertaEvaluador}">
+									<f:setPropertyActionListener value="#{doc}"
+										target="#{docenteController.docenteSeleccionado}" />
+								</p:commandButton>
+							</center>
+						</p:column>
+
+					</p:dataTable>
+				</p:panel>
+			</center>
+		</h:form>
+
+
+		<p:dialog id="dlgEliminarDoc" widgetVar="dialogEliminarDoc"
+			modal="true" closable="false" header="Confirmacion"
+			closeOnEscape="false" resizable="false" showEffect="fade">
+			<h:form id="formEliminarDoc" acceptcharset="iso-8859-1">
+				<center>
+					<h:panelGrid columns="2">
+						<p:commandButton icon="ui-icon-alert" disabled="true" />
+						<h:outputText value="¿Desea eliminar al docente seleccionado?" />
+					</h:panelGrid>
+					<h:panelGrid columns="1">
+						<h:inputTextarea readonly="true" cols="50" rows="3"
+							value="#{docenteController.docenteSeleccionado.apellidoPaterno} #{docenteController.docenteSeleccionado.apellidoMaterno} #{docenteController.docenteSeleccionado.nombres}" />
+					</h:panelGrid>
+					<h:panelGrid columns="1">
+						<h:outputText value="Ingrese el motivo de salida del docente:" />
+						<h:inputTextarea  id="motivoSalidaTaId"
+							value="#{docenteController.docenteSeleccionado.motivoSalida}"
+							 />
+						<h:message for="motivoSalidaTaId" />
+					</h:panelGrid>
+					<p:separator />
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si"
+							action="#{docenteController.eliminarDocente}"
+							update=":formAdministracion :formAdministracion:msgAdministracionDocenteG"/>
+						<p:commandButton value="No" onclick="dialogEliminarDoc.hide()" />
+					</h:panelGrid>
+				</center>
+			</h:form>
+		</p:dialog>
+
+	</ui:define>
+
+</ui:composition>
+</html>

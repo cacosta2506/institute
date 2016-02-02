@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="contenido">
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+		<h:form id="formEventos" enctype="multipart/form-data" acceptcharset="iso-8859-1">
+			<f:facet name="header"></f:facet>
+			<p:messages autoUpdate="false" showSummary="true"></p:messages>
+			<p:confirmDialog id="deleteConfirmDialog"
+				message="Está seguro de eliminar evento?"
+				header="Iniciando proceso de eliminación" severity="alert"
+				widgetVar="deleteConfirmation">
+				<p:commandButton id="confirm" value="Si" update=":formEventos"
+					oncomplete="deleteConfirmation.hide()"
+					action="#{eventoController.eliminarEvento}" />
+				<p:commandButton id="decline" value="No"
+					onclick="deleteConfirmation.hide()" type="button" />
+			</p:confirmDialog>
+
+			<center>
+				<p:panel header="ADMINISTRACION DE PERIODOS ACADEMICOS"
+					style="margin-right:10px;"
+					rendered="#{!eventoController.editarEvento}">
+					<p:commandButton style="float:right;" value="Nuevo"
+						action="#{eventoController.nuevoEvento}" update=":formEventos">
+					</p:commandButton>
+					<br />
+					<br />
+
+					<p:panel id="panelControles">
+						<br />
+						<p:dataTable id="tablaEventos"
+							filteredValue="#{eventoController.listaEventosFiltrados}"
+							value="#{eventoController.listaEventos}" var="evento"
+							emptyMessage="No se encontraron eventos">
+							<!--NOMBRE -->
+							<p:column headerText="Nombre" filterBy="#{evento.nombre}"
+								cols="30">
+								<h:inputTextarea value="#{evento.nombre}" readonly="true" />
+							</p:column>
+							<!--FECHA INICIO -->
+							<p:column headerText="Fecha Inicio">
+								<h:outputText value="#{evento.fechaInicio}">
+									<f:convertDateTime pattern="dd-MM-yyyy" />
+								</h:outputText>
+							</p:column>
+							<!--FECHA FIN -->
+							<p:column headerText="Fecha Fin">
+								<h:outputText value="#{evento.fechaFin}">
+									<f:convertDateTime pattern="dd-MM-yyyy" />
+								</h:outputText>
+							</p:column>
+
+							<!-- editar -->
+							<p:column headerText="Acciones">
+								<p:commandButton update=":formEventos" icon="ui-icon-pencil"
+									style="width:24px;height:24px;">
+									<f:setPropertyActionListener
+										target="#{eventoController.eventoSeleccionado}"
+										value="#{evento}"></f:setPropertyActionListener>
+								</p:commandButton>
+								<p:commandButton oncomplete="deleteConfirmation.show()"
+									icon="ui-icon-close" style="width:24px;height:24px;">
+									<f:setPropertyActionListener
+										target="#{eventoController.eventoSeleccionado}"
+										value="#{evento}"></f:setPropertyActionListener>
+								</p:commandButton>
+							</p:column>
+						</p:dataTable>
+
+					</p:panel>
+				</p:panel>
+			</center>
+			<p:panel rendered="#{eventoController.editarEvento}"
+				header="CREAR - EDITAR EVENTO">
+				<ui:include src="editarEvento.xhtml"></ui:include>
+			</p:panel>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

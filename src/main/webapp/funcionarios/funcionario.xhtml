@@ -1,0 +1,295 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+
+	<ui:define name="contenido">
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false"
+			header="Espere por favor, esto puede tomar algunos segundos">
+			<center>
+				<p:graphicImage value="../images/saving.gif" alt="..." />
+			</center>
+		</p:dialog>
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+
+
+		<h:form>
+			<p:commandButton style="float:right;margin-right:10px;"
+				value="Regresar" action="#{funcionarioController.regresar}" />
+		</h:form>
+		<br />
+		<br />
+
+		<p:fieldset
+			legend="FUNCIONARIO: #{funcionarioController.funcionarioSeleccionado.apellidoPaterno} #{funcionarioController.funcionarioSeleccionado.apellidoMaterno} #{funcionarioController.funcionarioSeleccionado.nombres}">
+
+			<p:tabView id="tabViewFormularios"
+				activeIndex="#{funcionarioController.indiceTab}">
+
+				<p:ajax event="tabChange"
+					listener="#{funcionarioController.tomarTab}"
+					update=":tabViewFormularios:formContratacion" global="false" />
+
+				<p:tab title="Datos Personales" id="tabDatosPersonales"
+					disabled="#{funcionarioController.verTabDatosPersonales}">
+
+					<h:form id="formDatosPersonales" acceptcharset="iso-8859-1">
+						<p:growl autoUpdate="true" sticky="true" />
+						<center>
+							<p:panel>
+								<h:panelGrid columns="4" cellspacing="5" cellpadding="5">
+
+									<h:outputText value="MATRIZ/EXTENSION:" />
+									<p:selectOneMenu id="sedei" style="width:250px"
+										value="#{funcionarioController.idSedeSeleccionada}">
+										<p:ajax event="change" update="@this"></p:ajax>
+										<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+										<f:selectItems
+											value="#{funcionarioController.listaSedeIesDto}" var="lis"
+											itemLabel="#{lis.nombre}" itemValue="#{lis.id}" />
+									</p:selectOneMenu>
+
+									<h:outputText style="float:right;" value="" />
+									<h:outputText style="float:right;" value="" />
+
+									<h:outputText style="float:right;" value="Documento: " />
+									<p:selectOneMenu style="width:250px;"
+										value="#{funcionarioController.funcionarioSeleccionado.tipoIdentificacion}">
+										<p:ajax event="change" update="@this"></p:ajax>
+										<f:selectItem itemValue="CEDULA" itemLabel="CÉDULA" />
+										<f:selectItem itemValue="PASAPORTE" itemLabel="PASAPORTE" />
+									</p:selectOneMenu>
+
+									<h:outputText style="float:right;" value="Identificación:" />
+									<p:inputText style="width:250px;"
+										value="#{funcionarioController.funcionarioSeleccionado.identificacion}">
+										<p:ajax event="blur" update="@this"></p:ajax>
+									</p:inputText>
+
+									<h:outputText style="float:right;" value="Primer Apellido:" />
+									<p:inputText style="width:250px;"
+										onkeyup="this.value = this.value.toUpperCase()"
+										value="#{funcionarioController.funcionarioSeleccionado.apellidoPaterno}">
+										<p:ajax event="blur" update="@this"></p:ajax>
+									</p:inputText>
+
+									<h:outputText style="float:right;" value="Segundo Apellido:" />
+									<p:inputText style="width:250px;"
+										onkeyup="this.value = this.value.toUpperCase()"
+										value="#{funcionarioController.funcionarioSeleccionado.apellidoMaterno}">
+										<p:ajax event="blur" update="@this"></p:ajax>
+									</p:inputText>
+
+									<h:outputText style="float:right;" value="Nombres:" />
+									<p:inputText style="width:250px;"
+										onkeyup="this.value = this.value.toUpperCase()"
+										value="#{funcionarioController.funcionarioSeleccionado.nombres}">
+										<p:ajax event="blur" update="@this"></p:ajax>
+									</p:inputText>
+
+									<h:outputText style="float:right;" value="Sexo:" />
+									<p:selectOneMenu value="#{funcionarioController.genero}"
+										style="width:250px;"
+										valueChangeListener="#{funcionarioController.tomarGenero}">
+										<f:selectItems value="#{funcionarioController.generos}"
+											var="gen" itemValue="#{gen}" itemLabel="#{gen}" />
+									</p:selectOneMenu>
+
+									<h:outputText style="float:right;" value="Discapacidad:" />
+									<p:selectOneMenu id="selectDis" style="width:250px;"
+										valueChangeListener="#{funcionarioController.tomarDiscapacidad}"
+										value="#{funcionarioController.discapacidad}">
+										<f:selectItems value="#{funcionarioController.discapacidades}"
+											var="dis" itemValue="#{dis}" itemLabel="#{dis}" />
+									</p:selectOneMenu>
+
+									<h:outputText style="float:right;" value="Número Conadis:" />
+									<p:inputText style="width:250px;"
+										value="#{funcionarioController.funcionarioSeleccionado.numeroConadis}">
+										<p:ajax event="blur" update="@this"></p:ajax>
+									</p:inputText>
+
+									<h:outputText style="float:right;" value="Tipo Funcionario: " />
+									<p:selectOneMenu value="#{funcionarioController.tipoFunc}"
+										style="width:250px;">
+										<f:selectItem itemLabel="--Seleccionar--" />
+										<f:selectItems
+											value="#{funcionarioController.tipoFuncionario}" var="tfun"
+											itemValue="#{tfun}" itemLabel="#{tfun}" />
+										<p:ajax event="change" process="@this" global="false" />
+									</p:selectOneMenu>
+
+									<h:outputText style="float:right;" value="Cargo: " />
+									<p:inputText style="width:250px;"
+										value="#{funcionarioController.funcionarioSeleccionado.cargo}">
+										<p:ajax event="blur" update="@this"></p:ajax>
+									</p:inputText>
+
+								</h:panelGrid>
+								<br />
+								<h:panelGrid columns="2" cellpadding="10" cellspacing="10">
+									<p:commandButton value="#{funcionarioController.accion}"
+										style="width:145px;" action="#{funcionarioController.guardar}"
+										update=":tabViewFormularios" />
+								</h:panelGrid>
+							</p:panel>
+						</center>
+					</h:form>
+				</p:tab>
+
+				<p:tab title="Contratación"
+					disabled="#{funcionarioController.verTabContratacion}">
+					<h:form id="formContratacion" acceptcharset="iso-8859-1">
+						<p:panel>
+							<p:confirmDialog id="cdContrataciones" header="Confirmación"
+								widgetVar="cfContrataciones" severity="alert"
+								message="¿Desea eliminar el contrato #{funcionarioController.contratoFuncionario.numeroContrato}?"
+								showEffect="fade">
+								<center>
+									<p:commandButton value="Si"
+										update=":tabViewFormularios:formContratacion"
+										oncomplete="cfContrataciones.hide()"
+										action="#{funcionarioController.eliminarContratacion}" />
+									<p:commandButton value="No" onclick="cfContrataciones.hide()" />
+								</center>
+							</p:confirmDialog>
+							<center>
+								<p:commandButton id="btnNuevoContrato" value="Nuevo"
+									update=":formContrato" oncomplete="dlgwContrato.show();"
+									actionListener="#{funcionarioController.nuevoContrato}"
+									style="float:right;" />
+								<br /> <br /> <br />
+								<p:dataTable id="tablaContratacion" scrollable="true"
+									scrollHeight="300"
+									value="#{funcionarioController.contrataciones}" var="cont"
+									emptyMessage="No hay datos de Contratacion">
+
+									<p:column headerText="Num Contrato" width="125">
+										<h:outputText style="font-size:10px;"
+											value="#{cont.numeroContrato}" />
+									</p:column>
+									<p:column headerText="Relacion IES" width="125">
+										<h:inputTextarea style="font-size:10px;resize:none;"
+											disabled="true" value="#{cont.relacionIes.value}" cols="15"
+											rows="1" />
+									</p:column>
+									<p:column headerText="Fecha Inicio" width="125">
+										<h:outputText style="font-size:10px;"
+											value="#{cont.fechaInicio}">
+											<f:convertDateTime pattern="dd-MM-yyyy" />
+										</h:outputText>
+									</p:column>
+									<p:column headerText="Fecha Fin" width="125">
+										<h:outputText style="font-size:10px;" value="#{cont.fechaFin}">
+											<f:convertDateTime pattern="dd-MM-yyyy" />
+										</h:outputText>
+									</p:column>
+									<p:column headerText="Acciones" width="125">
+										<center>
+											<p:commandButton title="seleccionar" icon="ui-icon-pencil"
+												actionListener="#{funcionarioController.nuevoContrato}"
+												action="#{funcionarioController.editarContrato}"
+												update=":formContrato" oncomplete="dlgwContrato.show();"
+												style="width:16px;height:16px;">
+												<f:setPropertyActionListener
+													target="#{funcionarioController.contratoFuncionario}"
+													value="#{cont}" />
+											</p:commandButton>
+											<p:commandButton title="eliminar" icon="ui-icon-close"
+												oncomplete="cfContrataciones.show()"
+												update=":tabViewFormularios:formContratacion"
+												style="width:16px;height:16px;">
+												<f:setPropertyActionListener
+													target="#{funcionarioController.contratoFuncionario}"
+													value="#{cont}" />
+											</p:commandButton>
+										</center>
+									</p:column>
+
+								</p:dataTable>
+							</center>
+						</p:panel>
+					</h:form>
+				</p:tab>
+			</p:tabView>
+		</p:fieldset>
+		<p:dialog widgetVar="dlgwContrato" id="dlgContrato">
+			<h:form id="formContrato" acceptcharset="iso-8859-1">
+				<center>
+					<h:panelGrid columns="4" cellpadding="10" cellspacing="10">
+
+						<h:outputText style="float:right;" value="Número Contrato:" />
+						<p:inputTextarea style="resize:none;width:250px;"
+							value="#{funcionarioController.contratoFuncionario.numeroContrato}"
+							cols="20" rows="1" />
+						<h:outputText value="" />
+						<h:outputText value="" />
+
+						<h:outputText style="float:right;" value="Relacion IES:" />
+						<p:selectOneMenu style="width:250px;"
+							value="#{funcionarioController.relacionSeleccionada}">
+							<f:selectItem itemLabel="--Seleccionar--" />
+							<f:selectItems value="#{funcionarioController.relacionesIes}"
+								var="rel" itemValue="#{rel}" itemLabel="#{rel}" />
+							<p:ajax event="change" process="@this" global="false" />
+						</p:selectOneMenu>
+
+						<h:outputText style="float:right;" value="Fecha Inicio:" />
+						<p:calendar
+							value="#{funcionarioController.contratoFuncionario.fechaInicio}"
+							navigator="true" effect="slide" pattern="dd-MM-yyyy"
+							yearRange="c-20:c+20" mindate="#{funcionarioController.fechaMin}"
+							maxdate="#{funcionarioController.fechaActual}" size="37">
+							<p:ajax event="dateSelect" update="@this" global="false" />
+						</p:calendar>
+
+						<h:outputText style="float:right;" value="Fecha Fin:" />
+						<p:calendar
+							value="#{funcionarioController.contratoFuncionario.fechaFin}"
+							navigator="true" effect="slide" pattern="dd-MM-yyyy"
+							yearRange="c-20:c+20" mindate="#{funcionarioController.fechaMin}"
+							size="37">
+							<p:ajax event="dateSelect" update="@this" global="false" />
+						</p:calendar>
+
+						<h:outputText style="float:right;" value="Concurso:" />
+						<p:selectBooleanCheckbox
+							value="#{funcionarioController.contratoFuncionario.ingresoPorConcurso}">
+							<p:ajax event="change" update="@this" global="false" />
+						</p:selectBooleanCheckbox>
+
+						<h:outputText style="float:right;" value="Remuneración Contrato:" />
+						<p:inputTextarea style="resize:none;width:250px;"
+							value="#{funcionarioController.contratoFuncionario.remuneracionContrato}"
+							cols="20" rows="1" />
+
+					</h:panelGrid>
+					<div align="right" style="float: right;">
+						<h:panelGrid columns="2" cellpadding="10" cellspacing="10"
+							style="float:right;">
+							<p:commandButton value="Guardar"
+								rendered="#{funcionarioController.funcionarioSeleccionado.id!=null}"
+								action="#{funcionarioController.guardarContrato}"
+								update=":tabViewFormularios:formContratacion" />
+							<p:commandButton value="Guardar"
+								rendered="#{funcionarioController.funcionarioSeleccionado.id==null}"
+								action="#{funcionarioController.guardarContrato}"
+								update=":tabViewFormularios" />
+							<p:commandButton value="Cerrar" oncomplete="dlgwContrato.hide();"
+								global="false"
+								action="#{funcionarioController.cancelarContrato}" />
+						</h:panelGrid>
+					</div>
+				</center>
+			</h:form>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

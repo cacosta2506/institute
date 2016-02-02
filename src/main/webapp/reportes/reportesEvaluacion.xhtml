@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:l="http://www.lapis.com/jsf/exporter">
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+	<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+
+
+			<p:panel header="REPORTES EVALUACIÓN">
+			<center>
+			<p:panelGrid style="width: 500px;" columns="1">
+				<p:dataTable value="#{reportesController.listaRecursosReportes}"
+					var="reporteN" widgetVar="tablaReportes" paginator="true" rows="30"
+					emptyMessage="No se encontraron registros"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15">
+					<p:column headerText="Reporte">
+						<h:outputText value="#{reporteN.descripcion}" />
+					</p:column>
+
+					<p:column headerText="Ver" style="width:16px;text-align:center">
+
+						<p:commandButton title="Descargar" ajax="false" process="this"
+									icon="ui-icon-circle-triangle-s"									
+									action="#{reportesController.generarReporteN}">
+									<f:setPropertyActionListener value="#{reporteN}"
+										target="#{reportesController.recursoSeleccionado}" />								
+								</p:commandButton>
+					</p:column>
+
+				</p:dataTable>
+
+			</p:panelGrid>
+			</center>
+
+
+
+
+			</p:panel>
+			
+		</h:form>
+
+
+	</ui:define>
+</ui:composition>
+</html>

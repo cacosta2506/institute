@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:utils="http://java.sun.com/jsf/composite/utils"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:sec="http://www.springframework.org/security/tags"
+	xmlns:p="http://primefaces.org/ui">
+
+<f:metadata>
+	<f:event listener="#{ingresoController.removerControladores}"
+		type="preRenderView"></f:event>
+</f:metadata>
+
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="tituloPagina">Selección de perfil</ui:define>
+	<ui:define name="perfilAplicacion"></ui:define>
+	<ui:define name="menuPrincipal"></ui:define>
+	<ui:define name="etiquetaIES"></ui:define>
+	<ui:define name="etiquetaCarrera"></ui:define>
+	<ui:define name="contenido">
+
+		<h:inputHidden value="#{ingresoController.escondido}" />
+
+		<br />
+		<br />
+		<br />
+		<br />
+		<center>
+			<h:outputText value="#{ingresoController.aplicacionDTO.nombre}"
+				styleClass="titulo"
+				style="font-size:16px;font-weight:bold;color:grey;" />
+			<br /> <br />
+			<div class="panel_big">
+				<f:facet name="header">PERFILES DE INGRESO</f:facet>
+				<br />
+				<h:form id="formBienvenida" styleClass="frm_bvn" acceptcharset="iso-8859-1">
+
+					<h:messages id="msg" showDetail="false" />
+
+					<h:panelGrid columns="5" styleClass="panel_bvn">
+						<h:outputText value="Ingresar como: " styleClass="input_bvn" />
+						<h:outputText value="" />
+						<p:selectOneMenu value="#{ingresoController.idPerfil}"
+							styleClass="select_bvn" panelStyleClass="panel_select">
+							<f:ajax event="change" render="formBienvenida"
+								listener="#{ingresoController.cargarMenusPerfil()}" />
+							<f:selectItem itemValue="-1" itemLabel="--seleccionar--" />
+							<f:selectItems value="#{ingresoController.perfilesDeUsuario}"
+								var="puser" itemValue="#{puser.perfil.id}"
+								itemLabel="#{puser.perfil.etiqueta}" />
+						</p:selectOneMenu>
+						<h:outputText value="" />
+						<p:inputTextarea disabled="true" cols="30" rows="1"
+							styleClass="text_bvn"
+							value="#{ingresoController.perfil.descripcion != null ? ingresoController.perfil.descripcion : ''}" />
+
+						<h:outputText value="Proceso: " styleClass="input_bvn" />
+						<h:outputText value="" />
+						<p:selectOneMenu id="selectProceso" styleClass="select_bvn"
+							panelStyleClass="panel_select"
+							value="#{ingresoController.idProceso}"
+							disabled="#{ingresoController.procesos.size() > 0 ? false : true}"
+							style="width:400px;font-size:10px;">
+							<f:ajax event="change" render="formBienvenida" />
+							<f:selectItem itemValue="-1" itemLabel="--seleccionar--" />
+							<f:selectItems value="#{ingresoController.procesos}" var="proc"
+								itemValue="#{proc.id}" itemLabel="#{proc.nombre}" />
+						</p:selectOneMenu>
+						<h:outputText value="" />
+						<h:outputText value="" />
+					</h:panelGrid>
+					<br />
+					<div class="texto-cls">
+						<p:commandLink value="Continuar" styleClass="btn_bvn"
+							disabled="#{ingresoController.idProceso == -1 ? true : false}"
+							action="#{ingresoController.redirect('listaIes.jsf')}">
+							<f:setPropertyActionListener
+								value="#{ingresoController.idPerfil}"
+								target="#{listaIesController.idPerfilSeleccionado}" />
+						</p:commandLink>
+					</div>
+				</h:form>
+			</div>
+		</center>
+
+	</ui:define>
+</ui:composition>
+</html>

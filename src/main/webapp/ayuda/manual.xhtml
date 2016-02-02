@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+<ui:define name="tituloPagina">Manual</ui:define>
+	<ui:define name="contenido">
+		<p:media value="/resources/files/manual.pdf"
+			width="100%" style="height: 500px;">  
+    		Para descargar el manual haz click <h:outputLink
+				value="#{request.contextPath}/resources/files/manual.pdf">aqui</h:outputLink>.  
+		</p:media>
+	</ui:define>
+</ui:composition>
+</html>

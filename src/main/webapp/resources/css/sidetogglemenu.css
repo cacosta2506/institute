@@ -1,0 +1,133 @@
+body {
+	/* CSS for BODY transition when menu is set to push BODY content. */
+	-moz-transition: left 100ms ease-in-out, right 100ms ease-in-out;
+	-webkit-transition: left 100ms ease-in-out, right 100ms ease-in-out;
+	transition: left 100ms ease-in-out, right 100ms ease-in-out;
+}
+
+.sidetogglemenu { /* shared class for side toggle menus */
+	/* background: rgb(0, 136, 204); Old browsers
+	background: -moz-linear-gradient(top, rgba(0, 136, 204, 1) 0%,
+		rgba(32, 124, 202, 1) 45%, rgba(43, 136, 217, 1) 78%,
+		rgba(0, 136, 204, 1) 100%); FF3.6+
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(0,
+		136, 204, 1)), color-stop(45%, rgba(32, 124, 202, 1)),
+		color-stop(78%, rgba(43, 136, 217, 1)),
+		color-stop(100%, rgba(0, 136, 204, 1))); Chrome,Safari4+
+	background: -webkit-linear-gradient(top, rgba(0, 136, 204, 1) 0%,
+		rgba(32, 124, 202, 1) 45%, rgba(43, 136, 217, 1) 78%,
+		rgba(0, 136, 204, 1) 100%); Chrome10+,Safari5.1+
+	background: -o-linear-gradient(top, rgba(0, 136, 204, 1) 0%,
+		rgba(32, 124, 202, 1) 45%, rgba(43, 136, 217, 1) 78%,
+		rgba(0, 136, 204, 1) 100%); Opera 11.10+
+	background: -ms-linear-gradient(top, rgba(0, 136, 204, 1) 0%,
+		rgba(32, 124, 202, 1) 45%, rgba(43, 136, 217, 1) 78%,
+		rgba(0, 136, 204, 1) 100%); IE10+
+	background: linear-gradient(to bottom, rgba(0, 136, 204, 1) 0%,
+		rgba(32, 124, 202, 1) 45%, rgba(43, 136, 217, 1) 78%,
+		rgba(0, 136, 204, 1) 100%); W3C
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0088cc',
+		endColorstr='#0088cc', GradientType=0); IE6-9 */
+		background-color:#0188C5;
+	border-right: 5px solid #ffffff;
+	width: 250px; /* default menu width */
+	height: 100%;
+	position: fixed;
+	top: -100%;
+	clear: both;
+	display: block;
+	visibility: 'hidden';
+	box-shadow: 5px 0 5px rgba(174, 174, 174, .8);
+	-moz-transition: all 100ms ease-in-out;
+	/* change 100ms to slide in animation time */
+	-webkit-transition: all 100ms ease-in-out;
+	transition: all 100ms ease-in-out;
+}
+
+.sidetogglemenu ul {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	position: relative;
+	top: 130px;
+}
+
+.sidetogglemenu a {
+	font: bold 12px Verdana;
+	padding: 10px;
+	display: block;
+	color: #f0f0f0 !important;
+	text-decoration: none;
+	border-bottom: 1px solid #C0C0C0;
+}
+
+.sidetogglemenu a:hover {
+	background: #005EA2;
+	color: white;
+}
+/* #######  Additional CSS for toggle menu #togglemenu2  ####### */
+#togglemenu2 {
+	width: 250px;
+	border-width: 0;
+	background: rgb(53, 106, 160);
+	box-shadow: -5px 0 5px rgba(174, 174, 174, .8);
+}
+
+#togglemenu2 ul a {
+	color: white;
+	border-bottom: 1px solid #eee;
+	font: bold 14px;
+	text-transform: uppercase;
+}
+
+#togglemenu2 a:hover {
+	background: #162a50;
+	color: white;
+}
+/* #######  Responsive Menu related CSS  ####### */
+div#smallscreentoggler {
+	/* CSS for small screen menus toggler, shown when device width is below specified */
+	width: 1.5em;
+	z-index: 10000;
+	color: white;
+	position: relative;
+	float: right;
+	overflow: hidden;
+	background: gray;
+	font: normal 1.8em Arial;
+	margin-bottom: 0.5em;
+	text-align: center;
+	box-shadow: -3px 3px 5px gray;
+	cursor: pointer;
+	border-radius: 2px;
+	display: none;
+	-moz-transition: all 200ms ease-in-out;
+	-webkit-transition: all 200ms ease-in-out;
+	transition: all 200ms ease-in-out;
+}
+
+div#smallscreentoggler:hover {
+	background: #eee;
+	color: black;
+	-moz-transition: all 200ms ease-in-out;
+	-webkit-transition: all 200ms ease-in-out;
+	transition: all 200ms ease-in-out;
+}
+
+@media screen and (max-width: 480px) {
+	/* CSS when device width is 480px or less */
+	div#smallscreentoggler {
+		display: block; /* show small screen menus toggler */
+	}
+	.sidetogglemenu { /* Set position of menus to static */
+		position: static;
+		border-width: 0;
+		border-top-width: 1px;
+		width: 98% !important;
+		height: auto;
+		box-shadow: 5px 0 5px rgba(174, 174, 174, .8) !important;
+		margin-left: 5px;
+		margin-bottom: 10px;
+		display: none;
+	}
+}

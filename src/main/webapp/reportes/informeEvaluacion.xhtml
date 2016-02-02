@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:l="http://www.lapis.com/jsf/exporter">
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false"
+			header="Espere por favor, esto puede tomar algunos segundos">
+			<center>
+				<p:graphicImage value="../images/saving.gif" alt="..." />
+			</center>
+		</p:dialog>
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+			<p:growl id="growl" sticky="true"></p:growl>
+
+			<p:commandButton title="informe de evaluación" 
+				icon="ui-icon-document-b" immediate="true" value="Informe de Evaluación"
+				oncomplete="document.getElementById('formPrincipal:reporteXls').click();"
+				action="#{reporteVariablesController.generarReporteInformeEvaluacion}">
+			</p:commandButton>
+			<p:commandLink value="" id="reporteXls" ajax="false" immediate="true"
+				style="float:left"
+				action="#{reporteVariablesController.presentarReporteXls}">
+			</p:commandLink>
+			
+			
+						
+		</h:form>
+
+	</ui:define>
+</ui:composition>
+</html>

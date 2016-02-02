@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:l="http://www.lapis.com/jsf/exporter">
+<f:metadata>
+	<f:event listener="#{reporteVariablesController.obtenerDatosIniciales}"
+		type="preRenderView"></f:event>
+</f:metadata>
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+		<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+
+		<p:dialog widgetVar="esperando" modal="true" resizable="false"
+			closable="false" draggable="false"
+			header="Espere por favor, esto puede tomar algunos segundos">
+			<center>
+				<p:graphicImage value="../images/saving.gif" alt="..." />
+			</center>
+		</p:dialog>
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<h:form id="formPrincipal" acceptcharset="iso-8859-1">
+			<p:panel>
+				<div class="info2">
+					<p class="titulo-mensaje">Advertencia:</p>
+					<p>Considere que al seleccionar la opción Rectificar
+						Verificación, deberá realizar la evaluación de las variables
+						afectadas en la verificación de datos</p>
+					<p>Si está seguro de realizar esta acción, presione el botón
+						que se muestra a continuación.</p>
+
+					<p:commandButton value="Rectificar verificación"
+						action="#{reporteVerificacionController.rectificarVerificacion()}" />
+
+
+				</div>
+
+			</p:panel>
+
+		</h:form>
+
+
+	</ui:define>
+</ui:composition>
+</html>

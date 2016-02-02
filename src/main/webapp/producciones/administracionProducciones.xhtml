@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../templates/template.xhtml">
+	<ui:define name="contenido">
+
+
+		<h:inputHidden value="#{ingresoController.soloLectura}" />
+		<h:inputHidden value="#{editarPublicacionParticipanteController.nada}" />
+		<h:inputHidden value="#{publicacionParticipanteController.nada}" />
+
+		<h:form id="formulario" acceptcharset="iso-8859-1">
+
+
+			<p:ajaxStatus onstart="esperando.show()" onsuccess="esperando.hide()" />
+			<p:dialog widgetVar="esperando" modal="true" resizable="false"
+				closable="false" draggable="false" header="Espere por favor...">
+				<center>
+					<p:graphicImage value="../images/saving.gif" />
+				</center>
+			</p:dialog>
+
+			<p:confirmDialog widgetVar="deleteConfirmationDocenteE"
+				id="delDocent" message="Está seguro de eliminar el docente?"
+				header="Confirmación" severity="alert">
+				<p:commandButton id="go" value="Si"
+					oncomplete="deleteConfirmationDocenteE.hide()"
+					update=":tabViewFormulariosEditar:formParticipacionEditar"
+					actionListener="#{produccionController.eliminarParticipante}" />
+				<p:commandButton id="cancel" value="No"
+					onclick="deleteConfirmationDocenteE.hide()" type="button" />
+			</p:confirmDialog>
+
+			<p:confirmDialog id="delConfirmati"
+				message="Está seguro de eliminar la Producción?"
+				header="Confirmación" severity="alert"
+				widgetVar="deleteConfirmation">
+				<p:commandButton id="gop" value="Si" update=":formulario"
+					oncomplete="deleteConfirmation.hide()"
+					actionListener="#{produccionController.eliminarProducciones}" />
+				<p:commandButton id="cancelp" value="No"
+					onclick="deleteConfirmation.hide()" type="button" />
+			</p:confirmDialog>
+
+
+			<p:confirmDialog id="delConfirmation2"
+				message="La Producción tiene Participaciones Activas, Está seguro de eliminar?"
+				header="Confirmación" severity="alert"
+				widgetVar="deleteConfirmation2">
+				<p:commandButton id="go2" value="Si" update=":formulario"
+					oncomplete="deleteConfirmation2.hide()"
+					actionListener="#{produccionController.eliminarProduccionesParticipantes}" />
+				<p:commandButton id="cancel2" value="No"
+					onclick="deleteConfirmation2.hide()" type="button" />
+			</p:confirmDialog>
+
+			<p:growl id="messages" showDetail="false" autoUpdate="false"
+				showSummary="true" closable="true" globalOnly="true" />
+			<p:panel header="ADMINISTRACIÓN DE PRODUCCIONES"
+				style="text-align:center;">
+				<p:outputPanel rendered="#{!produccionController.alertaEvaluador}">
+					<p:commandButton action="#{produccionController.nuevaProduccion}"
+						update=":tabViewFormularios" value=" Nuevo" style="float:right">
+					</p:commandButton>
+				</p:outputPanel>
+				<br />
+				<br />
+				<br />
+				<h:outputText
+					style="font-size:12px;float:left;color:#0078D0;font-weight:bold;"
+					value="Nro. producciones registradas: #{produccionController.totalProducciones}" />
+				<br />
+
+				<p:dataTable id="tablaProduccion" var="prod"
+					value="#{produccionController.listaProduccionDTO}" border="1"
+					style="width:auto;height:auto" paginator="true" rows="10"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15"
+					emptyMessage="No se encontraron registros">
+					<p:column id="nombre" filterBy="#{prod.nombre}" headerText="Nombre"
+						style="white-space: normal" filterMatchMode="contains">
+						<h:outputText value="#{prod.nombre}" />
+					</p:column>
+					<p:column id="tipo" headerText="Tipo" filterMatchMode="contains">
+						<h:outputText value="#{prod.tipo.value}" />
+					</p:column>
+					<p:column headerText="Fecha Divulgación">
+						<h:outputText value="#{prod.fechaPresentacion}" />
+					</p:column>
+					<p:column headerText="Premio">
+						<h:outputText value="#{prod.tipoPremio}" />
+					</p:column>
+					<p:column headerText="Premios recibidos"
+						style="white-space: normal">
+						<h:outputText value="#{prod.nombrePremio}" />
+					</p:column>
+					<p:column headerText="Evaluación" style="white-space: normal"
+						rendered="#{produccionController.alertaEvaluador}">
+						<h:outputText value="#{prod.aceptadoEvaluador ? 'SI': 'NO'}" />
+					</p:column>
+					<p:column headerText="Observación"
+						rendered="#{produccionController.alertaEvaluador}">						
+						<h:inputTextarea  value="#{prod.observacionEvaluador}" readonly="true" cols="150" rows="4"/>
+					</p:column>
+					<p:column
+						headerText="#{!produccionController.alertaEvaluador ? 'Acciones' : 'Verificación'}">
+						<p:commandButton icon="ui-icon-pencil"
+							style="width:24px;height:24px;"
+							action="#{produccionController.editarProduccion(prod.id)}"
+							process="@this"
+							update=":tabViewFormulariosEditar :tabViewFormulariosEditar:formParticipacionEditar :formulario:messages">
+							<f:setPropertyActionListener
+								target="#{produccionController.produccionDTO}" value="#{prod}" />
+						</p:commandButton>
+						<p:commandButton icon="ui-icon-close" title="eliminar"
+							action="#{produccionController.comprobarProduccion(prod.id)}"
+							style="width:24px;height:24px;"
+							rendered="#{!produccionController.alertaEvaluador}"
+							update=":formulario:messages">
+							<f:setPropertyActionListener
+								target="#{produccionController.produccionDTO}" value="#{prod}" />
+						</p:commandButton>
+						<p:commandButton title="Mostrar Evidencias"
+							icon="ui-icon-circle-triangle-s"
+							update=":formulario:campoEvidencia :formulario:tablaEConcepto"
+							action="#{produccionController.cargarEvidencia}"
+							style="width:24px;height:24px;" immediate="true"
+							rendered="#{produccionController.alertaEvaluador}">
+							<f:setPropertyActionListener
+								target="#{produccionController.produccionDTO}" value="#{prod}" />
+						</p:commandButton>
+
+						<p:outputPanel
+							rendered="#{produccionController.alertaEvaluador and prod.faseIesDTO.faseProcesoDTO.faseDTO.id == '1'}">
+							<i class="fa fa-exclamation-triangle"
+								style="color: #E8E870; text-align: center; font-size: 18px;"></i>
+						</p:outputPanel>
+
+						<p:outputPanel
+							rendered="#{produccionController.alertaEvaluador and prod.faseIesDTO.faseProcesoDTO.faseDTO.id == '2'}">
+
+							<i class="fa fa-check"
+								style="color: green; text-align: center; font-size: 14px;"></i>
+						</p:outputPanel>
+
+						<p:outputPanel
+							rendered="#{(prod.verificarEvidencia and produccionController.alertaEvaluador) ? true : false}">
+							<p:graphicImage id="nuevo" library="img" name="nuevo.gif"
+								style="text-align: center; font-size: 20px;" />
+
+						</p:outputPanel>
+					</p:column>
+
+					<p:column headerText="Histórico"
+						rendered="#{produccionController.alertaEvaluador}">
+						<p:commandLink value="Histórico"
+							actionListener="#{produccionController.obtenerHistoricoProduccion(prod)}"
+							update="@form" oncomplete="historicoModal.show()" async="true"
+							process="@this">
+							<f:setPropertyActionListener
+								target="#{produccionController.produccionSeleccionada}"
+								value="#{prod}" />
+						</p:commandLink>
+
+					</p:column>
+				</p:dataTable>
+			</p:panel>
+			<p:outputPanel rendered="#{produccionController.alertaEvaluador}">
+				<p:fieldset id="campoEvidencia" legend="Evidencias"
+					style="margin:  20px 0px 0px 0px;">
+					<p:outputLabel style="font-weight: bold;"
+						value="#{produccionController.produccionDTO.nombre}" />
+					<p:dataTable id="tablaEConcepto" var="objEvidencia"
+						value="#{produccionController.listaEvidenciaConceptoDto}"
+						emptyMessage="No hay Conceptos">
+						<p:column headerText="Evidencias">
+							<h:outputText value="#{objEvidencia.nombre}" />
+						</p:column>
+						<p:column headerText="Lista Archivos">
+							<p:dataTable value="#{objEvidencia.evidenciasDTO}"
+								var="evidencia" emptyMessage="No hay Evidencias">
+								<p:column>
+									<h:outputText value="#{evidencia.nombreArchivo}" />
+								</p:column>
+								<p:column>
+									<p:commandButton title="descargar" icon="ui-icon-document"
+										oncomplete="dlgDescarga.show()" process="@this"
+										update=":formulario"
+										actionListener="#{produccionController.enviarEvidencia(evidencia)}">
+									</p:commandButton>
+								</p:column>
+							</p:dataTable>
+						</p:column>
+					</p:dataTable>
+				</p:fieldset>
+			</p:outputPanel>
+
+			<!-- Historicos de Produccion -->
+
+			<p:dialog widgetVar="historicoModal" modal="true"
+				header="Histórico de la Producción : #{produccionController.produccionSeleccionada.nombre}"
+				resizable="false" closeOnEscape="false" showEffect="fade"
+				hideEffect="fade">
+				<br />
+				<p:dataTable id="tblhistoricos" var="vv"
+					value="#{produccionController.listaProduccionHistorico}"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					style="width:900px" paginator="true" rows="10">
+					<p:column headerText="Tipo">
+						<h:outputText value="#{vv.tipo.value}" />
+					</p:column>
+
+					<p:column headerText="Fecha Divulgación">
+						<h:outputText value="#{vv.fechaPresentacion}" />
+					</p:column>
+
+
+					<p:column headerText="Observación"
+						style="text-align:left;width:200px; white-space:normal;">
+						<h:outputText value="#{vv.observacionEvaluador}" />
+					</p:column>
+
+					<p:column headerText="Usuario" style="width:80px">
+						<h:outputText value="#{vv.auditoria.usuarioModificacion}">
+						</h:outputText>
+					</p:column>
+					<p:column headerText="Fecha" style="width:80px">
+						<center>
+							<h:outputText value="#{vv.auditoria.fechaModificacion}">
+								<f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss"
+									timeZone="GMT-5" />
+							</h:outputText>
+						</center>
+					</p:column>
+				</p:dataTable>
+				<br></br>
+				<p:commandButton value="Cerrar" async="true" process="@this"
+					onclick="historicoModal.hide()" />
+			</p:dialog>
+			<p:dialog id="cfDescarga" header="Descarga de Evidencia"
+				resizable="false" closable="false" closeOnEscape="false"
+				widgetVar="dlgDescarga" modal="true">
+				<p:panel>
+					<h:panelGrid columns="3">
+						<p:commandButton value="Si" style="width:100px"
+							icon="ui ui-icon-check" ajax="false" onclick="dlgDescarga.hide()">
+							<p:fileDownload value="#{produccionController.documentoDescarga}" />
+						</p:commandButton>
+						<p:spacer width="10" />
+						<p:commandButton value="No" onclick="dlgDescarga.hide()"
+							style="width:100px" icon="ui ui-icon-closethick" />
+					</h:panelGrid>
+				</p:panel>
+			</p:dialog>
+		</h:form>
+		<p:dialog widgetVar="dialogAdministracion" header="Nuevo Producción"
+			resizable="true" id="dialogAdministracionId">
+			<center>
+				<p:messages id="mensajesPrinci" showDetail="true" autoUpdate="true"
+					showSummary="false" />
+				<p:tabView id="tabViewFormularios">
+					<p:tab title="Producciones">
+						<h:form id="formProduccion">
+							<p:fieldset legend="Información General">
+								<h:panelGrid id="plg2" columns="4" cellspacing="10"
+									cellpadding="10">
+									<h:outputText value="Tipo:" />
+									<p:selectOneMenu id="selectPr"
+										value="#{produccionController.tipoProduccionSeleccionado}"
+										style="width:250px;">
+										<p:ajax event="change" update="@this" global="false" />
+										<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+										<f:selectItems
+											value="#{produccionController.tipoProduccionEnum}" var="tp"
+											itemValue="#{tp}" itemLabel="#{tp}" />
+									</p:selectOneMenu>
+									<h:outputText value="" />
+									<h:outputText value="" />
+
+									<h:outputText value="Nombre:" />
+									<h:inputTextarea id="txt_titulo" style="width:250px" rows="1"
+										value="#{produccionController.produccionDTO.nombre}">
+										<p:ajax event="blur" update="@this" global="false" />
+									</h:inputTextarea>
+
+									<h:outputText value="Fecha divulgación: " />
+									<p:calendar id="fechaPresentacion" effect="slideDown" size="37"
+										value="#{produccionController.produccionDTO.fechaPresentacion}"
+										navigator="true" pattern="dd-MM-yyyy">
+										<p:ajax event="dateSelect" update="@this" global="false" />
+									</p:calendar>
+
+									<h:outputText value="Breve descripción:" />
+									<p:inputTextarea id="txt_descripEvento" style="width:250px"
+										rows="2"
+										value="#{produccionController.produccionDTO.descripcion}">
+										<p:ajax event="blur" update="@this" global="false" />
+									</p:inputTextarea>
+
+									<h:outputText
+										value="Tipo de apoyo recibido por el Instituto (opcional):" />
+									<p:inputTextarea id="txt_tipoApoyo" style="width:250px"
+										rows="2"
+										value="#{produccionController.produccionDTO.tipoApoyo}">
+										<p:ajax event="blur" update="@this" global="false" />
+									</p:inputTextarea>
+
+									<h:outputText value="Premio: " />
+									<p:selectBooleanCheckbox id="premio"
+										value="#{produccionController.produccionDTO.premio}">
+										<p:ajax event="change"
+											update=":tabViewFormularios:formProduccion @this"
+											global="false" />
+									</p:selectBooleanCheckbox>
+
+									<h:outputText id="tp" value="Tipo premio: "
+										rendered="#{produccionController.produccionDTO.premio}" />
+									<p:selectOneMenu id="cmb_TipoPremio"
+										rendered="#{produccionController.produccionDTO.premio}"
+										value="#{produccionController.produccionDTO.tipoPremio}">
+										<p:ajax event="change" update="@this" global="false" />
+										<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+										<f:selectItem itemLabel="NACIONAL" itemValue="NACIONAL" />
+										<f:selectItem itemLabel="INTERNACIONAL"
+											itemValue="INTERNACIONAL" />
+										<f:selectItem itemLabel="AMBOS" itemValue="AMBOS" />
+									</p:selectOneMenu>
+									<h:outputText value=""
+										rendered="#{!produccionController.produccionDTO.premio}" />
+									<h:outputText value=""
+										rendered="#{!produccionController.produccionDTO.premio}" />
+
+									<h:outputText value="Premio(s) recibido:"
+										rendered="#{produccionController.produccionDTO.premio}" />
+									<p:inputTextarea id="txt_nombrePremio"
+										rendered="#{produccionController.produccionDTO.premio}"
+										style="width:250px" rows="2"
+										value="#{produccionController.produccionDTO.nombrePremio}">
+										<p:ajax event="blur" update="@this" global="false" />
+									</p:inputTextarea>
+
+
+								</h:panelGrid>
+							</p:fieldset>
+							<p:fieldset legend="Evaluación"
+								rendered="#{produccionController.alertaEvaluador}">
+								<h:panelGrid columns="2" cellspacing="5">
+									<h:outputText value="Aceptado Evaluador:" />
+									<p:selectBooleanCheckbox id="bc_aceptadoE" tabindex="9"
+										value="#{produccionController.produccionDTO.aceptadoEvaluador}" />
+
+									<h:outputText value="Observación Evaluador:" />
+									<p:inputTextarea id="txtObservacion" tabindex="10"
+										style="resize:none; width:250px;" cols="30"
+										value="#{produccionController.produccionDTO.observacionEvaluador}">
+										<p:ajax event="blur" update="@this" global="false" />
+									</p:inputTextarea>
+								</h:panelGrid>
+							</p:fieldset>
+							<br />
+						</h:form>
+					</p:tab>
+
+					<p:tab title="Participación">
+						<h:form id="formParticipacion">
+							<h:panelGrid width="100%" columns="2">
+								<p:panel>
+									<p:dataTable id="tablaDocentes" paginator="true"
+										syle="width: 100%;"										
+										value="#{produccionController.listaDocentes}" var="doc"
+										paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+										rowsPerPageTemplate="5,10,15" rows="5"
+										emptyMessage="No se encontraron Docentes">
+										<p:column id="ced" headerText="Identificación"
+											filterBy="#{doc.identificacion}" filterMatchMode="contains">
+											<h:outputText value="#{doc.identificacion}" />
+										</p:column>
+										<p:column id="nom" headerText="Nombre"
+											filterBy="#{doc.apellidoPaterno}" filterMatchMode="contains">
+											<h:outputText
+												value="#{doc.apellidoPaterno} #{doc.apellidoMaterno} #{doc.nombres}" />
+										</p:column>
+										<p:column headerText="Seleccionar">
+											<p:commandButton icon="ui-icon-circle-arrow-e"
+												style="width:20px;height:20px;"
+												update=":tabViewFormularios:formParticipacion"
+												action="#{produccionController.tomarDocente(doc)}">
+											</p:commandButton>
+										</p:column>
+									</p:dataTable>
+								</p:panel>
+								<h:panelGrid id="datosPersona" columns="1">
+									<p:panel>
+										<h:panelGrid columns="2">
+											<h:outputLabel value="Identificación:" />
+											<h:outputText
+												value="#{produccionController.docenteDTO.identificacion}" />
+											<h:outputText value="Nombre:" />
+											<h:outputLabel
+												value="#{produccionController.docenteDTO.apellidoPaterno}  #{produccionController.docenteDTO.apellidoMaterno} #{produccionController.docenteDTO.nombres}" />
+											<h:outputText value="" />
+											<p:commandButton value="Agregar"
+												rendered="#{!produccionController.alertaEvaluador}"
+												update=":tabViewFormularios:formParticipacion"
+												action="#{produccionController.agregarListaParticipantes}" />
+											<h:outputText value="" />
+
+											<p:dataTable id="tablaParticipante" var="objParticipante"
+												value="#{produccionController.listaDocenteProduccionDTO}"
+												widgetVar="tablSedeIes" border="1"
+												style="width:auto;height:auto" paginator="true" rows="10"
+												paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+												<p:column id="identi"
+													filterBy="#{objParticipante.docenteDTO.identificacion}"
+													headerText="Identificación" filterMatchMode="contains">
+													<h:outputText
+														value="#{objParticipante.docenteDTO.identificacion}" />
+												</p:column>
+												<p:column id="nombre"
+													filterBy="#{objParticipante.docenteDTO.apellidoPaterno}"
+													headerText="Docente" filterMatchMode="contains">
+													<h:outputText
+														value="#{objParticipante.docenteDTO.apellidoPaterno} #{objParticipante.docenteDTO.apellidoMaterno} #{objParticipante.docenteDTO.nombres} " />
+												</p:column>
+											</p:dataTable>
+										</h:panelGrid>
+									</p:panel>
+								</h:panelGrid>
+							</h:panelGrid>
+						</h:form>
+					</p:tab>
+				</p:tabView>
+				<br />
+				<h:panelGrid columns="2">
+					<p:commandButton value="Guardar" style="width:80px;"
+						update=":formulario"
+						action="#{produccionController.guardarProduccion}" />
+
+					<p:commandButton value="Cerrar" style="width:80px;"
+						oncomplete="dialogAdministracion.hide();">
+						<p:resetInput target=":dialogAdministracionId" />
+					</p:commandButton>
+				</h:panelGrid>
+			</center>
+		</p:dialog>
+		<!--            editar -->
+		<p:dialog widgetVar="dialogAdministracionEditar"
+			id="dialogAdministracionEditarId" header="Editar Producción"
+			resizable="true">
+			<center>
+				<p:messages id="mns" showDetail="true" autoUpdate="true"
+					showSummary="false" />
+				<p:tabView id="tabViewFormulariosEditar">
+					<p:tab title="Producciones">
+						<h:form id="formProduccionEditar">
+							<p:fieldset legend="Información General">
+								<h:panelGrid id="plg2Editar" columns="4" cellspacing="10"
+									cellpadding="10">
+
+									<h:outputText value="Tipo:" />
+									<p:selectOneMenu id="selectProducEditar"
+										value="#{produccionController.tipoProduccionSeleccionado}"
+										style="width:250px;">
+										<p:ajax event="change" update="@this" global="false" />
+										<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+										<f:selectItems
+											value="#{produccionController.tipoProduccionEnum}" var="tp"
+											itemValue="#{tp}" itemLabel="#{tp}" />
+									</p:selectOneMenu>
+									<h:outputText value="" />
+									<h:outputText value="" />
+
+									<h:outputText value="Nombre:" />
+									<h:inputTextarea id="txt_tituloEditar"
+										style="resize:none; width:250px;" rows="1"
+										value="#{produccionController.produccionDTO.nombre}">
+										<p:ajax event="blur" update="@this" global="false" />
+									</h:inputTextarea>
+
+									<h:outputText value="Fecha divulgación: " />
+									<p:calendar id="fechaPresentacionEditar" effect="slideDown"
+										size="37"
+										value="#{produccionController.produccionDTO.fechaPresentacion}"
+										navigator="true" pattern="dd-MM-yyyy">
+										<p:ajax event="dateSelect" update="@this" global="false" />
+									</p:calendar>
+
+									<h:outputText value="Breve descripción:" />
+									<h:inputTextarea id="txdescripEventoEditar"
+										style="resize:none; width:250px;" rows="2"
+										value="#{produccionController.produccionDTO.descripcion}">
+										<p:ajax event="blur" update="@this" global="false" />
+									</h:inputTextarea>
+
+									<h:outputText value="Tipo de apoyo recibido por el Instituto:" />
+									<h:inputTextarea id="txt_tipoApoyoEditar"
+										style="resize:none; width:250px;"
+										value="#{produccionController.produccionDTO.tipoApoyo}">
+										<p:ajax event="blur" update="@this" global="false" />
+									</h:inputTextarea>
+
+									<h:outputText value="Premio: " />
+									<p:selectBooleanCheckbox id="premioEditar"
+										value="#{produccionController.produccionDTO.premio}">
+										<p:ajax event="change"
+											update=":tabViewFormulariosEditar:formProduccionEditar @this"
+											global="false" />
+									</p:selectBooleanCheckbox>
+
+									<h:outputText value="Tipo premio:"
+										rendered="#{produccionController.produccionDTO.premio}" />
+									<p:selectOneMenu id="cmb_TipoPremioEditar"
+										rendered="#{produccionController.produccionDTO.premio}"
+										value="#{produccionController.produccionDTO.tipoPremio}">
+										<p:ajax event="change" update="@this" global="false" />
+										<f:selectItem itemLabel="-- Seleccionar --" itemValue="" />
+										<f:selectItem itemLabel="NACIONAL" itemValue="NACIONAL" />
+										<f:selectItem itemLabel="INTERNACIONAL"
+											itemValue="INTERNACIONAL" />
+										<f:selectItem itemLabel="AMBOS" itemValue="AMBOS" />
+									</p:selectOneMenu>
+
+									<h:outputText value=""
+										rendered="#{!produccionController.produccionDTO.premio}" />
+									<h:outputText value=""
+										rendered="#{!produccionController.produccionDTO.premio}" />
+
+									<h:outputText value="Premio(s) recibido:"
+										rendered="#{produccionController.produccionDTO.premio}" />
+									<p:inputTextarea id="txt_nombrePremioEditar"
+										rendered="#{produccionController.produccionDTO.premio}"
+										style="width:250px" rows="2"
+										value="#{produccionController.produccionDTO.nombrePremio}">
+										<p:ajax event="blur" update="@this" global="false" />
+									</p:inputTextarea>
+								</h:panelGrid>
+							</p:fieldset>
+							<p:fieldset legend="Evaluación"
+								rendered="#{produccionController.alertaEvaluador}">
+								<h:panelGrid columns="2" cellspacing="5">
+									<h:outputText value="Aceptado Evaluador:" />
+									<p:selectOneMenu
+										value="#{produccionController.produccionDTO.aceptadoEvaluador}"
+										style="width:210px;" tabindex="6">
+										<f:selectItem itemLabel="Sí" itemValue="TRUE" />
+										<f:selectItem itemLabel="No" itemValue="FALSE" />
+
+										<p:ajax event="change" update="@this" global="false" />
+									</p:selectOneMenu>
+
+
+									<h:outputText value="Observación Evaluador:" />
+									<h:inputTextarea id="txtObservacion" tabindex="10"
+										style="resize:none; width:250px;" cols="30"
+										value="#{produccionController.produccionDTO.observacionEvaluador}"
+										required="true"
+										requiredMessage="Debe ingresar una observación">
+										<p:ajax event="blur" update="@this" global="false" />
+									</h:inputTextarea>
+								</h:panelGrid>
+							</p:fieldset>
+							<br />
+						</h:form>
+					</p:tab>
+
+					<p:tab title="Participación">
+						<h:form id="formParticipacionEditar">
+							<h:panelGrid width="100%" columns="2">
+								<p:panel>
+									<p:dataTable id="tablaDocentesEditar" paginator="true"
+										scrollable="true"
+										paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+										rowsPerPageTemplate="5,10,15" rows="5"
+										value="#{produccionController.listaDocentes}" var="doc"
+										emptyMessage="No se encontraron Docentes">
+
+										<p:column id="cedEditar" headerText="Identificación">
+											<h:outputText value="#{doc.identificacion}" />
+										</p:column>
+
+										<p:column id="nomEditar" headerText="Nombre">
+											<h:outputText
+												value="#{doc.apellidoPaterno} #{doc.apellidoMaterno} #{doc.nombres}" />
+										</p:column>
+
+										<p:column headerText="Seleccionar">
+											<p:commandButton icon="ui-icon-circle-arrow-e"
+												style="width:20px;height:20px;"
+												update=":tabViewFormulariosEditar:formParticipacionEditar"
+												global="false"
+												action="#{produccionController.tomarDocente(doc)}">
+											</p:commandButton>
+										</p:column>
+									</p:dataTable>
+								</p:panel>
+								<h:panelGrid id="datosPersonaEditar" columns="1">
+									<p:panel>
+
+										<h:panelGrid columns="2">
+
+											<h:outputLabel value="Identificación:" />
+											<h:outputText
+												value="#{produccionController.docenteDTO.identificacion}" />
+
+											<h:outputText value="Nombre:" />
+											<h:outputLabel
+												value="#{produccionController.docenteDTO.apellidoPaterno}  #{produccionController.docenteDTO.apellidoMaterno} #{produccionController.docenteDTO.nombres}" />
+
+											<h:outputText value="" />
+											<p:commandButton value="Guardar"
+												rendered="#{!produccionController.alertaEvaluador}"
+												update=":tabViewFormulariosEditar:formParticipacionEditar"
+												action="#{produccionController.guardarParticipantes}" />
+
+											<h:outputText value="" />
+											<p:dataTable id="tablaParticipanteEditar"
+												var="objParticipante"
+												value="#{produccionController.listaDocenteProduccionDTO}"
+												widgetVar="tablSedeIes" border="1"
+												style="width:auto;height:auto" paginator="true" rows="10"
+												paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+
+												<p:column id="iidenteEditar"
+													filterBy="#{objParticipante.docenteDTO.identificacion}"
+													headerText="Identificación" filterMatchMode="contains">
+													<h:outputText
+														value="#{objParticipante.docenteDTO.identificacion}" />
+												</p:column>
+
+												<p:column id="nombreEditar"
+													filterBy="#{objParticipante.docenteDTO.apellidoPaterno}"
+													headerText="Docente" filterMatchMode="contains">
+													<h:outputText
+														value="#{objParticipante.docenteDTO.apellidoPaterno} #{objParticipante.docenteDTO.apellidoMaterno} #{objParticipante.docenteDTO.nombres} " />
+												</p:column>
+												<p:column>
+													<p:commandButton id="eliminarDoc" icon="ui-icon-close"
+														rendered="#{!produccionController.alertaEvaluador}"
+														title="eliminar"
+														oncomplete="deleteConfirmationDocenteE.show()">
+														<f:setPropertyActionListener
+															target="#{produccionController.docenteProduccion}"
+															value="#{objParticipante}">
+														</f:setPropertyActionListener>
+													</p:commandButton>
+												</p:column>
+											</p:dataTable>
+
+										</h:panelGrid>
+									</p:panel>
+								</h:panelGrid>
+							</h:panelGrid>
+
+						</h:form>
+					</p:tab>
+
+				</p:tabView>
+				<br />
+				<h:panelGrid columns="2">
+					<p:commandButton value="Guardar" style="width:80px;"
+						update=":formulario"
+						action="#{produccionController.guardarProduccionEditada}" />
+
+					<p:commandButton value="Cerrar" style="width:80px;"
+						oncomplete="dialogAdministracionEditar.hide()">
+						<p:resetInput target=":dialogAdministracionEditarId" />
+					</p:commandButton>
+				</h:panelGrid>
+			</center>
+		</p:dialog>
+
+
+
+	</ui:define>
+</ui:composition>
+</html>
